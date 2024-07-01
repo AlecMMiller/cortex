@@ -9,8 +9,11 @@ export default {
     },
     colors: {
       'background-base-default': 'hsl(240, 6%, 10%)',
+      'background-code': 'hsl(240, 6%, 20%)',
       'text-normal': 'hsl(240, 5%, 84%)',
-      'text-bold': 'hsl(240, 70%, 84%)'
+      'text-bold': 'hsl(240, 70%, 84%)',
+      'quote': 'hsl(240, 70%, 84%)',
+      'separator': 'hsl(240, 6%, 20%)',
     }
   },
   plugins: [],
