@@ -44,7 +44,7 @@ function Editor() {
       <div className="flex flex-col overflow-y-auto h-full grow items-center">
         <h1 contentEditable className="text-text-normal font-semibold font-prose text-4xl mt-12 text-center">Example Title</h1>
         <RichTextPlugin
-          contentEditable={<ContentEditable className="p-10 focus:outline-none max-w-4xl" />}
+          contentEditable={<ContentEditable className="p-10 focus:outline-none max-w-4xl w-full" />}
           placeholder={<></>}
           ErrorBoundary={LexicalErrorBoundary}
         />
