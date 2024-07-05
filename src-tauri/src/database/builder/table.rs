@@ -1,4 +1,4 @@
-use sqlx::{query::Query, Sqlite};
+use sqlx::{query::Query, sqlite::SqliteQueryResult, Error, Sqlite};
 
 use crate::types::schema::SchemaId;
 
@@ -39,7 +39,7 @@ impl<'a> TableBuilder<'a> {
         }
     }
 
-    pub fn build(&self) -> String {
+    fn build(&self) -> String {
         let mut query = format!("CREATE TABLE IF NOT EXISTS {} (\n", self.table_name);
 
         query.push_str("id TEXT PRIMARY KEY NOT NULL,\n");
@@ -59,6 +59,12 @@ impl<'a> TableBuilder<'a> {
         query.push_str("\n);");
 
         query
+    }
+
+    pub async fn execute(&self, pool: &sqlx::SqlitePool) -> Result<SqliteQueryResult, Error> {
+        let query = self.build();
+        let query = sqlx::query(query.as_str());
+        query.execute(pool).await
     }
 
     pub fn add_column(&mut self, column: ColumnBuilder<'a>) {

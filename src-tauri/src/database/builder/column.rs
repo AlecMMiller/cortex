@@ -1,16 +1,8 @@
-use crate::types::column::ColumnId;
+use crate::types::column::{ColumnId, RawDataType};
 pub struct ColumnBuilder<'a> {
     column_name: &'a str,
     nullable: bool,
-    data_type: DataType,
-}
-
-#[allow(dead_code)]
-pub enum DataType {
-    Text,
-    Integer,
-    Real,
-    Blob,
+    data_type: RawDataType,
 }
 
 #[allow(dead_code)]
@@ -21,7 +13,7 @@ pub enum ColumnIdentifier<'a> {
 }
 
 impl<'a> ColumnBuilder<'a> {
-    pub fn new(column_identifier: ColumnIdentifier<'a>, data_type: DataType) -> ColumnBuilder<'a> {
+    pub fn new(column_identifier: ColumnIdentifier<'a>, data_type: RawDataType) -> ColumnBuilder<'a> {
         let column_name = match column_identifier {
             ColumnIdentifier::Hardcoded(name) => name,
             ColumnIdentifier::ColumnId(id) => id.get(),
@@ -36,10 +28,10 @@ impl<'a> ColumnBuilder<'a> {
     pub fn build(&self) -> String {
         let mut query = format!("{} ", self.column_name);
         match self.data_type {
-            DataType::Text => query.push_str("TEXT"),
-            DataType::Integer => query.push_str("INTEGER"),
-            DataType::Real => query.push_str("REAL"),
-            DataType::Blob => query.push_str("BLOB"),
+            RawDataType::Text => query.push_str("TEXT"),
+            RawDataType::Integer => query.push_str("INTEGER"),
+            RawDataType::Real => query.push_str("REAL"),
+            RawDataType::Blob => query.push_str("BLOB"),
         }
         if !self.nullable {
             query.push_str(" NOT NULL");
