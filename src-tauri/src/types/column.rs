@@ -40,6 +40,13 @@ impl<'a> Column<'a> {
             DataType::RichText => RawDataType::Text,
         }
     }
+
+    pub fn get_data_type_str(&self) -> &str {
+        match self.data_type {
+            DataType::Text => "Text",
+            DataType::RichText => "RichText",
+        }
+    }
 }
 
 impl ColumnId {

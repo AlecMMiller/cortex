@@ -1,9 +1,8 @@
-use sqlx::{query::Query, sqlite::SqliteQueryResult, Execute, QueryBuilder, Sqlite, SqlitePool};
-use tokio::sync::futures;
+use sqlx::{query::Query, sqlite::SqliteQueryResult, QueryBuilder, Sqlite, SqlitePool};
 
 use crate::{
     database::builder::{
-        column::{self, ColumnBuilder, ColumnIdentifier},
+        column::{ColumnBuilder, ColumnIdentifier},
         table::{TableBuilder, TableIdentifier},
     },
     types::schema::Schema,
@@ -43,7 +42,7 @@ pub async fn add_columns<'a>(
     pool: &SqlitePool,
 ) -> Result<SqliteQueryResult, sqlx::Error> {
     let column_insert_query = format!(
-        "INSERT INTO {} ({}, id, title) ",
+        "INSERT INTO {} ({}, id, title, data_type) ",
         COLUMN_SCHEMA, TABLE_SCHEMA
     );
     let mut column_insert_query = QueryBuilder::new(column_insert_query);
@@ -51,7 +50,8 @@ pub async fn add_columns<'a>(
     column_insert_query.push_values(schema.iter_columns(), |mut b, column| {
         b.push_bind(schema.id())
             .push_bind(column.id())
-            .push_bind(column.name);
+            .push_bind(column.name)
+            .push_bind(column.get_data_type_str());
     });
 
     let column_insert_query = column_insert_query.build();

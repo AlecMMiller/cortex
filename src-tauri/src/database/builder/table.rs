@@ -1,4 +1,4 @@
-use sqlx::{query::Query, sqlite::SqliteQueryResult, Error, Sqlite};
+use sqlx::{sqlite::SqliteQueryResult, Error};
 
 use crate::types::schema::SchemaId;
 
