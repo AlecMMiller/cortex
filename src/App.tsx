@@ -18,6 +18,7 @@ import LexicalAutoLinkPlugin from "./utils/AutoLink";
 import { OnChangePlugin } from "@lexical/react/LexicalOnChangePlugin";
 import { EditorState } from "lexical";
 import { invoke } from '@tauri-apps/api/tauri'
+import { useEffect } from "react";
 
 function onError(error: any) {
   console.error(error);
@@ -30,7 +31,37 @@ function onChange(state: EditorState) {
   invoke('editor_change_state', { state: serialized })
 }
 
+async function createPage(name: string): Promise<string> {
+  const result = invoke('create_note', { name })
+  return result as Promise<string>
+}
+
+async function getLastUpdated(): Promise<string | null> {
+  try {
+    const result = await invoke('get_last_updated')
+    return result as string
+  }
+  catch {
+    return null
+  }
+}
+
 function Editor() {
+  useEffect(() => {
+    async function loadLatest() {
+      const result = await getLastUpdated()
+      
+      if(result === null) {
+        console.log('No notes found')
+        createPage('New Note')
+      } else {
+        console.log('Last updated: ' + result)
+      }
+
+    }
+
+    loadLatest()
+  }, [])
   const initialConfig: InitialConfigType = {
     namespace: 'MyEditor',
     theme: EDITOR_THEME,
