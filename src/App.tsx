@@ -19,6 +19,7 @@ import { OnChangePlugin } from "@lexical/react/LexicalOnChangePlugin";
 import { EditorState } from "lexical";
 import { invoke } from '@tauri-apps/api/tauri'
 import { useEffect } from "react";
+import { createNote, getLastUpdated } from "./commands/note";
 
 function onError(error: any) {
   console.error(error);
@@ -31,21 +32,6 @@ function onChange(state: EditorState) {
   invoke('editor_change_state', { state: serialized })
 }
 
-async function createPage(name: string): Promise<string> {
-  const result = invoke('create_note', { name })
-  return result as Promise<string>
-}
-
-async function getLastUpdated(): Promise<string | null> {
-  try {
-    const result = await invoke('get_last_updated')
-    return result as string
-  }
-  catch {
-    return null
-  }
-}
-
 function Editor() {
   useEffect(() => {
     async function loadLatest() {
@@ -53,7 +39,7 @@ function Editor() {
       
       if(result === null) {
         console.log('No notes found')
-        createPage('New Note')
+        createNote('New Note')
       } else {
         console.log('Last updated: ' + result)
       }
