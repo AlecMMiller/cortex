@@ -48,9 +48,11 @@ jobs:
           node-version: lts/*
 
       # Change the version in package.json to jobs.version.outputs.version
+      # Don't use sed because it's not available on windows runners.
       - name: Change Version
         run: |
-          sed -i "s@\"version\": \".*\"/\"version\": \"${{ needs.version.outputs.version }}\"/g" package.json
+          jq '.version = "${{ needs.version.outputs.version }}"' package.json > package.json.tmp
+          mv package.json.tmp package.json
 
       - name: install Rust stable
         uses: dtolnay/rust-toolchain@stable
