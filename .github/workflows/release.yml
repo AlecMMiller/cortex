@@ -44,7 +44,7 @@ jobs:
       - name: Update package.json
         run: |
           VERSION="${{ needs.version.outputs.version }}"
-          node -e "let pkg = require('./package.json'); pkg.version = '${VERSION}'; require('fs').writeFileSync('./package.json', JSON.stringify(pkg, null, 2));"
+          sed -i "s/\"version\": \".*\"/\"version\": \"${VERSION}\"/" package.json
 
       - name: install dependencies (ubuntu only)
         if: matrix.platform == 'ubuntu-22.04' # This must match the platform value defined above.
