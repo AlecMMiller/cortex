@@ -2,98 +2,15 @@ name: Release
 on:
   push:
     branches:
-      - main # or main
-
-permissions:
-  contents: read # for checkout
+      - main
 
 jobs:
   version:
     runs-on: ubuntu-latest
-    permissions:
-      contents: write # to be able to publish a GitHub release
-      issues: write # to be able to comment on released issues
-      pull-requests: write # to be able to comment on released pull requests
-      id-token: write # to enable use of OIDC for npm provenance
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+      - id: semver-tag
+        uses: gandarez/semver-action@master
         with:
-          fetch-depth: 0
-      - name: Semantic Release
-        id: semantic-release
-        uses: cycjimmy/semantic-release-action@v4
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      - name: Determine Version
-        id: determine-version
-        run: |
-          # Check if steps.semantic-release.outputs.version exists
-          if [ -n "${{ steps.semantic-release.outputs.new_release_version }}" ]; then
-            echo "VERSION=${{ steps.semantic-release.outputs.new_release_version }}" >> $GITHUB_ENV
-            echo "Version set to new ${{ steps.semantic-release.outputs.new_release_version }}"
-          else
-            echo "VERSION=${{ steps.semantic-release.outputs.last_release_version }}" >> $GITHUB_ENV
-            echo "Version set to last ${{ steps.semantic-release.outputs.last_release_version }}"
-          fi
-    outputs:
-      version: ${{ steps.determine-version.outputs.version }}
-
-  publish-tauri:
-    permissions:
-        contents: write
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - platform: 'ubuntu-22.04' # for Tauri v1 you could replace this with ubuntu-20.04.
-            args: ''
-    runs-on: ${{ matrix.platform }}
-    needs: version
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Update package.json
-        run: |
-          VERSION="${{ needs.version.outputs.version }}"
-          sed -i "s/\"version\": \".*\"/\"version\": \"${VERSION}\"/" package.json
-
-      - name: install dependencies (ubuntu only)
-        if: matrix.platform == 'ubuntu-22.04' # This must match the platform value defined above.
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y libwebkit2gtk-4.0-dev libappindicator3-dev librsvg2-dev patchelf
-        # webkitgtk 4.0 is for Tauri v1 - webkitgtk 4.1 is for Tauri v2.
-        # You can remove the one that doesn't apply to your app to speed up the workflow a bit.
-
-      - name: setup node
-        uses: actions/setup-node@v4
-        with:
-          node-version: lts/*
-          cache: 'yarn' # Set this to npm, yarn or pnpm.
-
-      - name: install Rust stable
-        uses: dtolnay/rust-toolchain@stable
-        with:
-          # Those targets are only used on macos runners so it's in an `if` to slightly speed up windows and linux builds.
-          targets: ${{ matrix.platform == 'macos-latest' && 'aarch64-apple-darwin,x86_64-apple-darwin' || '' }}
-
-      - name: Rust cache
-        uses: swatinem/rust-cache@v2
-        with:
-          workspaces: './src-tauri -> target'
-
-      - name: install frontend dependencies
-        # If you don't have `beforeBuildCommand` configured you may want to build your frontend here too.
-        run: yarn install # change this to npm or pnpm depending on which one you use.
-
-      - uses: tauri-apps/tauri-action@v0
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          tagName: app-v__VERSION__ # the action automatically replaces \_\_VERSION\_\_ with the app version.
-          releaseName: 'App v__VERSION__'
-          releaseBody: 'See the assets to download this version and install.'
-          releaseDraft: true
-          prerelease: false
-          args: ${{ matrix.args }}
+          branching_model: "git-flow"
+      - name: "Created tag"
+        run: echo "Version ${{ steps.semver-tag.outputs.semver_tag }}"
