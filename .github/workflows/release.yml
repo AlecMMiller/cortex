@@ -15,5 +15,6 @@ jobs:
         uses: gandarez/semver-action@master
         with:
           branching_model: "git-flow"
+          main_branch_name: "main"
       - name: "Created tag"
         run: echo "Version ${{ steps.semver-tag.outputs.semver_tag }}"
