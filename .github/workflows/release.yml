@@ -31,10 +31,11 @@ jobs:
           # Check if steps.semantic-release.outputs.version exists
           if [ -n "${{ steps.semantic-release.outputs.new_release_version }}" ]; then
             echo "VERSION=${{ steps.semantic-release.outputs.new_release_version }}" >> $GITHUB_ENV
-            echo ${{ steps.semantic-release.outputs.new_release_version }}
+            echo "Version set to new ${{ steps.semantic-release.outputs.new_release_version }}"
           else
             echo "VERSION=${{ steps.semantic-release.outputs.last_release_version }}" >> $GITHUB_ENV
-            echo ${{ steps.semantic-release.outputs.last_release_version }}
+            echo "Version set to last ${{ steps.semantic-release.outputs.last_release_version }}"
+          else
           fi
     outputs:
       version: ${{ steps.determine-version.outputs.version }}
