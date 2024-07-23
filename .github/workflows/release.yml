@@ -28,10 +28,13 @@ jobs:
       - name: Determine Version
         id: determine-version
         run: |
+          # Check if steps.semantic-release.outputs.version exists
           if [ -n "${{ steps.semantic-release.outputs.version }}" ]; then
-            echo "::set-output name=version::${{ steps.semantic-release.outputs.version }}"
+            echo "VERSION=${{ steps.semantic-release.outputs.version }}" >> $GITHUB_ENV
+            echo ${{ steps.semantic-release.outputs.version }}
           else
-            echo "::set-output name=version::${{ steps.semantic-release.outputs.last-version }}"
+            echo "VERSION=${{ steps.semantic-release.outputs.last-version }}" >> $GITHUB_ENV
+            echo ${{ steps.semantic-release.outputs.last-version }}
           fi
     outputs:
       version: ${{ steps.determine-version.outputs.version }}
