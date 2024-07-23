@@ -35,7 +35,6 @@ jobs:
           else
             echo "VERSION=${{ steps.semantic-release.outputs.last_release_version }}" >> $GITHUB_ENV
             echo "Version set to last ${{ steps.semantic-release.outputs.last_release_version }}"
-          else
           fi
     outputs:
       version: ${{ steps.determine-version.outputs.version }}
