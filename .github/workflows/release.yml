@@ -52,7 +52,7 @@ jobs:
       - name: Change Version
         run: |
           jq '.version = "${{ needs.version.outputs.version }}"' package.json > package.json.tmp
-          mv -f package.json.tmp package.json
+          mv -Force package.json.tmp package.json
 
       - name: install Rust stable
         uses: dtolnay/rust-toolchain@stable
