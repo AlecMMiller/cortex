@@ -26,8 +26,15 @@ jobs:
       - name: Sanitize Version
         id: sanitize
         run: |
-          echo "##[set-output name=version;]$(echo ${{ steps.version.outputs.version }} | sed -E 's/\.SNAPSHOT\.[0-9]+\.[0-9a-f]+/-/')"
-          echo "##[set-output name=is_release;]$(echo ${{ steps.version.outputs.version }} | grep -q 'SNAPSHOT' && echo 'false' || echo 'true')"
+          version=${{ steps.version.outputs.version }}
+          base_version="${version%%-*}"
+          suffix=$(echo "${version##*-}" | sed 's/[^0-9.]//g')
+          if [[ -n "$suffix" ]]; then
+            extracted_version="$base_version-$suffix"
+          else
+            extracted_version="$base_version"
+          fi
+          echo $extracted_version >> $GITHUB_ENV
     outputs:
       version: ${{ steps.sanitize.outputs.version }}
       is_release: ${{ steps.version.outputs.is_release }}
