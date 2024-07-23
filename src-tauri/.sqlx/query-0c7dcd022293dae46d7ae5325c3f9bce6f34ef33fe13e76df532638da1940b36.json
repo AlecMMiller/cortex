@@ -1,0 +1,12 @@
+{
+  "db_name": "SQLite",
+  "query": "\n        UPDATE notes SET body = ?, updated_at = ? WHERE uuid = ?\n        ",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Right": 3
+    },
+    "nullable": []
+  },
+  "hash": "0c7dcd022293dae46d7ae5325c3f9bce6f34ef33fe13e76df532638da1940b36"
+}
