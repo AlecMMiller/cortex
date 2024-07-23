@@ -34,6 +34,8 @@ jobs:
         include:
           - platform: 'ubuntu-22.04' # for Tauri v1 you could replace this with ubuntu-20.04.
             args: ''
+          - platform: 'windows-latest'
+            args: ''
 
     runs-on: ${{ matrix.platform }}
     needs: version
