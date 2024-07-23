@@ -49,14 +49,16 @@ jobs:
 
       # Change the version in package.json to jobs.version.outputs.version
       # Don't use sed because it's not available on windows runners.
-      - name: Change Version
+      - name: Change Version (Windows)
+        if: matrix.platform == 'windows-latest'
         run: |
-          if [[ "$RUNNER_OS" == "Windows" ]]; then
-            jq '.version = "${{ needs.version.outputs.version }}"' package.json | Out-File -Encoding utf8 package.json.tmp
-            mv -Force package.json.tmp package.json
-          else
-            sed -i "s/\"version\": \".*\"/\"version\": \"${{ needs.version.outputs.version }}\"/" package.json
-          fi
+          jq '.version = "${{ needs.version.outputs.version }}"' package.json | Out-File -Encoding utf8 package.json.tmp
+          mv -Force package.json.tmp package.json
+      
+      - name: Change Version (Unix)
+        if: matrix.platform != 'windows-latest'
+        run: |
+          sed -i "s/\"version\": \".*\"/\"version\": \"${{ needs.version.outputs.version }}\"/" package.json
 
       - name: install Rust stable
         uses: dtolnay/rust-toolchain@stable
