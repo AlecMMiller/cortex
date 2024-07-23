@@ -25,8 +25,17 @@ jobs:
         uses: cycjimmy/semantic-release-action@v4
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Determine Version
+        id: determine-version
+        run: |
+          if [ -n "${{ steps.semantic-release.outputs.version }}" ]; then
+            echo "::set-output name=version::${{ steps.semantic-release.outputs.version }}"
+          else
+            echo "::set-output name=version::${{ steps.semantic-release.outputs.last-version }}"
+          fi
     outputs:
-      version: ${{ steps.semantic-release.outputs.version }}
+      version: ${{ steps.determine-version.outputs.version }}
+
   publish-tauri:
     permissions:
         contents: write
