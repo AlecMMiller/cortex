@@ -1,4 +1,5 @@
-name: Release
+name: Git Version
+
 on:
   push:
     branches:
@@ -8,13 +9,19 @@ jobs:
   version:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout Code
+        uses: actions/checkout@v3
         with:
-          fetch-depth: 0
-      - id: semver-tag
-        uses: gandarez/semver-action@master
+          ref: ${{ github.head_ref }}   # checkout the correct branch name
+          fetch-depth: 0                # fetch the whole repo history
+
+      - name: Git Version
+        id: version
+        uses: codacy/git-version@2.7.1
         with:
-          branching_model: "git-flow"
-          main_branch_name: "main"
-      - name: "Created tag"
-        run: echo "Version ${{ steps.semver-tag.outputs.semver_tag }}"
+          release-branch: release
+          dev-branch: main
+      - name: Use the version
+        run: |
+          echo ${{ steps.version.outputs.version }}
+
