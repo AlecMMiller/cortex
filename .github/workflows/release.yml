@@ -51,8 +51,12 @@ jobs:
       # Don't use sed because it's not available on windows runners.
       - name: Change Version
         run: |
-          jq '.version = "${{ needs.version.outputs.version }}"' package.json > package.json.tmp
-          mv -Force package.json.tmp package.json
+          if [[ "$RUNNER_OS" == "Windows" ]]; then
+            jq '.version = "${{ needs.version.outputs.version }}"' package.json | Out-File -Encoding utf8 package.json.tmp
+            mv -Force package.json.tmp package.json
+          else
+            sed -i "s/\"version\": \".*\"/\"version\": \"${{ needs.version.outputs.version }}\"/" package.json
+          fi
 
       - name: install Rust stable
         uses: dtolnay/rust-toolchain@stable
