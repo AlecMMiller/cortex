@@ -34,7 +34,7 @@ jobs:
           else
             extracted_version="$base_version"
           fi
-          echo $extracted_version >> $GITHUB_ENV
+          echo "version=$(echo ${extracted_version})" >> $GITHUB_ENV
     outputs:
       version: ${{ steps.sanitize.outputs.version }}
       is_release: ${{ steps.version.outputs.is_release }}
