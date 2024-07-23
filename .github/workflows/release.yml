@@ -49,10 +49,15 @@ jobs:
 
       # Change the version in package.json to jobs.version.outputs.version
       # Don't use sed because it's not available on windows runners.
+      # get just the numeric portion of the ending e.g 0.0.1-SNAPSHOT.54.7c861b8 becomes 0.0.1-54
       - name: Change Version (Windows)
         if: matrix.platform == 'windows-latest'
         run: |
-          jq '.version = "${{ needs.version.outputs.version }}"' package.json | Out-File -Encoding utf8 package.json.tmp
+          version=${{ needs.version.outputs.version }}
+          version=${version%%-*}
+          version=${version%%.*}.${version#*.}
+          version=${version%%.*}-${version#*.}
+          jq '.version = "${version}"' package.json | Out-File -Encoding utf8 package.json.tmp
           mv -Force package.json.tmp package.json
       
       - name: Change Version (Unix)
