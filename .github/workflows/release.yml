@@ -34,7 +34,7 @@ jobs:
     strategy:
       matrix:
         include:
-          - platform: 'ubuntu-22.04' # for Tauri v1 you could replace this with ubuntu-20.04.
+          - platform: 'ubuntu-22.04'
             args: ''
           - platform: 'windows-latest'
             args: '--bundles nsis'
@@ -49,9 +49,6 @@ jobs:
         with:
           node-version: lts/*
 
-      # Change the version in package.json to jobs.version.outputs.version
-      # Don't use sed because it's not available on windows runners.
-      # get just the numeric portion of the ending e.g 0.0.1-SNAPSHOT.54.7c861b8 becomes 0.0.1-54
       - name: Change Version (Windows)
         if: matrix.platform == 'windows-latest'
         run: |
@@ -73,12 +70,10 @@ jobs:
         if: matrix.platform == 'ubuntu-22.04' # This must match the platform value defined above.
         run: |
           sudo apt-get update
-          sudo apt-get install -y libwebkit2gtk-4.0-dev libappindicator3-dev librsvg2-dev patchelf
-        # webkitgtk 4.0 is for Tauri v1 - webkitgtk 4.1 is for Tauri v2.
-        # You can remove the one that doesn't apply to your app to speed up the workflow a bit.
+          sudo apt-get install -y libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf
 
       - name: install frontend dependencies
-        run: yarn install # change this to npm, pnpm or bun depending on which one you use.
+        run: yarn install
 
       - uses: tauri-apps/tauri-action@v0
         env:
