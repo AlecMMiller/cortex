@@ -17,7 +17,7 @@ import { EDITOR_THEME } from "./style";
 import LexicalAutoLinkPlugin from "./utils/AutoLink";
 import { OnChangePlugin } from "@lexical/react/LexicalOnChangePlugin";
 import { EditorState } from "lexical";
-import { invoke } from '@tauri-apps/api/tauri'
+import { invoke } from '@tauri-apps/api/core'
 import { useEffect } from "react";
 import { createNote, getLastUpdated } from "./commands/note";
 
