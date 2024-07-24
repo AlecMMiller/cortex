@@ -27,7 +27,6 @@ jobs:
           useConfigFile: true
     outputs:
       version: ${{ steps.version.outputs.SemVer }}
-      is_release: ${{ steps.version.outputs.PreReleaseLabel != 'alpha' }}
 
   publish:
     permissions:
@@ -89,6 +88,6 @@ jobs:
           releaseName: 'Cortex v__VERSION__'
           releaseBody: 'See the assets to download this version and install.'
           releaseDraft: false
-          prerelease: ${{ !needs.version.outputs.is_release }}
+          prerelease: ${{ github.ref != 'refs/heads/release' }}
           args: ${{ matrix.args }}
 
