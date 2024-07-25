@@ -63,11 +63,11 @@ fn main() {
   
             create_dir_all(&path).unwrap();
             let db_path = path.join("data.db");
-            let runtime = tokio::runtime::Runtime::new().expect("Unable to create a runtime");
+            let runtime = tokio::runtime::Runtime::new().expect("Tokio should be able to create a runtime");
             let pool = runtime.block_on(async {
                 let conn = SqliteConnectOptions::new().filename(db_path).create_if_missing(true);
-                let pool = SqlitePool::connect_with(conn).await.unwrap();
-                sqlx::migrate!().run(&pool).await.unwrap();
+                let pool = SqlitePool::connect_with(conn).await.expect("SQLX should be able to connect to the database");
+                sqlx::migrate!().run(&pool).await.expect("SQLX should be able to run migrations");
                 pool
             });
 
