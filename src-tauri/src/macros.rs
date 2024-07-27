@@ -3,7 +3,7 @@ pub mod macros {
         (
             $id_name:ident
         ) => {
-            #[derive(AsExpression, FromSqlRow, Debug, PartialEq, Eq, Serialize)]
+            #[derive(AsExpression, FromSqlRow, Debug, PartialEq, Eq)]
             #[sql_type = "diesel::sql_types::Binary"]
             pub struct $id_name (Vec<u8>);
 
@@ -26,6 +26,18 @@ pub mod macros {
                     $id_name {
                         0: uuid::Uuid::new_v4().as_bytes().to_vec()
                     }
+                }
+            }
+
+            impl Serialize for $id_name {
+                fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+                where
+                    S: serde::ser::Serializer,
+                {
+                    // Convert to V4 uuid
+                    let uuid = uuid::Uuid::from_slice(&self.0).unwrap();
+                    let s = uuid.to_string();
+                    serializer.serialize_str(&s)
                 }
             }
         };

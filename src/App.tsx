@@ -36,17 +36,9 @@ function Editor() {
   console.log("Editor component loaded")
   useEffect(() => {
     async function loadLatest() {
-      console.log("Loading latest note")
       const result = await getLastUpdated()
-      console.log("Gor result")
-
-      if(result === null) {
-        console.log('No notes found')
-        createNote('New Note')
-      } else {
-        console.log('Last updated: ' + result)
-      }
-
+      console.log("Got result")
+      console.log(result)
     }
     loadLatest()
   }, [])
