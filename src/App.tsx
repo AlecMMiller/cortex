@@ -19,7 +19,7 @@ import { OnChangePlugin } from "@lexical/react/LexicalOnChangePlugin";
 import { EditorState } from "lexical";
 import { invoke } from '@tauri-apps/api/core'
 import { useEffect } from "react";
-import { createNote, getLastUpdated } from "./commands/note";
+import { getLastUpdated } from "./commands/note";
 
 function onError(error: any) {
   console.error(error);
