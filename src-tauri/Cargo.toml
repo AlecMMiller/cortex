@@ -14,11 +14,12 @@ tauri-build = { version = "2.0.0-beta", features = [] }
 tauri = { version = "2.0.0-beta", features = [] }
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
-sqlx = { version = "0.7.4", features = ["runtime-tokio", "sqlite"] }
 tokio = { version = "1.38.0", features = ["macros"] }
 uuid = { version = "1.9.1", features = ["v4"] }
 chrono = "0.4.38"
 tauri-plugin-fs = "2.0.0-beta.11"
+diesel = { version = "2.2.2", features = ["r2d2", "sqlite"] }
+diesel_migrations = { version = "2.2.0", features = ["sqlite"] }
 
 [features]
 # This feature is used for production builds or when a dev server is not specified, DO NOT REMOVE!!
