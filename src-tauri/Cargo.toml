@@ -20,7 +20,7 @@ chrono = "0.4.38"
 tauri-plugin-fs = "2.0.0-beta.11"
 diesel = { version = "2.2.2", features = ["r2d2", "sqlite"] }
 diesel_migrations = { version = "2.2.0", features = ["sqlite"] }
-libsqlite3-sys = "0.29.0"
+libsqlite3-sys = { version = "0.29.0", features = ["bundled"] }
 
 [features]
 # This feature is used for production builds or when a dev server is not specified, DO NOT REMOVE!!
