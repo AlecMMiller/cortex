@@ -2,11 +2,13 @@ import { useEffect, useState } from "react";
 import { getLastUpdated } from "./commands/note";
 import Editor from './editor';
 import { NoteData } from "./types";
+import { Maximize, Minimize2, Search, Settings, X } from "lucide-react";
+import { getCurrentWindow } from '@tauri-apps/api/window';
 
 function App() {
-    const [note, setNote] = useState<NoteData | null>(null)
+  const [note, setNote] = useState<NoteData | null>(null)
 
-    useEffect(() => {
+  useEffect(() => {
     async function loadLatest() {
       const result = await getLastUpdated()
       setNote(result)
@@ -15,10 +17,26 @@ function App() {
   }, [])
 
   let content = note !== null ? <Editor note={note} /> : <div>Loading...</div>
+  const appWindow = getCurrentWindow();
 
   return (
-    <div className="bg-background-base-default text-3xl w-screen h-screen flex flex-row justify-between">
-      {content}
+    <div className="bg-background-outline text-3xl w-screen h-screen flex flex-col">
+      <div className="flex text-text-soft p-1 gap-3">
+        <div className="grow"/>
+        <Minimize2 onClick={() => appWindow.minimize()} size={24} />
+        <Maximize onClick={() => appWindow.toggleMaximize()} size={24} />
+        <X onClick={() => appWindow.close()} size={24}/>
+      </div>
+      <div className="flex flex-row justify-between grow">
+        <div className="flex flex-col">
+          <Search className="m-2 text-text-soft" size={24} />
+          <div className="grow" />
+          <Settings className="m-2 text-text-soft" size={24} />
+        </div>
+        <div className="bg-background-base-default w-full h-full flex flex-row">
+          {content}
+        </div>
+      </div>
     </div>
   );
 }

@@ -8,6 +8,7 @@ export default {
      }
     },
     colors: {
+      'background-outline': 'hsl(240, 6%, 3%)',
       'background-base-default': 'hsl(240, 6%, 10%)',
       'background-code': 'hsl(240, 6%, 20%)',
       'text-normal': 'hsl(240, 5%, 84%)',

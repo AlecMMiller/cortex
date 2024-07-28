@@ -19,6 +19,7 @@
     "@tauri-apps/api": "2.0.0-beta.15",
     "autoprefixer": "^10.4.19",
     "lexical": "^0.16.0",
+    "lucide-react": "^0.417.0",
     "postcss": "^8.4.38",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
