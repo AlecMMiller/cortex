@@ -1,6 +1,6 @@
 use crate::{
     models::{AbsoluteTimestamp, Note, NoteId},
-    schema::notes::{dsl::notes, title, updated_at},
+    schema::notes::{body, dsl::notes, title, updated_at},
     utils::get_connection,
     SqlitePool,
 };
@@ -64,6 +64,17 @@ pub fn rename_note(pool: SqlitePool, uuid: NoteId, new_title: &str) -> Result<()
 
     diesel::update(notes.find(uuid))
         .set((title.eq(new_title), updated_at.eq(time)))
+        .execute(conn)?;
+
+    Ok(())
+}
+
+pub fn update_body(pool: SqlitePool, uuid: NoteId, new_body: &str) -> Result<(), Error> {
+    let time = AbsoluteTimestamp::now();
+    let conn = &mut get_connection(pool);
+
+    diesel::update(notes.find(uuid))
+        .set((updated_at.eq(time), body.eq(new_body)))
         .execute(conn)?;
 
     Ok(())

@@ -29,11 +29,11 @@ fn deserialize_editor(state: &str) -> Result<EditorState, Error> {
 
 // Learn more about Tauri commands at https://tauri.app/v1/guides/features/command
 #[tauri::command]
-fn editor_change_state(state: &str) {
-    let state = deserialize_editor(state);
-    match state {
-        Ok(_result) => return,
-        Err(error) => println!("{error}"),
+fn editor_change_state(state: State<'_, PoolWrapper>, uuid: NoteId, body: &str) -> Result<(), ()> {
+    let result = notes::update_body(state.pool.clone(), uuid, body);
+    match result {
+        Ok(_) => Ok(()),
+        Err(_) => Err(())
     }
 }
 
@@ -44,7 +44,7 @@ struct PoolWrapper{
   }
 
 #[tauri::command]
-async fn get_last_updated<'a>(state: State<'_, PoolWrapper>) -> Result<String, ()> {
+fn get_last_updated<'a>(state: State<'_, PoolWrapper>) -> Result<String, ()> {
     let last_updated = notes::get_last_updated_or_create(state.pool.clone());
     match last_updated {
         Ok(note) => {
@@ -59,23 +59,13 @@ async fn get_last_updated<'a>(state: State<'_, PoolWrapper>) -> Result<String, (
 }
 
 #[tauri::command]
-async fn rename_note(state: State<'_, PoolWrapper>, uuid: NoteId, title: &str) -> Result<(), ()> {
+fn rename_note(state: State<'_, PoolWrapper>, uuid: NoteId, title: &str) -> Result<(), ()> {
     let result = notes::rename_note(state.pool.clone(), uuid, title);
     match result {
         Ok(_) => Ok(()),
         Err(_) => Err(())
     }
 }
-
-// #[tauri::command]
-// async fn create_note<'a>(name: &str, pool: State<'_, SqlitePool>) -> Result<String, String> {
-//     println!("Creating note with name: {}", name);
-//     let note_id = notes::create(&pool, name).await;
-//     match note_id {
-//         Ok(note_id) => Ok(note_id.into()),
-//         Err(_) => Err("Failed to create note".to_string())
-//     }
-// }
 
 fn main() {
     tauri::Builder::default()

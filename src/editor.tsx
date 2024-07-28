@@ -21,10 +21,10 @@ import { invoke } from "@tauri-apps/api/core";
 import { NoteData } from "./types";
 import { renameNote } from "./commands/note";
 
-function onChange(state: EditorState) {
+function onChange(uuid: string, state: EditorState) {
     const json = state.toJSON()
     const serialized = JSON.stringify(json)
-    invoke('editor_change_state', { state: serialized })
+    invoke('editor_change_state', { uuid, body: serialized })
 }
 
 function onTitleChange(uuid: string, title: string) {
@@ -35,21 +35,24 @@ function onTitleChange(uuid: string, title: string) {
 function onError(error: any) {
     console.error(error);
 }
-
-
-const initialConfig: InitialConfigType = {
-    namespace: 'MyEditor',
-    theme: EDITOR_THEME,
-    onError,
-    nodes: [ListNode, ListItemNode, HorizontalRuleNode, HeadingNode, QuoteNode, CodeNode, LinkNode, AutoLinkNode]
-};
-
 interface EditorProps {
     note: NoteData
 }
 
 export default function Editor(props: EditorProps): JSX.Element {
     const note = props.note
+
+    let initialEditorState = note.body !== "" ? note.body : undefined;
+
+    const initialConfig: InitialConfigType = {
+        namespace: 'MyEditor',
+        editorState: initialEditorState,
+        theme: EDITOR_THEME,
+        onError,
+        nodes: [ListNode, ListItemNode, HorizontalRuleNode, HeadingNode, QuoteNode, CodeNode, LinkNode, AutoLinkNode]
+    };
+    
+
     return (
         <LexicalComposer initialConfig={initialConfig}>
             <ListPlugin />
@@ -70,7 +73,7 @@ export default function Editor(props: EditorProps): JSX.Element {
                     return <PageNavigator tableOfContents={tableOfContentsArray} />;
                 }}
             </TableOfContentsPlugin>
-            <OnChangePlugin onChange={onChange} />
+            <OnChangePlugin onChange={(state: EditorState) => {onChange(note.uuid, state)}} />
         </LexicalComposer>
     );
 }
