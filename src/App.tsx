@@ -20,12 +20,12 @@ function App() {
   const appWindow = getCurrentWindow();
 
   return (
-    <div className="bg-background-outline text-3xl w-screen h-screen flex flex-col">
+    <div className="bg-background-outline text-3xl w-screen h-screen flex flex-col rounded-md">
       <div className="flex text-text-soft p-1 gap-3">
-        <div className="grow"/>
-        <Minimize2 onClick={() => appWindow.minimize()} size={24} />
-        <Maximize onClick={() => appWindow.toggleMaximize()} size={24} />
-        <X onClick={() => appWindow.close()} size={24}/>
+        <div data-tauri-drag-region className="grow"/>
+        <Minimize2 onClick={() => appWindow.minimize()} size={16} />
+        <Maximize onClick={() => appWindow.toggleMaximize()} size={16} />
+        <X onClick={() => appWindow.close()} size={16}/>
       </div>
       <div className="flex flex-row justify-between grow">
         <div className="flex flex-col">
@@ -33,7 +33,7 @@ function App() {
           <div className="grow" />
           <Settings className="m-2 text-text-soft" size={24} />
         </div>
-        <div className="bg-background-base-default w-full h-full flex flex-row">
+        <div className="bg-background-base-default w-full h-full flex flex-row rounded-tl-md">
           {content}
         </div>
       </div>
