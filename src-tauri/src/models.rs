@@ -1,6 +1,7 @@
+use serde::Deserializer;
 use chrono::DateTime;
 use diesel::{backend::Backend, deserialize::{self, FromSql, FromSqlRow}, expression::AsExpression, prelude::{Insertable, Queryable}, serialize::{self, Output, ToSql}, sql_types::{BigInt, Binary}, sqlite::Sqlite, Selectable};
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 use crate::macros::macros::create_id;
 
 create_id!(NoteId);

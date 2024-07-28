@@ -1,83 +1,42 @@
-import { InitialConfigType, LexicalComposer } from "@lexical/react/LexicalComposer";
-import { RichTextPlugin } from "@lexical/react/LexicalRichTextPlugin";
-import { ContentEditable } from "@lexical/react/LexicalContentEditable";
-import { HistoryPlugin } from "@lexical/react/LexicalHistoryPlugin";
-import { AutoFocusPlugin } from "@lexical/react/LexicalAutoFocusPlugin";
-import LexicalErrorBoundary from "@lexical/react/LexicalErrorBoundary";
-import { ListItemNode, ListNode } from "@lexical/list";
-import { ListPlugin } from "@lexical/react/LexicalListPlugin";
-import { MarkdownShortcutPlugin } from "@lexical/react/LexicalMarkdownShortcutPlugin";
-import { HorizontalRuleNode } from "@lexical/react/LexicalHorizontalRuleNode";
-import { HeadingNode, QuoteNode } from "@lexical/rich-text";
-import { CodeNode } from "@lexical/code";
-import { AutoLinkNode, LinkNode } from "@lexical/link";
-import { TableOfContentsPlugin } from "@lexical/react/LexicalTableOfContentsPlugin";
-import PageNavigator from "./elements/PageNavigator";
-import { EDITOR_THEME } from "./style";
-import LexicalAutoLinkPlugin from "./utils/AutoLink";
-import { OnChangePlugin } from "@lexical/react/LexicalOnChangePlugin";
-import { EditorState } from "lexical";
-import { invoke } from '@tauri-apps/api/core'
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { getLastUpdated } from "./commands/note";
+import Editor from './editor';
+import { NoteData } from "./types";
+import { Maximize, Minimize2, Search, Settings, X } from "lucide-react";
+import { getCurrentWindow } from '@tauri-apps/api/window';
 
-function onError(error: any) {
-  console.error(error);
-}
+function App() {
+  const [note, setNote] = useState<NoteData | null>(null)
 
-function onChange(state: EditorState) {
-  const json = state.toJSON()
-  console.log(json)
-  const serialized = JSON.stringify(json)
-  invoke('editor_change_state', { state: serialized })
-}
-
-function Editor() {
-  console.log("Editor component loaded")
   useEffect(() => {
     async function loadLatest() {
       const result = await getLastUpdated()
-      console.log("Got result")
-      console.log(result)
+      setNote(result)
     }
     loadLatest()
   }, [])
-  const initialConfig: InitialConfigType = {
-    namespace: 'MyEditor',
-    theme: EDITOR_THEME,
-    onError,
-    nodes: [ListNode, ListItemNode, HorizontalRuleNode, HeadingNode, QuoteNode, CodeNode, LinkNode, AutoLinkNode]
-  };
+
+  let content = note !== null ? <Editor note={note} /> : <div>Loading...</div>
+  const appWindow = getCurrentWindow();
 
   return (
-    <LexicalComposer initialConfig={initialConfig}>
-      <ListPlugin />
-      <div className="flex flex-col overflow-y-auto h-full grow items-center">
-        <h1 contentEditable className="text-text-normal font-semibold font-prose text-4xl mt-12 text-center">Example Title</h1>
-        <RichTextPlugin
-          contentEditable={<ContentEditable className="p-10 focus:outline-none max-w-4xl w-full" />}
-          placeholder={<></>}
-          ErrorBoundary={LexicalErrorBoundary}
-        />
+    <div className="bg-background-outline text-3xl w-screen h-screen flex flex-col">
+      <div className="flex text-text-soft p-1 gap-3">
+        <div className="grow"/>
+        <Minimize2 onClick={() => appWindow.minimize()} size={24} />
+        <Maximize onClick={() => appWindow.toggleMaximize()} size={24} />
+        <X onClick={() => appWindow.close()} size={24}/>
       </div>
-      <MarkdownShortcutPlugin />
-      <HistoryPlugin />
-      <AutoFocusPlugin />
-      <LexicalAutoLinkPlugin />
-      <TableOfContentsPlugin>
-        {(tableOfContentsArray) => {
-          return <PageNavigator tableOfContents={tableOfContentsArray} />;
-        }}
-      </TableOfContentsPlugin>
-      <OnChangePlugin onChange={onChange} />
-    </LexicalComposer>
-  );
-}
-
-function App() {
-  return (
-    <div className="bg-background-base-default text-3xl w-screen h-screen flex flex-row justify-between">
-      <Editor />
+      <div className="flex flex-row justify-between grow">
+        <div className="flex flex-col">
+          <Search className="m-2 text-text-soft" size={24} />
+          <div className="grow" />
+          <Settings className="m-2 text-text-soft" size={24} />
+        </div>
+        <div className="bg-background-base-default w-full h-full flex flex-row">
+          {content}
+        </div>
+      </div>
     </div>
   );
 }
