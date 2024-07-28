@@ -1,43 +1,48 @@
+use crate::{
+    models::{AbsoluteTimestamp, Note, NoteId},
+    schema::notes::{dsl::notes, title, updated_at},
+    utils::get_connection,
+    SqlitePool,
+};
 use diesel::{prelude::*, result::Error};
-use crate::{models::{Note, NoteId}, schema::notes::{dsl::notes, updated_at}, utils::get_connection, SqlitePool};
 
 pub enum GetNoteError {
     NotFound,
-    UnknownError
+    UnknownError,
 }
 
 pub fn get_by_uuid(pool: SqlitePool, uuid: NoteId) -> Result<Note, GetNoteError> {
     let conn = &mut get_connection(pool);
 
-    let note = notes.find(uuid).select(Note::as_select()).first(conn).optional();
-    
+    let note = notes
+        .find(uuid)
+        .select(Note::as_select())
+        .first(conn)
+        .optional();
+
     match note {
-        Ok(Some(note)) => {
-            Ok(note)
-        },
-        Ok(None) => {
-            Err(GetNoteError::NotFound)
-        },
-        Err(_) => {
-            Err(GetNoteError::UnknownError)
-        }
+        Ok(Some(note)) => Ok(note),
+        Ok(None) => Err(GetNoteError::NotFound),
+        Err(_) => Err(GetNoteError::UnknownError),
     }
 }
 
 pub enum GetLatestError {
-    UnknownError
+    UnknownError,
 }
 
 pub fn get_last_updated_or_create(pool: SqlitePool) -> Result<Note, GetLatestError> {
     let conn = &mut get_connection(pool);
 
     let note: Result<Note, Error> = conn.immediate_transaction(|conn| {
-        let note = notes.order(updated_at.desc()).select(Note::as_select()).first(conn).optional()?;
+        let note = notes
+            .order(updated_at.desc())
+            .select(Note::as_select())
+            .first(conn)
+            .optional()?;
 
         match note {
-            Some(note) => {
-                Ok(note)
-            },
+            Some(note) => Ok(note),
             None => {
                 println!("No notes found, creating new note");
                 let new_note = Note::new("New Note", "");
@@ -48,11 +53,18 @@ pub fn get_last_updated_or_create(pool: SqlitePool) -> Result<Note, GetLatestErr
     });
 
     match note {
-        Ok(note) => {
-            Ok(note)
-        },
-        Err(_) => {
-            Err(GetLatestError::UnknownError)
-        }
-    }   
+        Ok(note) => Ok(note),
+        Err(_) => Err(GetLatestError::UnknownError),
+    }
+}
+
+pub fn rename_note(pool: SqlitePool, uuid: NoteId, new_title: &str) -> Result<(), Error> {
+    let time = AbsoluteTimestamp::now();
+    let conn = &mut get_connection(pool);
+
+    diesel::update(notes.find(uuid))
+        .set((title.eq(new_title), updated_at.eq(time)))
+        .execute(conn)?;
+
+    Ok(())
 }

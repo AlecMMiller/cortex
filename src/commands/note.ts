@@ -15,3 +15,7 @@ export async function createNote(name: string): Promise<string> {
     const result = invoke('create_note', { name })
     return result as Promise<string>
 }
+
+export async function renameNote(uuid: string, title: string): Promise<void> {
+    invoke('rename_note', { uuid, title })
+}

@@ -6,6 +6,7 @@ use diesel::{r2d2::{ConnectionManager, Pool}, SqliteConnection, prelude::*};
 use diesel_migrations::EmbeddedMigrations;
 use diesel_migrations::{embed_migrations, MigrationHarness};
 use lexical::EditorState;
+use models::NoteId;
 use serde_json::Error;
 use tauri::{Manager, State};
 mod models;
@@ -44,7 +45,6 @@ struct PoolWrapper{
 
 #[tauri::command]
 async fn get_last_updated<'a>(state: State<'_, PoolWrapper>) -> Result<String, ()> {
-    println!("Getting last updated note");
     let last_updated = notes::get_last_updated_or_create(state.pool.clone());
     match last_updated {
         Ok(note) => {
@@ -54,6 +54,15 @@ async fn get_last_updated<'a>(state: State<'_, PoolWrapper>) -> Result<String, (
                 Err(_) => Err(())
             }
         }
+        Err(_) => Err(())
+    }
+}
+
+#[tauri::command]
+async fn rename_note(state: State<'_, PoolWrapper>, uuid: NoteId, title: &str) -> Result<(), ()> {
+    let result = notes::rename_note(state.pool.clone(), uuid, title);
+    match result {
+        Ok(_) => Ok(()),
         Err(_) => Err(())
     }
 }
@@ -88,7 +97,7 @@ fn main() {
             app.manage(pool);
             Ok(())
          })
-        .invoke_handler(tauri::generate_handler![editor_change_state, get_last_updated])
+        .invoke_handler(tauri::generate_handler![editor_change_state, get_last_updated, rename_note])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }

@@ -40,6 +40,19 @@ pub mod macros {
                     serializer.serialize_str(&s)
                 }
             }
+
+            impl<'de> Deserialize<'de> for $id_name {
+                fn deserialize<D>(deserializer: D) -> Result<$id_name, D::Error>
+                where
+                    D: Deserializer<'de>,
+                {
+                    let s = String::deserialize(deserializer)?;
+                    let uuid = uuid::Uuid::parse_str(&s).unwrap();
+                    Ok($id_name {
+                        0: uuid.as_bytes().to_vec()
+                    })
+                }
+            }
         };
     }
 
