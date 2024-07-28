@@ -36,7 +36,7 @@ function onError(error: any) {
     console.error(error);
 }
 interface EditorProps {
-    note: NoteData
+    readonly note: NoteData
 }
 
 export default function Editor(props: EditorProps): JSX.Element {
