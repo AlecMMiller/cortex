@@ -6,6 +6,10 @@ import { Maximize, Minimize2, Search, Settings, X } from "lucide-react";
 import { getCurrentWindow } from '@tauri-apps/api/window';
 
 function App() {
+  document.addEventListener("contextmenu", (event) => {
+    event.preventDefault();
+  })
+  
   const [note, setNote] = useState<NoteData | null>(null)
 
   useEffect(() => {

@@ -3,5 +3,5 @@
     "identifier": "main-capability",
     "description": "Capability for the main window",
     "windows": ["main"],
-    "permissions": ["window:default", "window:allow-start-dragging", "window:allow-minimize", "window:allow-toggle-maximize", "window:allow-close"]
+    "permissions": ["window:default", "window:allow-start-dragging", "window:allow-minimize", "window:allow-toggle-maximize", "window:allow-close", "webview:allow-internal-toggle-devtools", "clipboard-manager:allow-write-text", "clipboard-manager:allow-write-html"]
   }

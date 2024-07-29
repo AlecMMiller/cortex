@@ -21,6 +21,7 @@ tauri-plugin-fs = "2.0.0-beta.11"
 diesel = { version = "2.2.2", features = ["r2d2", "sqlite"] }
 diesel_migrations = { version = "2.2.0", features = ["sqlite"] }
 libsqlite3-sys = { version = "0.29.0", features = ["bundled"] }
+tauri-plugin-clipboard-manager = "2.1.0-beta.6"
 
 [features]
 # This feature is used for production builds or when a dev server is not specified, DO NOT REMOVE!!

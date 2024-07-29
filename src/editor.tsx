@@ -20,6 +20,8 @@ import { EditorState } from "lexical";
 import { invoke } from "@tauri-apps/api/core";
 import { NoteData } from "./types";
 import { renameNote } from "./commands/note";
+import { ContextMenu, ContextMenuContent, ContextMenuTrigger } from "./components/ui/context-menu";
+import { CutCopyPaste } from "./components/ui/context-buttons";
 
 function onChange(uuid: string, state: EditorState) {
     const json = state.toJSON()
@@ -51,18 +53,24 @@ export default function Editor(props: EditorProps): JSX.Element {
         onError,
         nodes: [ListNode, ListItemNode, HorizontalRuleNode, HeadingNode, QuoteNode, CodeNode, LinkNode, AutoLinkNode]
     };
-    
 
     return (
         <LexicalComposer initialConfig={initialConfig}>
             <ListPlugin />
             <div className="flex flex-col overflow-y-auto h-full grow items-center">
-                <h1 onInput={(e) => {onTitleChange(note.uuid, e.currentTarget.innerText)}}contentEditable className="text-text-normal font-semibold font-prose text-4xl mt-12 text-center">{note.title}</h1>
-                <RichTextPlugin
-                    contentEditable={<ContentEditable className="p-10 focus:outline-none max-w-4xl w-full" />}
-                    placeholder={<></>}
-                    ErrorBoundary={LexicalErrorBoundary}
-                />
+                <h1 onInput={(e) => { onTitleChange(note.uuid, e.currentTarget.innerText) }} suppressContentEditableWarning contentEditable className="text-text-normal font-semibold font-prose text-4xl mt-12 text-center">{note.title}</h1>
+                <ContextMenu>
+                    <ContextMenuTrigger>
+                        <RichTextPlugin
+                            contentEditable={<ContentEditable className="p-10 focus:outline-none max-w-4xl w-full" />}
+                            placeholder={<></>}
+                            ErrorBoundary={LexicalErrorBoundary}
+                        />
+                    </ContextMenuTrigger>
+                    <ContextMenuContent>
+                        <CutCopyPaste />
+                    </ContextMenuContent>
+                </ContextMenu>
             </div>
             <MarkdownShortcutPlugin />
             <HistoryPlugin />
@@ -73,7 +81,7 @@ export default function Editor(props: EditorProps): JSX.Element {
                     return <PageNavigator tableOfContents={tableOfContentsArray} />;
                 }}
             </TableOfContentsPlugin>
-            <OnChangePlugin onChange={(state: EditorState) => {onChange(note.uuid, state)}} />
+            <OnChangePlugin onChange={(state: EditorState) => { onChange(note.uuid, state) }} />
         </LexicalComposer>
     );
 }

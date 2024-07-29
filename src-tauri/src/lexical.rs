@@ -5,7 +5,7 @@ use serde_json::Error;
 #[serde(rename_all = "camelCase")]
 enum Direction {
     Ltr,
-    Rtl
+    Rtl,
 }
 
 #[derive(Deserialize, Debug)]
@@ -55,7 +55,7 @@ struct ListItem {
     pub direction: Option<Direction>,
     pub children: Vec<LexicalNode>,
     pub indent: u8,
-    pub value: u8
+    pub value: u8,
 }
 
 #[derive(Deserialize, Debug)]

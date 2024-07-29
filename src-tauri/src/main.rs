@@ -71,6 +71,7 @@ fn rename_note(state: State<'_, PoolWrapper>, uuid: NoteId, title: &str) -> Resu
 
 fn main() {
     tauri::Builder::default()
+        .plugin(tauri_plugin_clipboard_manager::init())
         .plugin(tauri_plugin_fs::init())
         .setup(|app| {
             let path = app

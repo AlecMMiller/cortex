@@ -1,8 +1,17 @@
-use serde::Deserializer;
-use chrono::DateTime;
-use diesel::{backend::Backend, deserialize::{self, FromSql, FromSqlRow}, expression::AsExpression, prelude::{Insertable, Queryable}, serialize::{self, Output, ToSql}, sql_types::{BigInt, Binary}, sqlite::Sqlite, Selectable};
-use serde::{Deserialize, Serialize};
 use crate::macros::macros::create_id;
+use chrono::DateTime;
+use diesel::{
+    backend::Backend,
+    deserialize::{self, FromSql, FromSqlRow},
+    expression::AsExpression,
+    prelude::{Insertable, Queryable},
+    serialize::{self, Output, ToSql},
+    sql_types::{BigInt, Binary},
+    sqlite::Sqlite,
+    Selectable,
+};
+use serde::Deserializer;
+use serde::{Deserialize, Serialize};
 
 create_id!(NoteId);
 
@@ -35,10 +44,8 @@ impl Serialize for AbsoluteTimestamp {
             Some(date) => {
                 let s = date.to_rfc3339();
                 serializer.serialize_str(&s)
-            },
-            None => {
-                Err(serde::ser::Error::custom("Could not serialize date"))
             }
+            None => Err(serde::ser::Error::custom("Could not serialize date")),
         }
     }
 }
@@ -72,7 +79,19 @@ impl Note {
         }
     }
 
-    pub fn as_select() -> (crate::schema::notes::uuid, crate::schema::notes::title, crate::schema::notes::body, crate::schema::notes::created_at, crate::schema::notes::updated_at) {
-        (crate::schema::notes::uuid, crate::schema::notes::title, crate::schema::notes::body, crate::schema::notes::created_at, crate::schema::notes::updated_at)
+    pub fn as_select() -> (
+        crate::schema::notes::uuid,
+        crate::schema::notes::title,
+        crate::schema::notes::body,
+        crate::schema::notes::created_at,
+        crate::schema::notes::updated_at,
+    ) {
+        (
+            crate::schema::notes::uuid,
+            crate::schema::notes::title,
+            crate::schema::notes::body,
+            crate::schema::notes::created_at,
+            crate::schema::notes::updated_at,
+        )
     }
 }
