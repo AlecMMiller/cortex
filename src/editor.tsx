@@ -56,8 +56,8 @@ export default function Editor(props: EditorProps): JSX.Element {
     return (
         <LexicalComposer initialConfig={initialConfig}>
             <ListPlugin />
-            <div className="flex flex-col overflow-y-auto h-full grow items-center">
-                <h1 onInput={(e) => {onTitleChange(note.uuid, e.currentTarget.innerText)}}contentEditable className="text-text-normal font-semibold font-prose text-4xl mt-12 text-center">{note.title}</h1>
+            <div className="flex flex-col overflow-y-auto flex-1 items-center">
+                <h1 onInput={(e) => {onTitleChange(note.uuid, e.currentTarget.innerText)}}contentEditable className="text-text font-semibold font-prose text-4xl mt-12 text-center">{note.title}</h1>
                 <RichTextPlugin
                     contentEditable={<ContentEditable className="p-10 focus:outline-none max-w-4xl w-full" />}
                     placeholder={<></>}

@@ -26,6 +26,7 @@
     "tailwindcss": "^3.4.4"
   },
   "devDependencies": {
+    "@catppuccin/tailwindcss": "^0.1.6",
     "@tauri-apps/cli": "^2.0.0-rc.12",
     "@types/react": "^18.2.15",
     "@types/react-dom": "^18.2.7",

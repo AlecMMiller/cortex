@@ -7,17 +7,10 @@ export default {
         prose: ["Montserrat", "sans-serif"]
      }
     },
-    colors: {
-      'background-outline': 'hsl(240, 6%, 3%)',
-      'background-base-default': 'hsl(240, 6%, 10%)',
-      'background-code': 'hsl(240, 6%, 20%)',
-      'text-normal': 'hsl(240, 5%, 84%)',
-      'text-bold': 'hsl(240, 70%, 84%)',
-      'text-soft': 'hsl(240, 5%, 60%)',
-      'quote': 'hsl(240, 70%, 84%)',
-      'separator': 'hsl(240, 6%, 20%)',
-    }
   },
-  plugins: [],
+  plugins: [require("@catppuccin/tailwindcss")({
+    prefix: false,
+    defaultFlavour: "mocha",
+  })],
 }
 
