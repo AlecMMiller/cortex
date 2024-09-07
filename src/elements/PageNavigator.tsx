@@ -21,12 +21,12 @@ export default function PageNavigator(props: { tableOfContents: Array<[key: Node
         const key = entry[0]
         return <div key={entry[0]} onClick={() => scrollToNode(key, index)}
             role="button"
-            className={`hover:text-text-bold`}
+            className={`hover:text-blue`}
         >
             {entry[1]}
         </div>
     })
-    return <div className={`${BASE_TEXT} p-2 lg:p-9 gap-2 flex flex-col text-base font-semibold min-w-56`}>
+    return <div className={`text-overlay0 p-2 lg:p-9 gap-2 flex flex-col text-base font-semibold min-w-56`}>
         {entries}
     </div>
 }
