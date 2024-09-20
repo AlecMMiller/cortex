@@ -1,5 +1,5 @@
 export interface NoteData {
-    uuid: string
-    title: string
-    body: string
+  uuid: string
+  title: string
+  body: string
 }
