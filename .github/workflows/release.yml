@@ -22,12 +22,12 @@ jobs:
           fetch-depth: 0                # fetch the whole repo history
 
       - name: Install GitVersion
-        uses: gittools/actions/gitversion/setup@d2063e59b58a89fa78aa5efa39f6efb8ffea7308 # v2.0.1
+        uses: gittools/actions/gitversion/setup@a94a3b62ee018ef5346cb08fd0d63d93811fe691 # v3.0.0
         with:
           versionSpec: '6.x'
       - name: Determine Version
         id: version
-        uses: gittools/actions/gitversion/execute@d2063e59b58a89fa78aa5efa39f6efb8ffea7308 # v2.0.1
+        uses: gittools/actions/gitversion/execute@a94a3b62ee018ef5346cb08fd0d63d93811fe691 # v3.0.0
         with:
           useConfigFile: true
     outputs:
