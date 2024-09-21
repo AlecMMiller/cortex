@@ -9,7 +9,7 @@ import {
   Settings,
   X,
   FilePlus2,
-  Icon
+  LucideIcon
 } from 'lucide-react'
 import { getCurrentWindow } from '@tauri-apps/api/window'
 
@@ -21,7 +21,7 @@ import {
 } from '@/components/ui/tooltip'
 
 interface SideButtonProps {
-  icon: typeof Icon
+  icon: LucideIcon
   tooltip: string
   onClick?: () => void
 }
