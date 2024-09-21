@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { createNote, getLastUpdated } from './commands/note'
+import { createNote, getAllNotes, getLastUpdated } from './commands/note'
 import Editor from './editor'
 import { NoteData } from './types'
 import {
@@ -21,7 +21,7 @@ import {
 } from '@/components/ui/tooltip'
 
 interface SideButtonProps {
-  icon: Icon
+  icon: typeof Icon
   tooltip: string
   onClick?: () => void
 }
@@ -47,6 +47,8 @@ function App (): JSX.Element {
     async function loadLatest (): Promise<void> {
       const result = await getLastUpdated()
       setNote(result)
+      const all = await getAllNotes()
+      console.log(all)
     }
     void loadLatest()
   }, [])
