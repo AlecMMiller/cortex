@@ -1,4 +1,6 @@
-name: Git Version
+name: Release Application
+
+permissions: read-all
 
 on:
   push:
