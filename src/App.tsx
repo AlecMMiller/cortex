@@ -32,7 +32,7 @@ function SideButton (props: SideButtonProps): JSX.Element {
   return (
     <TooltipProvider>
       <Tooltip>
-        <TooltipTrigger>
+        <TooltipTrigger asChild>
           <Button variant='ghost' size='icon'>
             <Actual onClick={props.onClick} className='m-2 text-subtext1 hover:text-text' size={24} />
           </Button>
