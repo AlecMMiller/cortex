@@ -21,14 +21,13 @@ export default function PageNavigator (props: {
   const entries = props.tableOfContents.map((entry, index) => {
     const key = entry[0]
     return (
-      <div
+      <button
         key={entry[0]}
         onClick={() => scrollToNode(key, index)}
-        role='button'
         className='hover:text-blue'
       >
         {entry[1]}
-      </div>
+      </button>
     )
   })
   return (
