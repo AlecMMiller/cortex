@@ -1364,10 +1364,10 @@
   resolved "https://registry.yarnpkg.com/@sindresorhus/merge-streams/-/merge-streams-4.0.0.tgz#abb11d99aeb6d27f1b563c38147a72d50058e339"
   integrity sha512-tlqY9xq5ukxTUZBmoOp+m61cqwQD5pHJtFY3Mn8CA8ps6yghLH/Hw8UPdqg4OLmFW3IFlcXnQNmo/dh8HzXYIQ==
 
-"@tauri-apps/api@2.0.0-beta.15":
-  version "2.0.0-beta.15"
-  resolved "https://registry.yarnpkg.com/@tauri-apps/api/-/api-2.0.0-beta.15.tgz#41d5fbeaccf3926b6f9f3f9fb5137ba2e272e5c1"
-  integrity sha512-H9w6iISmR+NvH4XuyCZB4zDN10tf9RFt6i/9JHEjaRhAowdAaJ+oiXq/3kedizNClHMtbTQ5j0oqDVPkZDAI8g==
+"@tauri-apps/api@2.0.0-rc.5":
+  version "2.0.0-rc.5"
+  resolved "https://registry.yarnpkg.com/@tauri-apps/api/-/api-2.0.0-rc.5.tgz#9e790680f5cf691b0ae4c25c4de6696f340df401"
+  integrity sha512-JWs69pE9NsQdcqTpEVBepAZ08+jgQWuthIiTiaWRq/YlCLgnqq0KfC9sDem55uJ0YpgsytZuyj+m6b6q8oiD2g==
 
 "@tauri-apps/cli-darwin-arm64@2.0.0-rc.12":
   version "2.0.0-rc.12"
