@@ -1,5 +1,5 @@
 import { invoke } from '@tauri-apps/api/core'
-import { NoteData } from '../types'
+import { NoteData, NoteTitle } from '../types'
 
 export async function getLastUpdated (): Promise<NoteData | null> {
   try {
@@ -8,6 +8,11 @@ export async function getLastUpdated (): Promise<NoteData | null> {
   } catch {
     return null
   }
+}
+
+export async function getAllNotes (): Promise<NoteTitle[]> {
+  const result = await invoke('get_notes')
+  return JSON.parse(result as string) as NoteTitle[]
 }
 
 export async function createNote (name: string): Promise<string> {

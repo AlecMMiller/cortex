@@ -61,6 +61,22 @@ fn get_last_updated<'a>(state: State<'_, PoolWrapper>) -> Result<String, ()> {
 }
 
 #[tauri::command]
+fn get_notes<'a>(state: State<'_, PoolWrapper>) -> Result<String, ()> {
+    let all_notes = notes::get_all(state.pool.clone());
+
+    match all_notes {
+        Ok(all_notes) => {
+            let json = serde_json::to_string(&all_notes);
+            match json {
+                Ok(json) => Ok(json),
+                Err(_) => Err(()),
+            }
+        }
+        Err(_) => Err(()),
+    }
+}
+
+#[tauri::command]
 fn rename_note(state: State<'_, PoolWrapper>, uuid: NoteId, title: &str) -> Result<(), ()> {
     let result = notes::rename_note(state.pool.clone(), uuid, title);
     match result {
@@ -70,11 +86,17 @@ fn rename_note(state: State<'_, PoolWrapper>, uuid: NoteId, title: &str) -> Resu
 }
 
 #[tauri::command]
-fn create_note(state: State<'_, PoolWrapper>, title: &str) -> Result<(), ()> {
-    let result = notes::create_note(state.pool.clone(), title);
-    println!("{title}");
-    match result {
-        Ok(_) => Ok(()),
+fn create_note(state: State<'_, PoolWrapper>, title: &str) -> Result<String, ()> {
+    let new_note = notes::create_note(state.pool.clone(), title);
+    println!("Creating note {title}");
+    match new_note {
+        Ok(note) => {
+            let json = serde_json::to_string(&note);
+            match json {
+                Ok(json) => Ok(json),
+                Err(_) => Err(()),
+            }
+        }
         Err(_) => Err(()),
     }
 }
@@ -110,6 +132,7 @@ fn main() {
             editor_change_state,
             get_last_updated,
             create_note,
+            get_notes,
             rename_note
         ])
         .run(tauri::generate_context!())

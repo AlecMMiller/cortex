@@ -5,6 +5,14 @@ use crate::{
     SqlitePool,
 };
 use diesel::{prelude::*, result::Error};
+use serde::Serialize;
+
+#[derive(Serialize, Debug, PartialEq, Queryable, Selectable)]
+#[diesel(table_name = crate::schema::notes)]
+pub struct NoteTitle {
+    uuid: NoteId,
+    title: String,
+}
 
 pub enum GetNoteError {
     NotFound,
@@ -25,6 +33,14 @@ pub fn get_by_uuid(pool: SqlitePool, uuid: NoteId) -> Result<Note, GetNoteError>
         Ok(None) => Err(GetNoteError::NotFound),
         Err(_) => Err(GetNoteError::UnknownError),
     }
+}
+
+pub fn get_all(pool: SqlitePool) -> Result<Vec<NoteTitle>, Error> {
+    let conn = &mut get_connection(pool);
+
+    let all_notes = notes.select(NoteTitle::as_select()).get_results(conn)?;
+
+    Ok(all_notes)
 }
 
 pub enum GetLatestError {
