@@ -24,7 +24,6 @@ export default function PageNavigator (props: {
       <button
         key={entry[0]}
         onClick={() => scrollToNode(key, index)}
-        role='button'
         className='hover:text-blue'
       >
         {entry[1]}
