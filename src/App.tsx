@@ -19,6 +19,7 @@ import {
   TooltipTrigger,
   TooltipProvider
 } from '@/components/ui/tooltip'
+import { Button } from '@/components/ui/button'
 
 interface SideButtonProps {
   icon: LucideIcon
@@ -32,7 +33,9 @@ function SideButton (props: SideButtonProps): JSX.Element {
     <TooltipProvider>
       <Tooltip>
         <TooltipTrigger>
-          <Actual onClick={props.onClick} className='m-2 text-subtext1 hover:text-text' size={24} />
+          <Button variant='ghost' size='icon'>
+            <Actual onClick={props.onClick} className='m-2 text-subtext1 hover:text-text' size={24} />
+          </Button>
         </TooltipTrigger>
         <TooltipContent side='right'>{props.tooltip}</TooltipContent>
       </Tooltip>
