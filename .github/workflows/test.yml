@@ -7,7 +7,7 @@ on:
       - release
 
 jobs:
-  version:
+  validate:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Code
