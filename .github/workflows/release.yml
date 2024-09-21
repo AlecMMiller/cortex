@@ -10,19 +10,24 @@ jobs:
   version:
     runs-on: ubuntu-latest
     steps:
+      - name: Harden Runner
+        uses: step-security/harden-runner@91182cccc01eb5e619899d80e4e971d6181294a7 # v2.10.1
+        with:
+          egress-policy: audit
+
       - name: Checkout Code
-        uses: actions/checkout@v4
+        uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
         with:
           ref: ${{ github.head_ref }}   # checkout the correct branch name
           fetch-depth: 0                # fetch the whole repo history
 
       - name: Install GitVersion
-        uses: gittools/actions/gitversion/setup@v2.0.1
+        uses: gittools/actions/gitversion/setup@d2063e59b58a89fa78aa5efa39f6efb8ffea7308 # v2.0.1
         with:
           versionSpec: '6.x'
       - name: Determine Version
         id: version
-        uses: gittools/actions/gitversion/execute@v2.0.1
+        uses: gittools/actions/gitversion/execute@d2063e59b58a89fa78aa5efa39f6efb8ffea7308 # v2.0.1
         with:
           useConfigFile: true
     outputs:
@@ -42,10 +47,15 @@ jobs:
     runs-on: ${{ matrix.platform }}
     needs: version
     steps:
-      - uses: actions/checkout@v4
+      - name: Harden Runner
+        uses: step-security/harden-runner@91182cccc01eb5e619899d80e4e971d6181294a7 # v2.10.1
+        with:
+          egress-policy: audit
+
+      - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
 
       - name: setup node
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@0a44ba7841725637a19e28fa30b79a866c81b0a6 # v4.0.4
         with:
           node-version: lts/*
 
@@ -61,7 +71,7 @@ jobs:
           sed -i "s/\"version\": \".*\"/\"version\": \"${{ needs.version.outputs.version }}\"/" package.json
 
       - name: install Rust stable
-        uses: dtolnay/rust-toolchain@stable
+        uses: dtolnay/rust-toolchain@ed2356ad628626a6b3f5be6c3e0255c0454fcdb9 # stable
         with:
           # Those targets are only used on macos runners so it's in an `if` to slightly speed up windows and linux builds.
           targets: ${{ matrix.platform == 'macos-latest' && 'aarch64-apple-darwin,x86_64-apple-darwin' || '' }}
@@ -75,7 +85,7 @@ jobs:
       - name: install frontend dependencies
         run: yarn install
 
-      - uses: tauri-apps/tauri-action@v0
+      - uses: tauri-apps/tauri-action@4ec5841d83495da72c665daa556e6f231b89ae06 # v0.5.14
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
