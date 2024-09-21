@@ -34,6 +34,7 @@
           yarn
           cargo
           rustc
+          nodejs
         ];
         in
         {

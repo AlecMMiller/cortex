@@ -5,7 +5,7 @@ pub mod macros {
         ) => {
             #[derive(AsExpression, FromSqlRow, Debug, PartialEq, Eq)]
             #[sql_type = "diesel::sql_types::Binary"]
-            pub struct $id_name (Vec<u8>);
+            pub struct $id_name(Vec<u8>);
 
             impl FromSql<Binary, Sqlite> for $id_name {
                 fn from_sql(bytes: <Sqlite as Backend>::RawValue<'_>) -> deserialize::Result<Self> {
@@ -24,7 +24,7 @@ pub mod macros {
             impl $id_name {
                 pub fn new() -> Self {
                     $id_name {
-                        0: uuid::Uuid::new_v4().as_bytes().to_vec()
+                        0: uuid::Uuid::new_v4().as_bytes().to_vec(),
                     }
                 }
             }
@@ -49,7 +49,7 @@ pub mod macros {
                     let s = String::deserialize(deserializer)?;
                     let uuid = uuid::Uuid::parse_str(&s).unwrap();
                     Ok($id_name {
-                        0: uuid.as_bytes().to_vec()
+                        0: uuid.as_bytes().to_vec(),
                     })
                 }
             }
