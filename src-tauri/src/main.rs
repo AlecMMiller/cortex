@@ -69,6 +69,16 @@ fn rename_note(state: State<'_, PoolWrapper>, uuid: NoteId, title: &str) -> Resu
     }
 }
 
+#[tauri::command]
+fn create_note(state: State<'_, PoolWrapper>, title: &str) -> Result<(), ()> {
+    let result = notes::create_note(state.pool.clone(), title);
+    println!("{title}");
+    match result {
+        Ok(_) => Ok(()),
+        Err(_) => Err(()),
+    }
+}
+
 fn main() {
     tauri::Builder::default()
         .plugin(tauri_plugin_fs::init())
@@ -99,6 +109,7 @@ fn main() {
         .invoke_handler(tauri::generate_handler![
             editor_change_state,
             get_last_updated,
+            create_note,
             rename_note
         ])
         .run(tauri::generate_context!())

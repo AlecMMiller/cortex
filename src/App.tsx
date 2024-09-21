@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { getLastUpdated } from './commands/note'
+import { createNote, getLastUpdated } from './commands/note'
 import Editor from './editor'
 import { NoteData } from './types'
 import {
@@ -23,6 +23,7 @@ import {
 interface SideButtonProps {
   icon: Icon
   tooltip: string
+  onClick?: () => void
 }
 
 function SideButton (props: SideButtonProps): JSX.Element {
@@ -31,7 +32,7 @@ function SideButton (props: SideButtonProps): JSX.Element {
     <TooltipProvider>
       <Tooltip>
         <TooltipTrigger>
-          <Actual className='m-2 text-subtext1 hover:text-text' size={24} />
+          <Actual onClick={props.onClick} className='m-2 text-subtext1 hover:text-text' size={24} />
         </TooltipTrigger>
         <TooltipContent side='right'>{props.tooltip}</TooltipContent>
       </Tooltip>
@@ -56,7 +57,7 @@ function App (): JSX.Element {
 
   const [isFullScreen, setIsFullScreen] = useState(false)
 
-  const checkIsFullScreen = async (): void => {
+  const checkIsFullScreen = async (): Promise<void> => {
     const state = await appWindow.isMaximized()
     setIsFullScreen(state)
   }
@@ -87,7 +88,7 @@ function App (): JSX.Element {
       <div className='flex flex-row justify-between flex-1 min-h-0'>
         <div className='flex flex-col'>
           <SideButton icon={Search} tooltip='Search' />
-          <SideButton icon={FilePlus2} tooltip='New Note' />
+          <SideButton onClick={() => {void createNote('Unnamed Note')}} icon={FilePlus2} tooltip='New Note' />
           <div className='grow' />
           <SideButton icon={Settings} tooltip='Settings' />
         </div>

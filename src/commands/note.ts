@@ -11,7 +11,7 @@ export async function getLastUpdated (): Promise<NoteData | null> {
 }
 
 export async function createNote (name: string): Promise<string> {
-  const result = invoke('create_note', { name })
+  const result = invoke('create_note', { title: name })
   return await (result as Promise<string>)
 }
 

@@ -69,6 +69,15 @@ pub fn rename_note(pool: SqlitePool, uuid: NoteId, new_title: &str) -> Result<()
     Ok(())
 }
 
+pub fn create_note(pool: SqlitePool, new_title: &str) -> Result<Note, Error> {
+    let new_note = Note::new(new_title, "");
+    let conn = &mut get_connection(pool);
+
+    diesel::insert_into(notes).values(&new_note).execute(conn)?;
+
+    Ok(new_note)
+}
+
 pub fn update_body(pool: SqlitePool, uuid: NoteId, new_body: &str) -> Result<(), Error> {
     let time = AbsoluteTimestamp::now();
     let conn = &mut get_connection(pool);
