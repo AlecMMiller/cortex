@@ -4,7 +4,7 @@ import { Sidebar } from './Sidebar'
 import { Topbar } from './Topbar'
 
 interface WindowWrapperProps {
-  children: React.ReactNode
+  readonly children: React.ReactNode
 }
 
 export function WindowWrapper(props: WindowWrapperProps): JSX.Element {

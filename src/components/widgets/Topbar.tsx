@@ -1,8 +1,8 @@
 import { Minimize2, Maximize, X, LucideIcon } from 'lucide-react'
 
 interface TopButtonProps {
-  onClick: () => void
-  icon: LucideIcon
+  readonly onClick: () => void
+  readonly icon: LucideIcon
 }
 
 function TopButton(props: TopButtonProps) {
@@ -11,9 +11,9 @@ function TopButton(props: TopButtonProps) {
 }
 
 interface TopbarProps {
-  handleClose: () => void
-  handleMinimize: () => void
-  handleMaximize: () => void
+  readonly handleClose: () => void
+  readonly handleMinimize: () => void
+  readonly handleMaximize: () => void
 }
 
 export function Topbar(props: TopbarProps): JSX.Element {
