@@ -2,17 +2,9 @@ import { useEffect, useState } from 'react'
 import { createNote, getAllNotes, getLastUpdated } from './commands/note'
 import Editor from './editor'
 import { NoteData } from './types'
-import {
-  Maximize,
-  Minimize2,
-  Search,
-  Settings,
-  X,
-  FilePlus2,
-} from 'lucide-react'
+import { Maximize, Minimize2, X } from 'lucide-react'
 import { getCurrentWindow } from '@tauri-apps/api/window'
-
-import { NavButton } from './components/ui/nav-button'
+import { Sidebar } from './components/widgets/Sidebar'
 
 function App(): JSX.Element {
   const [note, setNote] = useState<NoteData | null>(null)
@@ -71,18 +63,7 @@ function App(): JSX.Element {
         />
       </div>
       <div className="flex flex-row justify-between flex-1 min-h-0">
-        <div className="flex flex-col">
-          <NavButton icon={Search} tooltip="Search" />
-          <NavButton
-            onClick={() => {
-              createNote('Unnamed Note')
-            }}
-            icon={FilePlus2}
-            tooltip="New Note"
-          />
-          <div className="grow" />
-          <NavButton icon={Settings} tooltip="Settings" />
-        </div>
+        <Sidebar />
         <div className="bg-base w-full flex flex-row rounded-tl-md min-h-0">
           {content}
         </div>
