@@ -11,18 +11,18 @@ function TopButton(props: TopButtonProps) {
 }
 
 interface TopbarProps {
-  close: () => void
-  minimize: () => void
-  toggleMaximize: () => void
+  handleClose: () => void
+  handleMinimize: () => void
+  handleMaximize: () => void
 }
 
 export function Topbar(props: TopbarProps): JSX.Element {
   return (
     <div className="flex text-text p-1 gap-3">
       <div data-tauri-drag-region className="grow" />
-      <TopButton onClick={props.close} icon={Minimize2} />
-      <TopButton onClick={props.toggleMaximize} icon={Maximize} />
-      <TopButton onClick={props.close} icon={X} />
+      <TopButton onClick={props.handleClose} icon={Minimize2} />
+      <TopButton onClick={props.handleMaximize} icon={Maximize} />
+      <TopButton onClick={props.handleClose} icon={X} />
     </div>
   )
 }

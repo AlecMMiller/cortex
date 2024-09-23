@@ -28,13 +28,13 @@ export function WindowWrapper(props: WindowWrapperProps): JSX.Element {
       className={`bg-crust text-3xl w-screen h-screen flex flex-col ${rounded}`}
     >
       <Topbar
-        close={() => appWindow.close()}
-        toggleMaximize={() => {
+        handleClose={() => appWindow.close()}
+        handleMaximize={() => {
           setIsFullScreen(!isFullScreen)
           appWindow.toggleMaximize()
           checkIsFullScreen()
         }}
-        minimize={() => {
+        handleMinimize={() => {
           appWindow.minimize()
         }}
       />
