@@ -6,5 +6,6 @@ export default neostandard({
     'vite.config.ts',
     'vite-env.d.ts',
     'dist/*',
-  ]
+  ],
+  ts: true,
 })

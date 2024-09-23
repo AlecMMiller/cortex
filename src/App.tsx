@@ -53,7 +53,7 @@ function App (): JSX.Element {
       const all = await getAllNotes()
       console.log(all)
     }
-    void loadLatest()
+    loadLatest()
   }, [])
 
   const content =
@@ -68,7 +68,7 @@ function App (): JSX.Element {
   }
 
   useEffect(() => {
-    void checkIsFullScreen()
+    checkIsFullScreen()
   }, [appWindow])
 
   const rounded = isFullScreen ? '' : 'rounded-md'
@@ -79,21 +79,21 @@ function App (): JSX.Element {
     >
       <div className='flex text-text p-1 gap-3'>
         <div data-tauri-drag-region className='grow' />
-        <Minimize2 onClick={() => { void appWindow.minimize() }} size={16} />
+        <Minimize2 onClick={() => { appWindow.minimize() }} size={16} />
         <Maximize
           onClick={() => {
             setIsFullScreen(!isFullScreen)
-            void appWindow.toggleMaximize()
-            void checkIsFullScreen()
+            appWindow.toggleMaximize()
+            checkIsFullScreen()
           }}
           size={16}
         />
-        <X onClick={() => { void appWindow.close() }} size={16} />
+        <X onClick={() => { appWindow.close() }} size={16} />
       </div>
       <div className='flex flex-row justify-between flex-1 min-h-0'>
         <div className='flex flex-col'>
           <SideButton icon={Search} tooltip='Search' />
-          <SideButton onClick={() => {void createNote('Unnamed Note')}} icon={FilePlus2} tooltip='New Note' />
+          <SideButton onClick={() => { createNote('Unnamed Note') }} icon={FilePlus2} tooltip='New Note' />
           <div className='grow' />
           <SideButton icon={Settings} tooltip='Settings' />
         </div>

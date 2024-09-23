@@ -27,12 +27,12 @@ import { renameNote } from './commands/note'
 function onChange (uuid: string, state: EditorState): void {
   const json = state.toJSON()
   const serialized = JSON.stringify(json)
-  void invoke('editor_change_state', { uuid, body: serialized })
+  invoke('editor_change_state', { uuid, body: serialized })
 }
 
 function onTitleChange (uuid: string, title: string): void {
   console.log('title changed', uuid, title)
-  void renameNote(uuid, title)
+  renameNote(uuid, title)
 }
 
 function onError (error: any): void {
