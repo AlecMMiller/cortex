@@ -4,6 +4,21 @@
 @tailwind components;
 @tailwind utilities;
 
+.overflow-y-auto {
+  scrollbar-color: green blue;
+}
+
+::-webkit-scrollbar {
+  background-color: rgb(49, 50, 68);
+  border-radius: 100px;
+  width: 8px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgb(88, 91, 112);
+  border-radius: 100px;
+}
+
 html,
 body {
   margin: 0;
