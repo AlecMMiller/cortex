@@ -8,7 +8,7 @@ export const Route = createLazyFileRoute('/')({
 })
 
 interface RecentNoteProps {
-  note: NoteTitle
+  readonly note: NoteTitle
 }
 
 function RecentNote(props: RecentNoteProps): JSX.Element {

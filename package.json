@@ -25,6 +25,7 @@
     "@lexical/react": "^0.17.1",
     "@lexical/rich-text": "^0.17.1",
     "@radix-ui/react-tooltip": "^1.1.2",
+    "@tanstack/react-router": "^1.58.7",
     "@tauri-apps/api": "2.0.0-rc.5",
     "autoprefixer": "^10.4.19",
     "class-variance-authority": "^0.7.0",
@@ -34,13 +35,14 @@
     "postcss": "^8.4.38",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
-    "react-router-dom": "^6.26.2",
     "tailwind-merge": "^2.5.2",
     "tailwindcss": "^3.4.4",
     "tailwindcss-animate": "^1.0.7"
   },
   "devDependencies": {
     "@catppuccin/tailwindcss": "^0.1.6",
+    "@tanstack/router-devtools": "^1.58.7",
+    "@tanstack/router-plugin": "^1.58.4",
     "@tauri-apps/cli": "^2.0.0-rc.16",
     "@types/react": "^18.2.15",
     "@types/react-dom": "^18.2.7",

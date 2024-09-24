@@ -3,10 +3,8 @@ import { WindowWrapper } from '@/components/widgets/WindowWrapper'
 
 export const Route = createRootRoute({
   component: () => (
-    <>
-      <WindowWrapper>
-        <Outlet />
-      </WindowWrapper>
-    </>
+    <WindowWrapper>
+      <Outlet />
+    </WindowWrapper>
   ),
 })

@@ -77,6 +77,22 @@ fn get_notes<'a>(state: State<'_, PoolWrapper>) -> Result<String, ()> {
 }
 
 #[tauri::command]
+fn get_note<'a>(state: State<'_, PoolWrapper>, uuid: NoteId) -> Result<String, ()> {
+    let note = notes::get_by_uuid(state.pool.clone(), uuid);
+
+    match note {
+        Ok(note) => {
+            let json = serde_json::to_string(&note);
+            match json {
+                Ok(json) => Ok(json),
+                Err(_) => Err(()),
+            }
+        }
+        Err(_) => Err(()),
+    }
+}
+
+#[tauri::command]
 fn rename_note(state: State<'_, PoolWrapper>, uuid: NoteId, title: &str) -> Result<(), ()> {
     let result = notes::rename_note(state.pool.clone(), uuid, title);
     match result {
@@ -133,6 +149,7 @@ fn main() {
             get_last_updated,
             create_note,
             get_notes,
+            get_note,
             rename_note
         ])
         .run(tauri::generate_context!())

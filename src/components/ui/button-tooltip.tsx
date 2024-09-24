@@ -21,7 +21,9 @@ export function TooltipButton(props: TooltipButtonProps): JSX.Element {
     to === undefined ? (
       <Button {...rest} />
     ) : (
-      <Link children={props.children} className={props.className} to={to} />
+      <Link className={props.className} to={to}>
+        {props.children}
+      </Link>
     )
 
   if (tooltip === undefined) return element
