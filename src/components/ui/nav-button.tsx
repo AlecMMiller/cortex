@@ -5,15 +5,17 @@ interface NavButtonProps {
   readonly icon: LucideIcon
   readonly tooltip: string
   readonly onClick?: () => void
+  readonly to?: string
 }
 
 export function NavButton(props: NavButtonProps): JSX.Element {
-  const { icon: Icon, tooltip, onClick } = props
+  const { icon: Icon, tooltip, onClick, to } = props
 
   return (
     <TooltipButton
       tooltip={tooltip}
       onClick={onClick}
+      to={to}
       size="icon"
       variant="ghost"
       side="right"
