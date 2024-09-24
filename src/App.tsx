@@ -1,20 +1,18 @@
-import { WindowWrapper } from './components/widgets/WindowWrapper'
-import { createBrowserRouter, RouterProvider } from 'react-router-dom'
-import { TestPage } from './routes/Test'
+import { routeTree } from './routeTree.gen'
+import { RouterProvider, createRouter } from '@tanstack/react-router'
 
-const router = createBrowserRouter([
-  {
-    path: '/',
-    element: <TestPage />,
-  },
-])
+const router = createRouter({
+  routeTree,
+})
+
+declare module '@tanstack/react-router' {
+  interface Register {
+    router: typeof router
+  }
+}
 
 function App(): JSX.Element {
-  return (
-    <WindowWrapper>
-      <RouterProvider router={router} />
-    </WindowWrapper>
-  )
+  return <RouterProvider router={router} />
 }
 
 export default App
