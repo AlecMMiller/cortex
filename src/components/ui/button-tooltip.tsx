@@ -1,3 +1,4 @@
+import { Link } from '@tanstack/react-router'
 import { ButtonProps, Button } from './button'
 import {
   TooltipProvider,
@@ -9,20 +10,26 @@ type Side = 'left' | 'right' | 'top' | 'bottom'
 
 export interface TooltipButtonProps extends ButtonProps {
   readonly side?: Side
+  readonly to?: string
   readonly tooltip?: string
 }
 
 export function TooltipButton(props: TooltipButtonProps): JSX.Element {
-  const { side, tooltip, ...rest } = props
+  const { side, tooltip, to, ...rest } = props
 
-  if (tooltip === undefined) return <Button {...rest} />
+  const element =
+    to === undefined ? (
+      <Button {...rest} />
+    ) : (
+      <Link children={props.children} className={props.className} to={to} />
+    )
+
+  if (tooltip === undefined) return element
 
   return (
     <TooltipProvider>
       <Tooltip>
-        <TooltipTrigger asChild>
-          <Button {...rest} />
-        </TooltipTrigger>
+        <TooltipTrigger asChild>{element}</TooltipTrigger>
         <TooltipContent side={side}>{tooltip}</TooltipContent>
       </Tooltip>
     </TooltipProvider>
