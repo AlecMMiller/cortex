@@ -9,7 +9,7 @@ export const Route = createFileRoute('/notes/$noteId')({
 function NoteComponent(): JSX.Element {
   const { noteId } = Route.useParams()
 
-  const { data, status } = useNote(noteId, {})
+  const { data, status } = useNote({ uuid: noteId }, {})
 
   if (status === 'error' || status === 'pending') return <></>
 
