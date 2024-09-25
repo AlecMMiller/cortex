@@ -16,8 +16,7 @@ export function Sidebar(): JSX.Element {
         onClick={() => {
           createNote('Unnamed Note')
         }}
-        onFocus={prefetchAllNotes}
-        onMouseEnter={prefetchAllNotes}
+        prefetch={prefetchAllNotes}
         icon={FilePlus2}
         tooltip="New Note"
       />
