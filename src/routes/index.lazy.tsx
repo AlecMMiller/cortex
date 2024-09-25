@@ -2,6 +2,8 @@ import { createLazyFileRoute, Link } from '@tanstack/react-router'
 import { buildPrefetchNote, useAllNotes } from '@/commands/note'
 import { NoteTitle } from '@/types'
 import { useQueryClient } from '@tanstack/react-query'
+import { locale } from '@tauri-apps/plugin-os'
+import { useEffect } from 'react'
 
 export const Route = createLazyFileRoute('/')({
   component: Index,
@@ -37,6 +39,13 @@ function Index(): JSX.Element {
   const noteElements = data.map((note) => (
     <RecentNote key={note.uuid} note={note} />
   ))
+
+  const doGetLocale = async () => {
+    const myLocale = await locale()
+    console.log(myLocale)
+  }
+
+  doGetLocale()
 
   return (
     <div className="p-8 flex flex-col">

@@ -6,6 +6,7 @@ import {
   TooltipTrigger,
   TooltipContent,
 } from './tooltip'
+import { useTranslation } from 'react-i18next'
 type Side = 'left' | 'right' | 'top' | 'bottom'
 
 export interface TooltipButtonProps extends ButtonProps {
@@ -34,11 +35,13 @@ export function TooltipButton(props: TooltipButtonProps): JSX.Element {
 
   if (tooltip === undefined) return element
 
+  const { t } = useTranslation()
+
   return (
     <TooltipProvider>
       <Tooltip>
         <TooltipTrigger asChild>{element}</TooltipTrigger>
-        <TooltipContent side={side}>{tooltip}</TooltipContent>
+        <TooltipContent side={side}>{t(tooltip)}</TooltipContent>
       </Tooltip>
     </TooltipProvider>
   )

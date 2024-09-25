@@ -18,6 +18,7 @@ tokio = { version = "1.40.0", features = ["macros"] }
 uuid = { version = "1.9.1", features = ["v4"] }
 chrono = "0.4.38"
 tauri-plugin-fs = "2.0.0-rc.0"
+tauri-plugin-os = "2.0.0-rc.0"
 tauri-plugin-shell = "2.0.0-rc"
 diesel = { version = "2.2.4", features = ["r2d2", "sqlite"] }
 diesel_migrations = { version = "2.2.0", features = ["sqlite"] }
