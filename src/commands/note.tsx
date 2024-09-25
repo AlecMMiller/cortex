@@ -15,18 +15,6 @@ export async function getLastUpdated(): Promise<NoteData | null> {
   }
 }
 
-function makeNoteKey(uuid: string): string[] {
-  return ['note', uuid]
-}
-
-function buildGetNote(uuid: string): () => Promise<NoteData> {
-  return async () => {
-    console.info(`Requesting note ${uuid}`)
-    const result = await invoke('get_note', { uuid })
-    return JSON.parse(result as string) as NoteData
-  }
-}
-
 interface QueryMethods<InputType, ReturnType> {
   useType: UseTypeFunction<InputType, ReturnType>
   buildPrefetchType: BuildPrefetchTypeFunction<InputType>
