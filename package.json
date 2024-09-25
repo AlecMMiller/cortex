@@ -25,6 +25,7 @@
     "@lexical/react": "^0.17.1",
     "@lexical/rich-text": "^0.17.1",
     "@radix-ui/react-tooltip": "^1.1.2",
+    "@tanstack/react-query": "^5.56.2",
     "@tanstack/react-router": "^1.58.7",
     "@tauri-apps/api": "2.0.0-rc.5",
     "@tauri-apps/plugin-shell": "^2.0.0-rc.1",
@@ -42,6 +43,7 @@
   },
   "devDependencies": {
     "@catppuccin/tailwindcss": "^0.1.6",
+    "@tanstack/eslint-plugin-query": "^5.57.2",
     "@tanstack/router-devtools": "^1.58.7",
     "@tanstack/router-plugin": "^1.58.4",
     "@tauri-apps/cli": "^2.0.0-rc.16",

@@ -1,7 +1,5 @@
 import { createFileRoute } from '@tanstack/react-router'
-import { useEffect, useState } from 'react'
-import { NoteData } from '@/types'
-import { getNote } from '@/commands/note'
+import { useNote } from '@/commands/note'
 import Editor from '@/editor'
 
 export const Route = createFileRoute('/notes/$noteId')({
@@ -11,17 +9,9 @@ export const Route = createFileRoute('/notes/$noteId')({
 function NoteComponent(): JSX.Element {
   const { noteId } = Route.useParams()
 
-  const [note, setNote] = useState<NoteData | null>(null)
-  useEffect(() => {
-    const doGet = async () => {
-      const note = await getNote(noteId)
-      setNote(note)
-    }
+  const { data, status } = useNote(noteId, {})
 
-    doGet()
-  }, [])
+  if (status === 'error' || status === 'pending') return <></>
 
-  if (note === null) return <></>
-
-  return <Editor note={note} />
+  return <Editor note={data} />
 }

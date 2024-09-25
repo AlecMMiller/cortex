@@ -1,7 +1,6 @@
 import { createLazyFileRoute, Link } from '@tanstack/react-router'
-import { getAllNotes } from '@/commands/note'
+import { useAllNotes } from '@/commands/note'
 import { NoteTitle } from '@/types'
-import { useEffect, useState } from 'react'
 
 export const Route = createLazyFileRoute('/')({
   component: Index,
@@ -21,18 +20,13 @@ function RecentNote(props: RecentNoteProps): JSX.Element {
 }
 
 function Index(): JSX.Element {
-  const [notes, setNotes] = useState<NoteTitle[]>([])
+  const { status, data } = useAllNotes({})
 
-  useEffect(() => {
-    const fetchNotes = async () => {
-      const notes = await getAllNotes()
-      setNotes(notes)
-    }
+  if (status === 'pending' || status === 'error') {
+    return <div>Loading</div>
+  }
 
-    fetchNotes()
-  }, [])
-
-  const noteElements = notes.map((note) => (
+  const noteElements = data.map((note) => (
     <RecentNote key={note.uuid} note={note} />
   ))
 
