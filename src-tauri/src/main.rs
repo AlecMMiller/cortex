@@ -10,7 +10,7 @@ use diesel_migrations::EmbeddedMigrations;
 use diesel_migrations::{embed_migrations, MigrationHarness};
 use models::NoteId;
 use std::fs::create_dir_all;
-use tauri::{Manager, State};
+use tauri::{tauri_build_context, Manager, State};
 mod models;
 mod schema;
 
@@ -119,6 +119,7 @@ fn create_note(state: State<'_, PoolWrapper>, title: &str) -> Result<String, ()>
 
 fn main() {
     tauri::Builder::default()
+        .plugin(tauri_plugin_shell::init())
         .plugin(tauri_plugin_fs::init())
         .setup(|app| {
             let path = app
