@@ -1,7 +1,7 @@
 import { createLazyFileRoute, Link } from '@tanstack/react-router'
-import { getAllNotes } from '@/commands/note'
+import { buildPrefetchNote, useAllNotes } from '@/commands/note'
 import { NoteTitle } from '@/types'
-import { useEffect, useState } from 'react'
+import { useQueryClient } from '@tanstack/react-query'
 
 export const Route = createLazyFileRoute('/')({
   component: Index,
@@ -13,26 +13,28 @@ interface RecentNoteProps {
 
 function RecentNote(props: RecentNoteProps): JSX.Element {
   const note = props.note
+  const client = useQueryClient()
+  const prefetch = buildPrefetchNote(client, { uuid: note.uuid })
   return (
-    <Link to={`notes/${note.uuid}`} className="text-blue">
+    <Link
+      to={`notes/${note.uuid}`}
+      className="text-blue"
+      onFocus={prefetch}
+      onMouseEnter={prefetch}
+    >
       {note.title}
     </Link>
   )
 }
 
 function Index(): JSX.Element {
-  const [notes, setNotes] = useState<NoteTitle[]>([])
+  const { status, data } = useAllNotes({}, {})
 
-  useEffect(() => {
-    const fetchNotes = async () => {
-      const notes = await getAllNotes()
-      setNotes(notes)
-    }
+  if (status === 'pending' || status === 'error') {
+    return <div>Loading</div>
+  }
 
-    fetchNotes()
-  }, [])
-
-  const noteElements = notes.map((note) => (
+  const noteElements = data.map((note) => (
     <RecentNote key={note.uuid} note={note} />
   ))
 

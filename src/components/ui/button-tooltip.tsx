@@ -11,17 +11,23 @@ type Side = 'left' | 'right' | 'top' | 'bottom'
 export interface TooltipButtonProps extends ButtonProps {
   readonly side?: Side
   readonly to?: string
+  readonly prefetch?: () => void
   readonly tooltip?: string
 }
 
 export function TooltipButton(props: TooltipButtonProps): JSX.Element {
-  const { side, tooltip, to, ...rest } = props
+  const { side, tooltip, to, prefetch, ...rest } = props
 
   const element =
     to === undefined ? (
-      <Button {...rest} />
+      <Button onMouseEnter={prefetch} onFocus={prefetch} {...rest} />
     ) : (
-      <Link className={props.className} to={to}>
+      <Link
+        onMouseEnter={prefetch}
+        onFocus={prefetch}
+        className={props.className}
+        to={to}
+      >
         {props.children}
       </Link>
     )
