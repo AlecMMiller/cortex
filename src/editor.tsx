@@ -1,15 +1,16 @@
 import { AutoFocusPlugin } from '@lexical/react/LexicalAutoFocusPlugin'
 import {
   InitialConfigType,
-  LexicalComposer
+  LexicalComposer,
 } from '@lexical/react/LexicalComposer'
 import { ContentEditable } from '@lexical/react/LexicalContentEditable'
-import LexicalErrorBoundary from '@lexical/react/LexicalErrorBoundary'
+import { LexicalErrorBoundary } from '@lexical/react/LexicalErrorBoundary'
 import { HistoryPlugin } from '@lexical/react/LexicalHistoryPlugin'
 import { ListPlugin } from '@lexical/react/LexicalListPlugin'
 import { MarkdownShortcutPlugin } from '@lexical/react/LexicalMarkdownShortcutPlugin'
 import { RichTextPlugin } from '@lexical/react/LexicalRichTextPlugin'
-import LexicalAutoLinkPlugin from './utils/AutoLink'
+import { LexicalAutoLinkPlugin } from './utils/AutoLink'
+import { ExternalLinkPlugin } from './utils/ExternalLink'
 import { TableOfContentsPlugin } from '@lexical/react/LexicalTableOfContentsPlugin'
 import PageNavigator from './elements/PageNavigator'
 import { OnChangePlugin } from '@lexical/react/LexicalOnChangePlugin'
@@ -24,25 +25,25 @@ import { invoke } from '@tauri-apps/api/core'
 import { NoteData } from './types'
 import { renameNote } from './commands/note'
 
-function onChange (uuid: string, state: EditorState): void {
+function onChange(uuid: string, state: EditorState): void {
   const json = state.toJSON()
   const serialized = JSON.stringify(json)
   invoke('editor_change_state', { uuid, body: serialized })
 }
 
-function onTitleChange (uuid: string, title: string): void {
+function onTitleChange(uuid: string, title: string): void {
   console.log('title changed', uuid, title)
   renameNote(uuid, title)
 }
 
-function onError (error: any): void {
+function onError(error: any): void {
   console.error(error)
 }
 interface EditorProps {
   readonly note: NoteData
 }
 
-export default function Editor (props: EditorProps): JSX.Element {
+export default function Editor(props: EditorProps): JSX.Element {
   const note = props.note
 
   const initialEditorState = note.body !== '' ? note.body : undefined
@@ -60,26 +61,26 @@ export default function Editor (props: EditorProps): JSX.Element {
       QuoteNode,
       CodeNode,
       LinkNode,
-      AutoLinkNode
-    ]
+      AutoLinkNode,
+    ],
   }
 
   return (
     <LexicalComposer initialConfig={initialConfig}>
       <ListPlugin />
-      <div className='flex flex-col overflow-y-auto flex-1 items-center'>
+      <div className="flex flex-col overflow-y-auto flex-1 items-center">
         <h1
           onInput={(e) => {
             onTitleChange(note.uuid, e.currentTarget.innerText)
           }}
           contentEditable
-          className='text-text font-semibold font-prose text-4xl mt-12 text-center'
+          className="text-text font-semibold font-prose text-4xl mt-12 text-center"
         >
           {note.title}
         </h1>
         <RichTextPlugin
           contentEditable={
-            <ContentEditable className='p-10 focus:outline-none max-w-4xl w-full' />
+            <ContentEditable className="p-10 focus:outline-none max-w-4xl w-full" />
           }
           placeholder={<></>}
           ErrorBoundary={LexicalErrorBoundary}
@@ -89,6 +90,7 @@ export default function Editor (props: EditorProps): JSX.Element {
       <HistoryPlugin />
       <AutoFocusPlugin />
       <LexicalAutoLinkPlugin />
+      <ExternalLinkPlugin />
       <TableOfContentsPlugin>
         {(tableOfContentsArray) => {
           return <PageNavigator tableOfContents={tableOfContentsArray} />
