@@ -9,6 +9,10 @@ import { HistoryPlugin } from '@lexical/react/LexicalHistoryPlugin'
 import { ListPlugin } from '@lexical/react/LexicalListPlugin'
 import { MarkdownShortcutPlugin } from '@lexical/react/LexicalMarkdownShortcutPlugin'
 import { RichTextPlugin } from '@lexical/react/LexicalRichTextPlugin'
+import {
+  LexicalTypeaheadMenuPlugin,
+  useBasicTypeaheadTriggerMatch,
+} from '@lexical/react/LexicalTypeaheadMenuPlugin'
 import { LexicalAutoLinkPlugin } from './utils/AutoLink'
 import { ExternalLinkPlugin } from './utils/ExternalLink'
 import { TableOfContentsPlugin } from '@lexical/react/LexicalTableOfContentsPlugin'
@@ -20,10 +24,14 @@ import { HorizontalRuleNode } from '@lexical/react/LexicalHorizontalRuleNode'
 import { HeadingNode, QuoteNode } from '@lexical/rich-text'
 import { CodeNode } from '@lexical/code'
 import { AutoLinkNode, LinkNode } from '@lexical/link'
-import { EditorState } from 'lexical'
+import { EditorState, LexicalEditor } from 'lexical'
 import { invoke } from '@tauri-apps/api/core'
 import { NoteData } from './types'
 import { renameNote } from './commands/note'
+import * as Popover from '@radix-ui/react-popover'
+import { MutableRefObject } from 'react'
+import { createPortal } from 'react-dom'
+import WikiLinkPlugin from './utils/WikiLink'
 
 function onChange(uuid: string, state: EditorState): void {
   const json = state.toJSON()
@@ -90,6 +98,7 @@ export default function Editor(props: EditorProps): JSX.Element {
       <HistoryPlugin />
       <AutoFocusPlugin />
       <LexicalAutoLinkPlugin />
+      <WikiLinkPlugin />
       <ExternalLinkPlugin />
       <TableOfContentsPlugin>
         {(tableOfContentsArray) => {
