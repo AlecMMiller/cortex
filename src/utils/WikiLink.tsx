@@ -2,17 +2,10 @@ import { useLexicalComposerContext } from '@lexical/react/LexicalComposerContext
 import {
   LexicalTypeaheadMenuPlugin,
   MenuOption,
-  MenuRenderFn,
   useBasicTypeaheadTriggerMatch,
 } from '@lexical/react/LexicalTypeaheadMenuPlugin'
 import { TextNode } from 'lexical'
-import {
-  useState,
-  useMemo,
-  useCallback,
-  ReactPortal,
-  MutableRefObject,
-} from 'react'
+import { useState, useMemo, useCallback, ReactPortal } from 'react'
 import { createPortal } from 'react-dom'
 
 const SUGGESTION_LIST_LENGTH_LIMIT = 5
@@ -32,6 +25,25 @@ class LinkTypeaheadOption extends MenuOption {
 
 interface MenuRenderFnProps {
   target: HTMLElement
+  selectedIndex: number | null
+}
+
+interface LinkTypeaheadMenuItemProps {
+  option: LinkTypeaheadOption
+  isSelected: boolean
+}
+
+function LinkTypeaheadMenuItem(props: LinkTypeaheadMenuItemProps): JSX.Element {
+  const { option, isSelected } = props
+  let className = 'px-2 rounded-md py-1'
+
+  if (isSelected === true) className += ' bg-surface1'
+
+  return (
+    <li className={className} key={option.key} tabIndex={-1}>
+      {option.title}
+    </li>
+  )
 }
 
 export default function WikiLinkPlugin(): JSX.Element {
@@ -62,8 +74,16 @@ export default function WikiLinkPlugin(): JSX.Element {
 
   const MenuRenderFn = (props: MenuRenderFnProps): ReactPortal => {
     return createPortal(
-      <div className="text-text w-52 p-2 bg-surface0 rounded-md shadow-md">
-        Test
+      <div className="text-text w-52 p-0.5 bg-surface0 rounded-md shadow-md">
+        <ul>
+          {options.map((option, i: number) => (
+            <LinkTypeaheadMenuItem
+              option={option}
+              key={option.key}
+              isSelected={props.selectedIndex === i}
+            />
+          ))}
+        </ul>
       </div>,
       props.target,
     )
@@ -75,10 +95,10 @@ export default function WikiLinkPlugin(): JSX.Element {
       onSelectOption={onSelectOption}
       triggerFn={useBasicTypeaheadTriggerMatch('[', {})}
       options={options}
-      menuRenderFn={(anchorElementRef) => {
+      menuRenderFn={(anchorElementRef, { selectedIndex }) => {
         const current = anchorElementRef.current
         if (current === null) return null
-        return <MenuRenderFn target={current} />
+        return <MenuRenderFn target={current} selectedIndex={selectedIndex} />
       }}
     />
   )
