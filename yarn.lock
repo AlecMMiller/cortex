@@ -1519,10 +1519,10 @@
   dependencies:
     "@tanstack/query-core" "5.56.2"
 
-"@tanstack/react-router@^1.58.9":
-  version "1.58.9"
-  resolved "https://registry.yarnpkg.com/@tanstack/react-router/-/react-router-1.58.9.tgz#602d8f89537b35f2eb78cc7bb53359294995a1af"
-  integrity sha512-ODKOo8bUo8nIPGZmJHa7zNul9U3XAMmohnwZLl2A/A3suU03Q+0R5oOfhUKw+qArPIdIcec1VtqYpNk6y7qfrQ==
+"@tanstack/react-router@^1.58.12":
+  version "1.58.12"
+  resolved "https://registry.yarnpkg.com/@tanstack/react-router/-/react-router-1.58.12.tgz#db25b03d0fed924015d9bf64532fc90a4cf58625"
+  integrity sha512-9MZWxB5W5gOoiTs1/H8lch5US6r6f+jW4yG/AudXUc2ntUYobSaZaZv3S5LK28XGH7sIjSIKowaKOXVX3kriug==
   dependencies:
     "@tanstack/history" "1.57.6"
     "@tanstack/react-store" "^0.5.5"
