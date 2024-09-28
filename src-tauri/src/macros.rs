@@ -16,6 +16,25 @@ pub mod macros {
                 }
             }
 
+            impl std::fmt::Display for $id_name {
+                fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> Result<(), std::fmt::Error> {
+                    let uuid = uuid::Uuid::from_slice(&self.0).unwrap();
+                    let s = uuid.to_string();
+                    write!(f, "{s}")
+                }
+            }
+
+            impl TryFrom<&str> for $id_name {
+                type Error = &'static str;
+
+                fn try_from(s: &str) -> Result<$id_name, Self::Error> {
+                    let uuid = uuid::Uuid::parse_str(&s).unwrap();
+                    Ok($id_name {
+                        0: uuid.as_bytes().to_vec(),
+                    })
+                }
+            }
+
             impl ToSql<Binary, Sqlite> for $id_name {
                 fn to_sql<'a>(&'a self, out: &mut Output<'a, '_, Sqlite>) -> serialize::Result {
                     ToSql::<Binary, Sqlite>::to_sql(&self.0, out)

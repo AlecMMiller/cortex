@@ -1,3 +1,5 @@
+use tantivy::TantivyError;
+
 pub mod notes;
 
 #[derive(Debug, thiserror::Error)]
@@ -6,6 +8,8 @@ pub enum Error {
     Diesel(#[from] diesel::result::Error),
     #[error("Not found")]
     NotFoundError,
+    #[error("Tantivy stuff")]
+    Tantivy(#[from] TantivyError),
 }
 
 // we must also implement serde::Serialize

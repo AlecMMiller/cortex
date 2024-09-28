@@ -481,6 +481,7 @@ dependencies = [
  "diesel",
  "diesel_migrations",
  "libsqlite3-sys",
+ "regex",
  "serde",
  "serde_json",
  "tantivy",

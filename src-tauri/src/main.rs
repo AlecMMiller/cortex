@@ -11,9 +11,10 @@ use diesel::{
 };
 use diesel_migrations::EmbeddedMigrations;
 use diesel_migrations::{embed_migrations, MigrationHarness};
+use search::{TextIndexSearcher, TextIndexWriter};
 use std::fs::create_dir;
 use std::fs::create_dir_all;
-use tantivy::IndexWriter;
+use std::sync::Arc;
 use tauri::Manager;
 mod models;
 mod schema;
@@ -31,6 +32,14 @@ pub type SqlitePool = Pool<ConnectionManager<SqliteConnection>>;
 
 pub struct PoolWrapper {
     pub pool: SqlitePool,
+}
+
+pub struct WriterWrapper {
+    pub writer: Arc<TextIndexWriter>,
+}
+
+pub struct SearcherWrapper {
+    pub searcher: Arc<TextIndexSearcher>,
 }
 
 fn main() {
@@ -57,9 +66,9 @@ fn main() {
             let pool = Pool::builder()
                 .build(manager)
                 .expect("Could not create connection pool");
-            let pool = PoolWrapper { pool };
+            let pool_wrapper = PoolWrapper { pool: pool.clone() };
 
-            app.manage(pool);
+            app.manage(pool_wrapper);
 
             let tantivy_path = path.join("tantivy");
 
@@ -70,16 +79,26 @@ fn main() {
                 }
                 Err(_) => {}
             };
-            let (tantivy_index, needs_reindex) = search::initialize(tantivy_path, needs_reindex)
-                .expect("Tantivy should be able to create an index");
+            let (tantivy_writer, tantivy_searcher, needs_reindex) =
+                search::initialize(tantivy_path, needs_reindex)
+                    .expect("Tantivy should be able to create an index");
 
-            println!("{needs_reindex}");
-            app.manage(tantivy_index.clone());
+            let writer_wrapper = WriterWrapper {
+                writer: tantivy_writer.clone(),
+            };
+            app.manage(writer_wrapper);
+            let searcher_wrapper = SearcherWrapper {
+                searcher: tantivy_searcher.clone(),
+            };
+            app.manage(searcher_wrapper);
 
-            let index_writer: IndexWriter = tantivy_index
-                .writer(30_000_000)
-                .expect("Should be able to create an index writer");
-            app.manage(std::sync::Mutex::new(index_writer));
+            if needs_reindex {
+                println!("Initializing tantivy index");
+                let all_notes = notes::get_all(pool.clone()).expect("should work");
+                for note in all_notes {
+                    let _ = search::write_note(note, tantivy_writer.clone());
+                }
+            };
 
             Ok(())
         })

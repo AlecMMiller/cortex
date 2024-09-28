@@ -1,8 +1,10 @@
 use crate::commands::Error;
 use crate::models::{Note, NoteId};
-use crate::notes;
 use crate::notes::NoteTitle;
-use crate::PoolWrapper;
+use crate::search::{search_by_title, TextIndexSearcher};
+use crate::{notes, search};
+use crate::{PoolWrapper, SearcherWrapper};
+use std::sync::Arc;
 use tauri::State;
 
 #[tauri::command]
@@ -31,15 +33,15 @@ pub fn get_last_updated_note<'a>(state: State<'_, PoolWrapper>) -> Result<String
 
 #[tauri::command]
 pub fn get_all_notes<'a>(state: State<'_, PoolWrapper>) -> Result<Vec<NoteTitle>, Error> {
-    Ok(notes::get_all(state.pool.clone())?)
+    Ok(notes::get_all_titles(state.pool.clone())?)
 }
 
 #[tauri::command]
 pub fn get_notes_by_title<'a>(
-    state: State<'_, PoolWrapper>,
-    _title: &str,
+    state: State<'_, SearcherWrapper>,
+    title: &str,
 ) -> Result<Vec<NoteTitle>, Error> {
-    Ok(notes::get_all(state.pool.clone())?)
+    Ok(search_by_title(title, 5, state.searcher.clone())?)
 }
 
 #[tauri::command]

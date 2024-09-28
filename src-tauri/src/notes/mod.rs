@@ -6,12 +6,11 @@ use crate::{
 };
 use diesel::{prelude::*, result::Error};
 use serde::Serialize;
-
 #[derive(Serialize, Debug, PartialEq, Queryable, Selectable)]
 #[diesel(table_name = crate::schema::notes)]
 pub struct NoteTitle {
-    uuid: NoteId,
-    title: String,
+    pub uuid: NoteId,
+    pub title: String,
 }
 
 pub fn get_by_uuid(pool: SqlitePool, uuid: NoteId) -> Result<Note, Error> {
@@ -30,10 +29,18 @@ pub fn get_by_uuid(pool: SqlitePool, uuid: NoteId) -> Result<Note, Error> {
     }
 }
 
-pub fn get_all(pool: SqlitePool) -> Result<Vec<NoteTitle>, Error> {
+pub fn get_all_titles(pool: SqlitePool) -> Result<Vec<NoteTitle>, Error> {
     let conn = &mut get_connection(pool);
 
     let all_notes = notes.select(NoteTitle::as_select()).get_results(conn)?;
+
+    Ok(all_notes)
+}
+
+pub fn get_all(pool: SqlitePool) -> Result<Vec<Note>, Error> {
+    let conn = &mut get_connection(pool);
+
+    let all_notes = notes.get_results(conn)?;
 
     Ok(all_notes)
 }
