@@ -34,7 +34,7 @@ export function buildQueryMethods<InputType extends InvokeArgs, ReturnType>(
     return async (): Promise<ReturnType> => {
       console.debug(`${args.command} ${JSON.stringify(data)}`)
       const result = await invoke(args.command, data)
-      return JSON.parse(result as string) as ReturnType
+      return result as ReturnType
     }
   }
 

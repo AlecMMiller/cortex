@@ -30,6 +30,9 @@ function RecentNote(props: RecentNoteProps): JSX.Element {
 function Index(): JSX.Element {
   const { status, data } = useAllNotes({}, {})
 
+  console.log(status)
+  console.log(data)
+
   if (status === 'pending' || status === 'error') {
     return <div>Loading</div>
   }

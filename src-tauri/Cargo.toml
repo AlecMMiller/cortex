@@ -23,6 +23,7 @@ tauri-plugin-shell = "2.0.0-rc"
 diesel = { version = "2.2.4", features = ["r2d2", "sqlite"] }
 diesel_migrations = { version = "2.2.0", features = ["sqlite"] }
 libsqlite3-sys = { version = "0.30.1", features = ["bundled"] }
+thiserror = "1.0.64"
 
 [features]
 # This feature is used for production builds or when a dev server is not specified, DO NOT REMOVE!!

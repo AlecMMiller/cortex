@@ -14,12 +14,7 @@ pub struct NoteTitle {
     title: String,
 }
 
-pub enum GetNoteError {
-    NotFound,
-    UnknownError,
-}
-
-pub fn get_by_uuid(pool: SqlitePool, uuid: NoteId) -> Result<Note, GetNoteError> {
+pub fn get_by_uuid(pool: SqlitePool, uuid: NoteId) -> Result<Note, Error> {
     let conn = &mut get_connection(pool);
 
     let note = notes
@@ -30,8 +25,8 @@ pub fn get_by_uuid(pool: SqlitePool, uuid: NoteId) -> Result<Note, GetNoteError>
 
     match note {
         Ok(Some(note)) => Ok(note),
-        Ok(None) => Err(GetNoteError::NotFound),
-        Err(_) => Err(GetNoteError::UnknownError),
+        Ok(None) => Err(Error::NotFound),
+        Err(foo) => Err(foo),
     }
 }
 
