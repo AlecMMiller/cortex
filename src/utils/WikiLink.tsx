@@ -3,19 +3,13 @@ import {
   LexicalTypeaheadMenuPlugin,
   MenuOption,
   QueryMatch,
-  useBasicTypeaheadTriggerMatch,
 } from '@lexical/react/LexicalTypeaheadMenuPlugin'
 import { TextNode } from 'lexical'
 import { useState, useMemo, useCallback, ReactPortal } from 'react'
 import { createPortal } from 'react-dom'
+import { useSearchNotesByTitle } from '@/commands/note'
 
 const SUGGESTION_LIST_LENGTH_LIMIT = 5
-
-function useNoteTitleLookup(partial: string | null): string[] {
-  if (partial === null) return []
-  console.log(partial)
-  return ['test1', 'test2', 'test3']
-}
 
 class LinkTypeaheadOption extends MenuOption {
   title: string
@@ -89,14 +83,21 @@ export default function WikiLinkPlugin(): JSX.Element {
 
   const [queryString, setQueryString] = useState<string | null>(null)
 
-  let actualQueryString = queryString === null ? null : queryString.slice(2)
+  let actualQueryString = queryString === null ? '' : queryString.slice(2)
 
-  const results = useNoteTitleLookup(actualQueryString)
+  const { data, status } = useSearchNotesByTitle(
+    {
+      title: actualQueryString,
+    },
+    {},
+  )
+
+  const results = status === 'success' ? data : []
 
   const options = useMemo(
     () =>
       results
-        .map((result) => new LinkTypeaheadOption(result))
+        .map((result) => new LinkTypeaheadOption(result.title))
         .slice(0, SUGGESTION_LIST_LENGTH_LIMIT),
     [results],
   )
