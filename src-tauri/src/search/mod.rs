@@ -5,8 +5,8 @@ use std::path::PathBuf;
 use std::sync::{Arc, Mutex};
 use std::usize;
 use tantivy::collector::TopDocs;
-use tantivy::query::{QueryParser, RegexQuery, TermQuery};
-use tantivy::{schema::*, DocAddress, Index, IndexReader, IndexWriter, ReloadPolicy};
+use tantivy::query::{QueryParser, RegexQuery};
+use tantivy::{schema::*, Index, IndexReader, IndexWriter, ReloadPolicy};
 
 pub struct TextIndexSearcher {
     pub schema: Schema,

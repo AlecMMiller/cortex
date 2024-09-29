@@ -85,7 +85,6 @@ export function ExternalLinkPlugin({
         return
       }
 
-      console.log('I did a thing?')
       open(url)
       event.preventDefault()
     }

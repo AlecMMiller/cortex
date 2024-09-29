@@ -29,5 +29,6 @@ export const EDITOR_THEME = {
       builtin: 'text-text',
     },
   },
-  link: 'text-blue hover:underline cursor-pointer',
+  'internal-link': 'text-teal bg-none hover:underline cursor-pointer',
+  link: 'text-teal hover:underline cursor-pointer',
 }

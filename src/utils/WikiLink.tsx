@@ -8,15 +8,19 @@ import { TextNode } from 'lexical'
 import { useState, useMemo, useCallback, ReactPortal } from 'react'
 import { createPortal } from 'react-dom'
 import { useSearchNotesByTitle } from '@/commands/note'
+import { NoteTitle } from '@/types'
+import { $createInternalLinkNode } from './InternalLink'
 
 const SUGGESTION_LIST_LENGTH_LIMIT = 5
 
 class LinkTypeaheadOption extends MenuOption {
+  uuid: string
   title: string
 
-  constructor(title: string) {
-    super(title)
-    this.title = title
+  constructor(note: NoteTitle) {
+    super(note.title)
+    this.uuid = note.uuid
+    this.title = note.title
   }
 }
 
@@ -37,7 +41,7 @@ function LinkTypeaheadMenuItem(props: LinkTypeaheadMenuItemProps): JSX.Element {
   if (isSelected === true) className += ' bg-surface1'
 
   return (
-    <li className={className} key={option.key} tabIndex={-1}>
+    <li className={className} key={option.uuid} tabIndex={-1}>
       {option.title}
     </li>
   )
@@ -83,7 +87,7 @@ export default function WikiLinkPlugin(): JSX.Element {
 
   const [queryString, setQueryString] = useState<string | null>(null)
 
-  let actualQueryString = queryString === null ? '' : queryString.slice(2)
+  const actualQueryString = queryString === null ? '' : queryString.slice(2)
 
   const { data, status } = useSearchNotesByTitle(
     {
@@ -97,18 +101,31 @@ export default function WikiLinkPlugin(): JSX.Element {
   const options = useMemo(
     () =>
       results
-        .map((result) => new LinkTypeaheadOption(result.title))
+        .map((result) => new LinkTypeaheadOption(result))
         .slice(0, SUGGESTION_LIST_LENGTH_LIMIT),
     [results],
   )
 
   const onSelectOption = useCallback(
     (
-      _selectedOption: LinkTypeaheadOption,
-      _nodeToReplace: TextNode | null,
+      selectedOption: LinkTypeaheadOption,
+      nodeToReplace: TextNode | null,
       closeMenu: () => void,
     ) => {
-      closeMenu()
+      console.log('Doing a thing')
+      editor.update(() => {
+        const linkNode = $createInternalLinkNode(
+          selectedOption.uuid,
+          selectedOption.title,
+        )
+
+        if (nodeToReplace) {
+          console.log(nodeToReplace)
+          nodeToReplace.replace(linkNode)
+        }
+        linkNode.select()
+        closeMenu()
+      })
     },
     [editor],
   )

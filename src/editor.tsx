@@ -9,10 +9,6 @@ import { HistoryPlugin } from '@lexical/react/LexicalHistoryPlugin'
 import { ListPlugin } from '@lexical/react/LexicalListPlugin'
 import { MarkdownShortcutPlugin } from '@lexical/react/LexicalMarkdownShortcutPlugin'
 import { RichTextPlugin } from '@lexical/react/LexicalRichTextPlugin'
-import {
-  LexicalTypeaheadMenuPlugin,
-  useBasicTypeaheadTriggerMatch,
-} from '@lexical/react/LexicalTypeaheadMenuPlugin'
 import { LexicalAutoLinkPlugin } from './utils/AutoLink'
 import { ExternalLinkPlugin } from './utils/ExternalLink'
 import { TableOfContentsPlugin } from '@lexical/react/LexicalTableOfContentsPlugin'
@@ -24,11 +20,12 @@ import { HorizontalRuleNode } from '@lexical/react/LexicalHorizontalRuleNode'
 import { HeadingNode, QuoteNode } from '@lexical/rich-text'
 import { CodeNode } from '@lexical/code'
 import { AutoLinkNode, LinkNode } from '@lexical/link'
-import { EditorState } from 'lexical'
+import { EditorState, TextNode } from 'lexical'
 import { invoke } from '@tauri-apps/api/core'
 import { NoteData } from './types'
 import { renameNote } from './commands/note'
 import WikiLinkPlugin from './utils/WikiLink'
+import { InternalLinkNode } from './utils/InternalLink'
 
 function onChange(uuid: string, state: EditorState): void {
   const json = state.toJSON()
@@ -59,6 +56,7 @@ export default function Editor(props: EditorProps): JSX.Element {
     theme: EDITOR_THEME,
     onError,
     nodes: [
+      TextNode,
       ListNode,
       ListItemNode,
       HorizontalRuleNode,
@@ -67,6 +65,7 @@ export default function Editor(props: EditorProps): JSX.Element {
       CodeNode,
       LinkNode,
       AutoLinkNode,
+      InternalLinkNode,
     ],
   }
 
