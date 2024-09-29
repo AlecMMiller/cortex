@@ -1,6 +1,6 @@
-use crate::models::{Note, NoteId};
+use crate::models::Note;
 use crate::notes::NoteTitle;
-use serde::Serialize;
+use std::fs::create_dir;
 use std::path::PathBuf;
 use std::sync::{Arc, Mutex};
 use std::usize;
@@ -27,8 +27,17 @@ const ID: &str = "id";
 
 pub fn initialize(
     path: PathBuf,
-    needs_reindex: bool,
 ) -> tantivy::Result<(Arc<TextIndexWriter>, Arc<TextIndexSearcher>, bool)> {
+    let path = path.join("tantivy");
+
+    let mut needs_reindex = false;
+    match create_dir(path.clone()) {
+        Ok(_) => {
+            needs_reindex = true;
+        }
+        Err(_) => {}
+    };
+
     let mut schema_builder = Schema::builder();
 
     schema_builder.add_text_field(TITLE, TEXT | STORED);

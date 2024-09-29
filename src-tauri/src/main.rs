@@ -12,7 +12,6 @@ use diesel::{
 use diesel_migrations::EmbeddedMigrations;
 use diesel_migrations::{embed_migrations, MigrationHarness};
 use search::{TextIndexSearcher, TextIndexWriter};
-use std::fs::create_dir;
 use std::fs::create_dir_all;
 use std::sync::Arc;
 use tauri::Manager;
@@ -70,18 +69,8 @@ fn main() {
 
             app.manage(pool_wrapper);
 
-            let tantivy_path = path.join("tantivy");
-
-            let mut needs_reindex = false;
-            match create_dir(tantivy_path.clone()) {
-                Ok(_) => {
-                    needs_reindex = true;
-                }
-                Err(_) => {}
-            };
             let (tantivy_writer, tantivy_searcher, needs_reindex) =
-                search::initialize(tantivy_path, needs_reindex)
-                    .expect("Tantivy should be able to create an index");
+                search::initialize(path).expect("Tantivy should be able to create an index");
 
             let writer_wrapper = WriterWrapper {
                 writer: tantivy_writer.clone(),
