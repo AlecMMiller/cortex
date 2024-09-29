@@ -24,19 +24,16 @@ import { HorizontalRuleNode } from '@lexical/react/LexicalHorizontalRuleNode'
 import { HeadingNode, QuoteNode } from '@lexical/rich-text'
 import { CodeNode } from '@lexical/code'
 import { AutoLinkNode, LinkNode } from '@lexical/link'
-import { EditorState, LexicalEditor } from 'lexical'
+import { EditorState } from 'lexical'
 import { invoke } from '@tauri-apps/api/core'
 import { NoteData } from './types'
 import { renameNote } from './commands/note'
-import * as Popover from '@radix-ui/react-popover'
-import { MutableRefObject } from 'react'
-import { createPortal } from 'react-dom'
 import WikiLinkPlugin from './utils/WikiLink'
 
 function onChange(uuid: string, state: EditorState): void {
   const json = state.toJSON()
   const serialized = JSON.stringify(json)
-  invoke('editor_change_state', { uuid, body: serialized })
+  invoke('update_note', { uuid, body: serialized })
 }
 
 function onTitleChange(uuid: string, title: string): void {
