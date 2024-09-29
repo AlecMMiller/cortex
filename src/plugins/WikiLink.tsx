@@ -9,7 +9,7 @@ import { useState, useMemo, useCallback, ReactPortal } from 'react'
 import { createPortal } from 'react-dom'
 import { useSearchNotesByTitle } from '@/commands/note'
 import { NoteTitle } from '@/types'
-import { $createInternalLinkNode } from './InternalLink'
+import { $createInternalLinkNode } from '@/nodes/InternalLink'
 
 const SUGGESTION_LIST_LENGTH_LIMIT = 5
 
