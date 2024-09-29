@@ -1,12 +1,12 @@
-use crate::models::Note;
+use crate::models::{Note, NoteId};
 use crate::notes::NoteTitle;
 use serde::Serialize;
 use std::path::PathBuf;
 use std::sync::{Arc, Mutex};
 use std::usize;
 use tantivy::collector::TopDocs;
-use tantivy::query::{QueryParser, RegexQuery};
-use tantivy::{schema::*, Index, IndexReader, IndexWriter, ReloadPolicy};
+use tantivy::query::{QueryParser, RegexQuery, TermQuery};
+use tantivy::{schema::*, DocAddress, Index, IndexReader, IndexWriter, ReloadPolicy};
 
 pub struct TextIndexSearcher {
     pub schema: Schema,
@@ -33,7 +33,7 @@ pub fn initialize(
 
     schema_builder.add_text_field(TITLE, TEXT | STORED);
     schema_builder.add_text_field(CONTENT, TEXT);
-    schema_builder.add_text_field(ID, TEXT | STORED);
+    schema_builder.add_text_field(ID, STRING | STORED);
 
     let schema = schema_builder.build();
     let directory = tantivy::directory::MmapDirectory::open(path)?;
@@ -70,19 +70,29 @@ pub fn initialize(
 
 pub fn write_note(note: Note, writer: Arc<TextIndexWriter>) -> tantivy::Result<()> {
     let schema = writer.schema.clone();
+    let reader = writer.reader.clone();
     let mut writer = writer.writer.lock().unwrap();
-
-    let mut doc = TantivyDocument::default();
 
     let title = schema.get_field(TITLE).unwrap();
     let id = schema.get_field(ID).unwrap();
     let content = schema.get_field(CONTENT).unwrap();
 
+    let uuid = &note.uuid.to_string();
+
+    let uuid_term = Term::from_field_text(id, uuid);
+    writer.delete_term(uuid_term.clone());
+
+    let mut doc = TantivyDocument::default();
+
     doc.add_text(title, note.title);
-    doc.add_text(id, note.uuid);
+    doc.add_text(id, uuid);
     doc.add_text(content, note.body);
-    let _ = writer.add_document(doc);
-    let _ = writer.commit();
+
+    writer.add_document(doc)?;
+
+    writer.commit()?;
+    reader.reload()?;
+
     Ok(())
 }
 
