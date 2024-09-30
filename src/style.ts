@@ -30,5 +30,5 @@ export const EDITOR_THEME = {
     },
   },
   'internal-link': 'text-teal bg-none hover:underline cursor-pointer',
-  link: 'text-teal hover:underline cursor-pointer',
+  link: 'text-blue hover:underline cursor-pointer',
 }

@@ -6,11 +6,15 @@ type NoteSelect = {
   uuid: string
 }
 
+export function makeNoteQueryKey(uuid: string) {
+  return ['note', uuid]
+}
+
 export const { useType: useNote, buildPrefetchType: buildPrefetchNote } =
   buildQueryMethods<NoteSelect, NoteData>({
     command: 'get_note',
     makeKey: (data: NoteSelect) => {
-      return ['note', data.uuid]
+      return makeNoteQueryKey(data.uuid)
     },
   })
 

@@ -24,14 +24,21 @@ import { AutoLinkNode, LinkNode } from '@lexical/link'
 import { EditorState, TextNode } from 'lexical'
 import { invoke } from '@tauri-apps/api/core'
 import { NoteData } from './types'
-import { renameNote } from './commands/note'
+import { makeNoteQueryKey, renameNote } from './commands/note'
 import WikiLinkPlugin from './plugins/WikiLink'
 import { InternalLinkNode } from './nodes/InternalLink'
+import { useQueryClient, QueryClient } from '@tanstack/react-query'
 
-function onChange(uuid: string, state: EditorState): void {
+function onChange(
+  queryClient: QueryClient,
+  uuid: string,
+  state: EditorState,
+): void {
+  const queryKey = makeNoteQueryKey(uuid)
   const json = state.toJSON()
   const serialized = JSON.stringify(json)
   invoke('update_note', { uuid, body: serialized })
+  queryClient.invalidateQueries({ queryKey })
 }
 
 function onTitleChange(uuid: string, title: string): void {
@@ -47,6 +54,7 @@ interface EditorProps {
 }
 
 export default function Editor(props: EditorProps): JSX.Element {
+  const queryClient = useQueryClient()
   const note = props.note
 
   const initialEditorState = note.body !== '' ? note.body : undefined
@@ -78,6 +86,7 @@ export default function Editor(props: EditorProps): JSX.Element {
           onInput={(e) => {
             onTitleChange(note.uuid, e.currentTarget.innerText)
           }}
+          suppressContentEditableWarning
           contentEditable
           className="text-text font-semibold font-prose text-4xl mt-12 text-center"
         >
@@ -105,7 +114,7 @@ export default function Editor(props: EditorProps): JSX.Element {
       <InternalLinkPlugin />
       <OnChangePlugin
         onChange={(state: EditorState) => {
-          onChange(note.uuid, state)
+          onChange(queryClient, note.uuid, state)
         }}
       />
     </LexicalComposer>
