@@ -65,7 +65,7 @@ export class InternalLinkNode extends ElementNode {
     element.title = this.__title
     element.textContent = this.__title
     element.target = '_self'
-    addClassNamesToElement(element, config.theme.link)
+    addClassNamesToElement(element, config.theme['internal-link'])
     return element
   }
 
