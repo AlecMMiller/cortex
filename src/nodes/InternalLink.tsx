@@ -72,6 +72,7 @@ export class InternalLinkNode extends ElementNode {
     element.href = this.getURL()
     element.title = this.__title
     element.textContent = this.__title
+    element.target = '_self'
     addClassNamesToElement(element, config.theme.link)
     return element
   }
@@ -131,7 +132,7 @@ export class InternalLinkNode extends ElementNode {
 
   getURL(): string {
     const uuid = this.getUuid()
-    return `notes/${uuid}`
+    return `/notes/${uuid}`
   }
 
   getUuid(): string {
@@ -235,136 +236,6 @@ export function $isInternalLinkNode(
   node: LexicalNode | null | undefined,
 ): node is InternalLinkNode {
   return node instanceof InternalLinkNode
-}
-
-export const TOGGLE_LINK_COMMAND: LexicalCommand<
-  string | ({ url: string } & LinkAttributes) | null
-> = createCommand('TOGGLE_LINK_COMMAND')
-
-/**
- * Generates or updates a LinkNode. It can also delete a LinkNode if the URL is null,
- * but saves any children and brings them up to the parent node.
- * @param url - The URL the link directs to.
- * @param attributes - Optional HTML a tag attributes. \\{ target, rel, title \\}
- */
-export function $toggleLink(
-  url: null | string,
-  attributes: LinkAttributes = {},
-): void {
-  const { target, title } = attributes
-  const rel = attributes.rel === undefined ? 'noreferrer' : attributes.rel
-  const selection = $getSelection()
-
-  if (!$isRangeSelection(selection)) {
-    return
-  }
-  const nodes = selection.extract()
-
-  if (url === null) {
-    // Remove LinkNodes
-    nodes.forEach((node) => {
-      const parentLink = $findMatchingParent(
-        node,
-        (parent): parent is LinkNode => !$isLinkNode(parent),
-      )
-
-      if (parentLink) {
-        const children = parentLink.getChildren()
-
-        for (let i = 0; i < children.length; i++) {
-          parentLink.insertBefore(children[i])
-        }
-
-        parentLink.remove()
-      }
-    })
-  } else {
-    // Add or merge LinkNodes
-    if (nodes.length === 1) {
-      const firstNode = nodes[0]
-      // if the first node is a LinkNode or if its
-      // parent is a LinkNode, we update the URL, target and rel.
-      const linkNode = $getAncestor(firstNode, $isLinkNode)
-      if (linkNode !== null) {
-        linkNode.setURL(url)
-        if (target !== undefined) {
-          linkNode.setTarget(target)
-        }
-        if (rel !== null) {
-          linkNode.setRel(rel)
-        }
-        if (title !== undefined) {
-          linkNode.setTitle(title)
-        }
-        return
-      }
-    }
-
-    let prevParent: ElementNode | LinkNode | null = null
-    let linkNode: LinkNode | null = null
-
-    nodes.forEach((node) => {
-      const parent = node.getParent()
-
-      if (
-        parent === linkNode ||
-        parent === null ||
-        ($isElementNode(node) && !node.isInline())
-      ) {
-        return
-      }
-
-      if ($isLinkNode(parent)) {
-        linkNode = parent
-        parent.setURL(url)
-        if (target !== undefined) {
-          parent.setTarget(target)
-        }
-        if (rel !== null) {
-          linkNode.setRel(rel)
-        }
-        if (title !== undefined) {
-          linkNode.setTitle(title)
-        }
-        return
-      }
-
-      if (!parent.is(prevParent)) {
-        prevParent = parent
-        linkNode = $createLinkNode(url, { rel, target, title })
-
-        if ($isLinkNode(parent)) {
-          if (node.getPreviousSibling() === null) {
-            parent.insertBefore(linkNode)
-          } else {
-            parent.insertAfter(linkNode)
-          }
-        } else {
-          node.insertBefore(linkNode)
-        }
-      }
-
-      if ($isLinkNode(node)) {
-        if (node.is(linkNode)) {
-          return
-        }
-        if (linkNode !== null) {
-          const children = node.getChildren()
-
-          for (let i = 0; i < children.length; i++) {
-            linkNode.append(children[i])
-          }
-        }
-
-        node.remove()
-        return
-      }
-
-      if (linkNode !== null) {
-        linkNode.append(node)
-      }
-    })
-  }
 }
 
 function $getAncestor<NodeType extends LexicalNode = LexicalNode>(

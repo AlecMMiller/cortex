@@ -11,6 +11,7 @@ import { MarkdownShortcutPlugin } from '@lexical/react/LexicalMarkdownShortcutPl
 import { RichTextPlugin } from '@lexical/react/LexicalRichTextPlugin'
 import { LexicalAutoLinkPlugin } from './plugins/AutoLink'
 import { ExternalLinkPlugin } from './plugins/ExternalLink'
+import { InternalLinkPlugin } from './plugins/InternalLink'
 import { TableOfContentsPlugin } from '@lexical/react/LexicalTableOfContentsPlugin'
 import PageNavigator from './elements/PageNavigator'
 import { OnChangePlugin } from '@lexical/react/LexicalOnChangePlugin'
@@ -70,7 +71,7 @@ export default function Editor(props: EditorProps): JSX.Element {
   }
 
   return (
-    <LexicalComposer initialConfig={initialConfig}>
+    <LexicalComposer initialConfig={initialConfig} key={note.uuid}>
       <ListPlugin />
       <div className="flex flex-col overflow-y-auto flex-1 items-center">
         <h1
@@ -101,6 +102,7 @@ export default function Editor(props: EditorProps): JSX.Element {
           return <PageNavigator tableOfContents={tableOfContentsArray} />
         }}
       </TableOfContentsPlugin>
+      <InternalLinkPlugin />
       <OnChangePlugin
         onChange={(state: EditorState) => {
           onChange(note.uuid, state)

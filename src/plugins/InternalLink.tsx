@@ -7,9 +7,10 @@
  *
  */
 
-import { $isLinkNode } from '@lexical/link'
+import { $isInternalLinkNode } from '@/nodes/InternalLink'
 import { useLexicalComposerContext } from '@lexical/react/LexicalComposerContext'
 import { $findMatchingParent, isHTMLAnchorElement } from '@lexical/utils'
+import { useNavigate, useRouter } from '@tanstack/react-router'
 import {
   $getNearestNodeFromDOMNode,
   $getSelection,
@@ -33,9 +34,7 @@ function findMatchingDOM<T extends Node>(
   return null
 }
 
-import { open } from '@tauri-apps/plugin-shell'
-
-export function ExternalLinkPlugin({
+export function InternalLinkPlugin({
   newTab = true,
   disabled = false,
 }: {
@@ -43,6 +42,9 @@ export function ExternalLinkPlugin({
   disabled?: boolean
 }): null {
   const [editor] = useLexicalComposerContext()
+  const navigation = useNavigate({ from: '/' })
+  console.log(navigation)
+  //console.log(router)
 
   useEffect(() => {
     const onClick = (event: MouseEvent) => {
@@ -62,8 +64,8 @@ export function ExternalLinkPlugin({
         if (clickedNode !== null) {
           const maybeLinkNode = $findMatchingParent(clickedNode, $isElementNode)
           if (!disabled) {
-            if ($isLinkNode(maybeLinkNode)) {
-              url = maybeLinkNode.sanitizeUrl(maybeLinkNode.getURL())
+            if ($isInternalLinkNode(maybeLinkNode)) {
+              url = maybeLinkNode.getURL()
             }
           }
         }
@@ -79,7 +81,8 @@ export function ExternalLinkPlugin({
         event.preventDefault()
         return
       }
-      open(url)
+
+      navigation({ to: url })
       event.preventDefault()
     }
 
