@@ -5,21 +5,22 @@ export default {
   theme: {
     extend: {
       fontFamily: {
-        prose: ['Montserrat', 'sans-serif']
+        prose: ['Montserrat', 'sans-serif'],
+        code: ['SourceCodePro', 'sans-serif'],
       },
       borderRadius: {
         lg: 'var(--radius)',
         md: 'calc(var(--radius) - 2px)',
-        sm: 'calc(var(--radius) - 4px)'
+        sm: 'calc(var(--radius) - 4px)',
       },
-      colors: {}
-    }
+      colors: {},
+    },
   },
   plugins: [
     require('@catppuccin/tailwindcss')({
       prefix: false,
-      defaultFlavour: 'mocha'
+      defaultFlavour: 'mocha',
     }),
-    require('tailwindcss-animate')
-  ]
+    require('tailwindcss-animate'),
+  ],
 }

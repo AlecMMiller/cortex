@@ -42,8 +42,8 @@ function Index(): JSX.Element {
   ))
 
   return (
-    <div className="p-8 flex flex-col">
-      <h1 className="text-text">Recent Notes</h1>
+    <div className="p-8 flex flex-col font-prose">
+      <h1 className="text-text font-semibold">Recent Notes</h1>
       {noteElements}
     </div>
   )
