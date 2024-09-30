@@ -21,7 +21,7 @@
     "@lexical/code": "^0.17.1",
     "@lexical/link": "^0.17.1",
     "@lexical/list": "^0.17.1",
-    "@lexical/markdown": "^0.17.1",
+    "@lexical/markdown": "^0.18.0",
     "@lexical/react": "^0.17.1",
     "@lexical/rich-text": "^0.17.1",
     "@radix-ui/react-popover": "^1.1.1",
