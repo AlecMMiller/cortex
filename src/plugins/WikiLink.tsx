@@ -2,7 +2,7 @@ import { useLexicalComposerContext } from '@lexical/react/LexicalComposerContext
 import {
   LexicalTypeaheadMenuPlugin,
   MenuOption,
-  QueryMatch,
+  MenuTextMatch,
 } from '@lexical/react/LexicalTypeaheadMenuPlugin'
 import { TextNode } from 'lexical'
 import { useState, useMemo, useCallback, ReactPortal } from 'react'
@@ -25,13 +25,13 @@ class LinkTypeaheadOption extends MenuOption {
 }
 
 interface MenuRenderFnProps {
-  target: HTMLElement
-  selectedIndex: number | null
+  readonly target: HTMLElement
+  readonly selectedIndex: number | null
 }
 
 interface LinkTypeaheadMenuItemProps {
-  option: LinkTypeaheadOption
-  isSelected: boolean
+  readonly option: LinkTypeaheadOption
+  readonly isSelected: boolean
 }
 
 function LinkTypeaheadMenuItem(props: LinkTypeaheadMenuItemProps): JSX.Element {
@@ -60,7 +60,7 @@ const linkRegex = new RegExp(
     ')$',
 )
 
-function checkForLinks(text: string): QueryMatch | null {
+function checkForLinks(text: string): MenuTextMatch | null {
   const match = linkRegex.exec(text)
 
   if (match === null) return null
