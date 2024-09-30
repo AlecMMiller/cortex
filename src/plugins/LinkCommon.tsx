@@ -24,7 +24,7 @@ export function makeLinkPlugin<T extends LexicalNode>(
   getUrlFunction: (node: T) => string,
   action: (url: string) => void,
 ) {
-  const genericPlugin = ({
+  const GenericPlugin = ({
     newTab = true,
     disabled = false,
   }: {
@@ -96,5 +96,5 @@ export function makeLinkPlugin<T extends LexicalNode>(
     return null
   }
 
-  return genericPlugin
+  return GenericPlugin
 }
