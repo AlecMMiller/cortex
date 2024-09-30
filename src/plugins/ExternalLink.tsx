@@ -9,7 +9,7 @@
 
 import { $isLinkNode } from '@lexical/link'
 import { useLexicalComposerContext } from '@lexical/react/LexicalComposerContext'
-import { $findMatchingParent, isHTMLAnchorElement } from '@lexical/utils'
+import { $findMatchingParent } from '@lexical/utils'
 import {
   $getNearestNodeFromDOMNode,
   $getSelection,
@@ -18,20 +18,6 @@ import {
   getNearestEditorFromDOMNode,
 } from 'lexical'
 import { useEffect } from 'react'
-
-function findMatchingDOM<T extends Node>(
-  startNode: Node,
-  predicate: (node: Node) => node is T,
-): T | null {
-  let node: Node | null = startNode
-  while (node != null) {
-    if (predicate(node)) {
-      return node
-    }
-    node = node.parentNode
-  }
-  return null
-}
 
 import { open } from '@tauri-apps/plugin-shell'
 

@@ -9,8 +9,8 @@
 
 import { $isInternalLinkNode } from '@/nodes/InternalLink'
 import { useLexicalComposerContext } from '@lexical/react/LexicalComposerContext'
-import { $findMatchingParent, isHTMLAnchorElement } from '@lexical/utils'
-import { useNavigate, useRouter } from '@tanstack/react-router'
+import { $findMatchingParent } from '@lexical/utils'
+import { useNavigate } from '@tanstack/react-router'
 import {
   $getNearestNodeFromDOMNode,
   $getSelection,
@@ -20,20 +20,6 @@ import {
 } from 'lexical'
 import { useEffect } from 'react'
 
-function findMatchingDOM<T extends Node>(
-  startNode: Node,
-  predicate: (node: Node) => node is T,
-): T | null {
-  let node: Node | null = startNode
-  while (node != null) {
-    if (predicate(node)) {
-      return node
-    }
-    node = node.parentNode
-  }
-  return null
-}
-
 export function InternalLinkPlugin({
   newTab = true,
   disabled = false,
@@ -42,9 +28,7 @@ export function InternalLinkPlugin({
   disabled?: boolean
 }): null {
   const [editor] = useLexicalComposerContext()
-  const navigation = useNavigate({ from: '/' })
-  console.log(navigation)
-  //console.log(router)
+  const navigation = useNavigate()
 
   useEffect(() => {
     const onClick = (event: MouseEvent) => {
