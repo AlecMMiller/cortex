@@ -24,11 +24,11 @@ import {
   $isRangeSelection,
   ElementNode,
   Spread,
+  TextNode,
 } from 'lexical'
 
 export type InternalLinkAttributes = {
   uuid: string
-  title: string
 }
 
 export type SerializedInternalLinkNode = Spread<
@@ -42,28 +42,24 @@ type InternalLinkHTMLElementType = HTMLAnchorElement | HTMLSpanElement
 export class InternalLinkNode extends ElementNode {
   /** @internal */
   __uuid: string
-  /** @internal */
-  __title: string
 
   static getType(): string {
     return 'internal-link'
   }
 
   static clone(node: InternalLinkNode): InternalLinkNode {
-    return new InternalLinkNode(node.__uuid, node.__title, node.__key)
+    return new InternalLinkNode(node.__uuid, node.__key)
   }
 
-  constructor(uuid: string, title: string, key?: NodeKey) {
+  constructor(uuid: string, key?: NodeKey) {
     super(key)
-    this.__title = title
     this.__uuid = uuid
   }
 
   createDOM(config: EditorConfig): InternalLinkHTMLElementType {
     const element = document.createElement('a')
     element.href = this.getURL()
-    element.title = this.__title
-    element.textContent = this.__title
+    //element.textContent = this.__title
     element.target = '_self'
     addClassNamesToElement(element, config.theme['internal-link'])
     return element
@@ -77,14 +73,9 @@ export class InternalLinkNode extends ElementNode {
     if (anchor instanceof HTMLAnchorElement) {
       const url = this.getURL()
       const uuid = this.__uuid
-      const title = this.__title
 
       if (uuid !== prevNode.__uuid) {
         anchor.href = url
-      }
-
-      if (title !== prevNode.__title) {
-        anchor.title = title
       }
     }
     return false
@@ -102,10 +93,7 @@ export class InternalLinkNode extends ElementNode {
   static importJSON(
     serializedNode: SerializedInternalLinkNode,
   ): InternalLinkNode {
-    const node = $createInternalLinkNode(
-      serializedNode.uuid,
-      serializedNode.title,
-    )
+    const node = $createInternalLinkNode_(serializedNode.uuid)
     node.setFormat(serializedNode.format)
     node.setIndent(serializedNode.indent)
     node.setDirection(serializedNode.direction)
@@ -116,7 +104,6 @@ export class InternalLinkNode extends ElementNode {
     return {
       ...super.exportJSON(),
       uuid: this.getUuid(),
-      title: this.getTitle(),
       type: 'internal-link',
       version: 1,
     }
@@ -136,20 +123,11 @@ export class InternalLinkNode extends ElementNode {
     writeable.__uuid = uuid
   }
 
-  getTitle(): string {
-    return this.getLatest().__title
-  }
-
-  setTitle(title: string): void {
-    const writable = this.getWritable()
-    writable.__title = title
-  }
-
   insertNewAfter(
     _: RangeSelection,
     restoreSelection = true,
   ): null | ElementNode {
-    const linkNode = $createInternalLinkNode(this.__uuid, this.__title)
+    const linkNode = $createInternalLinkNode_(this.__uuid)
     this.insertAfter(linkNode, restoreSelection)
     return linkNode
   }
@@ -195,15 +173,18 @@ function $convertAnchorElement(domNode: Node): DOMConversionOutput {
   if (isHTMLAnchorElement(domNode)) {
     const content = domNode.textContent
     if ((content !== null && content !== '') || domNode.children.length > 0) {
-      const title = domNode.getAttribute('title')
       const href = domNode.getAttribute('href')
       const uuid = href?.split('/')[1]
-      if (title !== null && uuid !== undefined) {
-        node = $createInternalLinkNode(uuid, title)
+      if (uuid !== undefined) {
+        node = $createInternalLinkNode_(uuid)
       }
     }
   }
   return { node }
+}
+
+function $createInternalLinkNode_(uuid: string): InternalLinkNode {
+  return $applyNodeReplacement(new InternalLinkNode(uuid))
 }
 
 /**
@@ -216,7 +197,10 @@ export function $createInternalLinkNode(
   uuid: string,
   title: string,
 ): InternalLinkNode {
-  return $applyNodeReplacement(new InternalLinkNode(uuid, title))
+  const child = new TextNode(title)
+  const node = new InternalLinkNode(uuid)
+  node.append(child)
+  return $applyNodeReplacement(node)
 }
 
 /**
