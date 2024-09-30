@@ -15,13 +15,72 @@ import {
   $isElementNode,
   $isRangeSelection,
   getNearestEditorFromDOMNode,
+  LexicalEditor,
   LexicalNode,
 } from 'lexical'
 import { useEffect } from 'react'
 
+type CheckNodeFunction<T extends LexicalNode> = (
+  node: LexicalNode | null,
+) => node is T
+type GetUrlFunction<T> = (node: T) => string
+
+function getUrl<T extends LexicalNode>(
+  disabled: boolean,
+  event: MouseEvent,
+  checker: CheckNodeFunction<T>,
+  extractor: GetUrlFunction<T>,
+): string | null {
+  const target = event.target
+  if (!(target instanceof Node)) {
+    return null
+  }
+  const nearestEditor = getNearestEditorFromDOMNode(target)
+
+  if (nearestEditor === null) {
+    return null
+  }
+
+  let url = null
+  nearestEditor.update(() => {
+    const clickedNode = $getNearestNodeFromDOMNode(target)
+    if (clickedNode !== null) {
+      const maybeLinkNode = $findMatchingParent(clickedNode, $isElementNode)
+      if (!disabled) {
+        if (checker(maybeLinkNode)) {
+          url = extractor(maybeLinkNode)
+        }
+      }
+    }
+  })
+
+  return url === '' ? null : url
+}
+
+function registerOnClick(
+  editor: LexicalEditor,
+  onClick: (event: MouseEvent) => void,
+) {
+  const onMouseUp = (event: MouseEvent) => {
+    if (event.button === 1) {
+      onClick(event)
+    }
+  }
+  return editor.registerRootListener((rootElement, prevRootElement) => {
+    if (prevRootElement !== null) {
+      prevRootElement.removeEventListener('click', onClick)
+      prevRootElement.removeEventListener('mouseup', onMouseUp)
+    }
+    if (rootElement !== null) {
+      rootElement.addEventListener('click', onClick)
+      rootElement.addEventListener('mouseup', onMouseUp)
+    }
+  })
+}
+
 export function makeLinkPlugin<T extends LexicalNode>(
-  checkerFunction: (node: LexicalNode | null) => node is T,
-  getUrlFunction: (node: T) => string,
+  checker: CheckNodeFunction<T>,
+  extractor: GetUrlFunction<T>,
   action: (url: string) => void,
 ) {
   const GenericPlugin = ({
@@ -35,35 +94,9 @@ export function makeLinkPlugin<T extends LexicalNode>(
 
     useEffect(() => {
       const onClick = (event: MouseEvent) => {
-        const target = event.target
-        if (!(target instanceof Node)) {
-          return
-        }
-        const nearestEditor = getNearestEditorFromDOMNode(target)
+        const url = getUrl(disabled, event, checker, extractor)
 
-        if (nearestEditor === null) {
-          return
-        }
-
-        let url = null
-        nearestEditor.update(() => {
-          const clickedNode = $getNearestNodeFromDOMNode(target)
-          if (clickedNode !== null) {
-            const maybeLinkNode = $findMatchingParent(
-              clickedNode,
-              $isElementNode,
-            )
-            if (!disabled) {
-              if (checkerFunction(maybeLinkNode)) {
-                url = getUrlFunction(maybeLinkNode)
-              }
-            }
-          }
-        })
-
-        if (url === null || url === '') {
-          return
-        }
+        if (url === null) return
 
         // Allow user to select link text without follwing url
         const selection = editor.getEditorState().read($getSelection)
@@ -75,22 +108,7 @@ export function makeLinkPlugin<T extends LexicalNode>(
         event.preventDefault()
       }
 
-      const onMouseUp = (event: MouseEvent) => {
-        if (event.button === 1) {
-          onClick(event)
-        }
-      }
-
-      return editor.registerRootListener((rootElement, prevRootElement) => {
-        if (prevRootElement !== null) {
-          prevRootElement.removeEventListener('click', onClick)
-          prevRootElement.removeEventListener('mouseup', onMouseUp)
-        }
-        if (rootElement !== null) {
-          rootElement.addEventListener('click', onClick)
-          rootElement.addEventListener('mouseup', onMouseUp)
-        }
-      })
+      return registerOnClick(editor, onClick)
     }, [editor, newTab, disabled])
 
     return null
