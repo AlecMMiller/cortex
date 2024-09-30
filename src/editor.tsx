@@ -9,8 +9,9 @@ import { HistoryPlugin } from '@lexical/react/LexicalHistoryPlugin'
 import { ListPlugin } from '@lexical/react/LexicalListPlugin'
 import { MarkdownShortcutPlugin } from '@lexical/react/LexicalMarkdownShortcutPlugin'
 import { RichTextPlugin } from '@lexical/react/LexicalRichTextPlugin'
-import { LexicalAutoLinkPlugin } from './utils/AutoLink'
-import { ExternalLinkPlugin } from './utils/ExternalLink'
+import { LexicalAutoLinkPlugin } from './plugins/AutoLink'
+import { ExternalLinkPlugin } from './plugins/ExternalLink'
+import { InternalLinkPlugin } from './plugins/InternalLink'
 import { TableOfContentsPlugin } from '@lexical/react/LexicalTableOfContentsPlugin'
 import PageNavigator from './elements/PageNavigator'
 import { OnChangePlugin } from '@lexical/react/LexicalOnChangePlugin'
@@ -20,15 +21,17 @@ import { HorizontalRuleNode } from '@lexical/react/LexicalHorizontalRuleNode'
 import { HeadingNode, QuoteNode } from '@lexical/rich-text'
 import { CodeNode } from '@lexical/code'
 import { AutoLinkNode, LinkNode } from '@lexical/link'
-import { EditorState } from 'lexical'
+import { EditorState, TextNode } from 'lexical'
 import { invoke } from '@tauri-apps/api/core'
 import { NoteData } from './types'
 import { renameNote } from './commands/note'
+import WikiLinkPlugin from './plugins/WikiLink'
+import { InternalLinkNode } from './nodes/InternalLink'
 
 function onChange(uuid: string, state: EditorState): void {
   const json = state.toJSON()
   const serialized = JSON.stringify(json)
-  invoke('editor_change_state', { uuid, body: serialized })
+  invoke('update_note', { uuid, body: serialized })
 }
 
 function onTitleChange(uuid: string, title: string): void {
@@ -54,6 +57,7 @@ export default function Editor(props: EditorProps): JSX.Element {
     theme: EDITOR_THEME,
     onError,
     nodes: [
+      TextNode,
       ListNode,
       ListItemNode,
       HorizontalRuleNode,
@@ -62,11 +66,12 @@ export default function Editor(props: EditorProps): JSX.Element {
       CodeNode,
       LinkNode,
       AutoLinkNode,
+      InternalLinkNode,
     ],
   }
 
   return (
-    <LexicalComposer initialConfig={initialConfig}>
+    <LexicalComposer initialConfig={initialConfig} key={note.uuid}>
       <ListPlugin />
       <div className="flex flex-col overflow-y-auto flex-1 items-center">
         <h1
@@ -90,12 +95,14 @@ export default function Editor(props: EditorProps): JSX.Element {
       <HistoryPlugin />
       <AutoFocusPlugin />
       <LexicalAutoLinkPlugin />
+      <WikiLinkPlugin />
       <ExternalLinkPlugin />
       <TableOfContentsPlugin>
         {(tableOfContentsArray) => {
           return <PageNavigator tableOfContents={tableOfContentsArray} />
         }}
       </TableOfContentsPlugin>
+      <InternalLinkPlugin />
       <OnChangePlugin
         onChange={(state: EditorState) => {
           onChange(note.uuid, state)

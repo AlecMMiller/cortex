@@ -1,4 +1,5 @@
 pub mod macros {
+
     macro_rules! create_id {
         (
             $id_name:ident
@@ -11,6 +12,25 @@ pub mod macros {
                 fn from_sql(bytes: <Sqlite as Backend>::RawValue<'_>) -> deserialize::Result<Self> {
                     Ok($id_name {
                         0: Vec::from_sql(bytes)?,
+                    })
+                }
+            }
+
+            impl std::fmt::Display for $id_name {
+                fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> Result<(), std::fmt::Error> {
+                    let uuid = uuid::Uuid::from_slice(&self.0).unwrap();
+                    let s = uuid.to_string();
+                    write!(f, "{s}")
+                }
+            }
+
+            impl TryFrom<&str> for $id_name {
+                type Error = &'static str;
+
+                fn try_from(s: &str) -> Result<$id_name, Self::Error> {
+                    let uuid = uuid::Uuid::parse_str(&s).unwrap();
+                    Ok($id_name {
+                        0: uuid.as_bytes().to_vec(),
                     })
                 }
             }
