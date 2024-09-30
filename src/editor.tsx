@@ -78,6 +78,7 @@ export default function Editor(props: EditorProps): JSX.Element {
           onInput={(e) => {
             onTitleChange(note.uuid, e.currentTarget.innerText)
           }}
+          suppressContentEditableWarning
           contentEditable
           className="text-text font-semibold font-prose text-4xl mt-12 text-center"
         >
