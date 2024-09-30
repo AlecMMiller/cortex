@@ -92,6 +92,7 @@ export default function WikiLinkPlugin(): JSX.Element {
   const { data, status } = useSearchNotesByTitle(
     {
       title: actualQueryString,
+      maxResults: SUGGESTION_LIST_LENGTH_LIMIT,
     },
     {},
   )

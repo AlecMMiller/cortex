@@ -30,6 +30,7 @@ export const {
 
 type TitleSearch = {
   title: string
+  maxResults: number
 }
 
 export const {
