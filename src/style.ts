@@ -19,7 +19,7 @@ export const EDITOR_THEME = {
     h5: 'text-subtext1 font-prose font-semibold text-lg lg:text-xl py-4',
     h6: 'text-subtext1 font-prose font-semibold text-lg lg:text-xl py-4',
   },
-  code: 'text-lg lg:text-xl font-code text-text bg-crust border-1 block rounded-md p-2',
+  code: 'text-[1rem] font-code text-text bg-crust border-1 block rounded-md p-2',
   list: {
     nested: {
       listitem: '',
