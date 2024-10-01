@@ -51,7 +51,6 @@ pub fn get_notes_by_title<'a>(
     title: &str,
     max_results: usize,
 ) -> Result<Vec<NoteTitle>, Error> {
-    println!("{max_results}");
     Ok(search_by_title(title, max_results, state.searcher.clone())?)
 }
 
@@ -80,17 +79,6 @@ pub fn rename_note(
 }
 
 #[tauri::command]
-pub fn create_note(state: State<'_, PoolWrapper>, title: &str) -> Result<String, ()> {
-    let new_note = notes::create_note(state.pool.clone(), title);
-    println!("Creating note {title}");
-    match new_note {
-        Ok(note) => {
-            let json = serde_json::to_string(&note);
-            match json {
-                Ok(json) => Ok(json),
-                Err(_) => Err(()),
-            }
-        }
-        Err(_) => Err(()),
-    }
+pub fn create_note(state: State<'_, PoolWrapper>, title: &str) -> Result<Note, Error> {
+    Ok(notes::create_note(state.pool.clone(), title)?)
 }
