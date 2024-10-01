@@ -19,7 +19,7 @@ const noteCreateSchema = z.object({
 })
 
 interface CreateNoteDialogProps {
-  setOpen: (open: boolean) => void
+  readonly setOpen: (open: boolean) => void
 }
 
 function CreateNoteDialog(props: CreateNoteDialogProps) {
