@@ -17,7 +17,7 @@ const resources = {
       'Recent Notes': 'Recent Notes',
     },
   },
-  jp: {
+  ja: {
     translation: {
       Home: 'ホーム',
       Search: '検索',
