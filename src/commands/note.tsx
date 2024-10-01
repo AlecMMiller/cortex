@@ -43,9 +43,9 @@ export const {
   },
 })
 
-export async function createNote(name: string): Promise<string> {
+export async function createNote(name: string): Promise<NoteData> {
   const result = invoke('create_note', { title: name })
-  return await (result as Promise<string>)
+  return (await result) as NoteData
 }
 
 export async function renameNote(uuid: string, title: string): Promise<void> {

@@ -2,6 +2,7 @@ import { createLazyFileRoute, Link } from '@tanstack/react-router'
 import { buildPrefetchNote, useAllNotes } from '@/commands/note'
 import { NoteTitle } from '@/types'
 import { useQueryClient } from '@tanstack/react-query'
+import { useTranslation } from 'react-i18next'
 
 export const Route = createLazyFileRoute('/')({
   component: Index,
@@ -30,8 +31,7 @@ function RecentNote(props: RecentNoteProps): JSX.Element {
 function Index(): JSX.Element {
   const { status, data } = useAllNotes({}, {})
 
-  console.log(status)
-  console.log(data)
+  const { t } = useTranslation()
 
   if (status === 'pending' || status === 'error') {
     return <div>Loading</div>
@@ -43,7 +43,7 @@ function Index(): JSX.Element {
 
   return (
     <div className="p-8 flex flex-col font-prose">
-      <h1 className="text-text font-semibold">Recent Notes</h1>
+      <h1 className="text-text font-semibold">{t('Recent Notes')}</h1>
       {noteElements}
     </div>
   )
