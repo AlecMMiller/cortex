@@ -15,7 +15,7 @@ const resources = {
   },
   jp: {
     translation: {
-      Home: '宅',
+      Home: 'ホーム',
       Search: '検索',
       'New Note': '新しいメモ',
       Settings: '設定',
