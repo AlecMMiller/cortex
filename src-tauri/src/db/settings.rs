@@ -39,6 +39,11 @@ pub fn get_or_set(pool: SqlitePool, setting_key: &str, value: &str) -> Result<Se
                 value: value.to_string(),
             };
 
+            if value == "" {
+                println!("Empty value for setter, ignoring");
+                return Ok(setting);
+            }
+
             println!("No existing value found, setting to {value}");
 
             diesel::insert_into(table).values(&setting).execute(conn)?;

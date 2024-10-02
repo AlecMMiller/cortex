@@ -1,17 +1,15 @@
-import { invoke } from '@tauri-apps/api/core'
-
-interface Setting {
-  setting_key: string
+import { buildQueryMethods } from './common'
+type Setting = {
+  key: string
   value: string
 }
 
-export async function getOrSetSetting(
-  key: string,
-  value: string,
-): Promise<string> {
-  const result = (await invoke('get_setting_or_set', {
-    key,
-    value,
-  })) as Setting
-  return result.value
-}
+export const { useType: useGetSettingOrSet } = buildQueryMethods<
+  Setting,
+  Setting
+>({
+  command: 'get_setting_or_set',
+  makeKey: (data: Setting) => {
+    return ['setting', data.key, data.value]
+  },
+})
