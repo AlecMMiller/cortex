@@ -11,13 +11,13 @@ import { createFileRoute } from '@tanstack/react-router'
 import { useEffect, useState } from 'react'
 
 interface OptionProps {
-  value: string
-  display: string
+  readonly value: string
+  readonly display: string
 }
 
 interface OptionSelectProps {
-  settingKey: string
-  options: OptionProps[]
+  readonly settingKey: string
+  readonly options: OptionProps[]
 }
 
 function OptionSelect(props: OptionSelectProps) {

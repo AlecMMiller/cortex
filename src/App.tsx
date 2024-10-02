@@ -19,7 +19,7 @@ declare module '@tanstack/react-router' {
 }
 
 interface LanguageProviderProps {
-  children: React.ReactNode
+  readonly children: React.ReactNode
 }
 
 function LanguageProvider(props: LanguageProviderProps): JSX.Element {
