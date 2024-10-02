@@ -4,6 +4,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
 import { useEffect } from 'react'
 import { locale } from '@tauri-apps/plugin-os'
+import { getOrSetSetting } from './commands/settings'
 
 const router = createRouter({
   routeTree,
@@ -22,10 +23,15 @@ function App(): JSX.Element {
 
   useEffect(() => {
     const doSetLanguage = async () => {
-      const userLocale = await locale()
-      if (userLocale === null) return
-      console.log(`Using detected language ${userLocale}`)
-      i18n.changeLanguage(userLocale)
+      let userLocale = await locale()
+      if (userLocale === null) userLocale = 'en-US'
+      console.log(`Detected language ${userLocale}`)
+
+      const stored = await getOrSetSetting('language', userLocale)
+
+      console.log(`Using language ${stored}`)
+
+      i18n.changeLanguage(stored)
     }
     doSetLanguage()
   }, [])

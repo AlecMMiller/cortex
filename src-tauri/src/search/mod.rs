@@ -1,5 +1,5 @@
-use crate::models::Note;
-use crate::notes::NoteTitle;
+use crate::db::notes::NoteTitle;
+use crate::models::notes::Note;
 use std::fs::create_dir;
 use std::path::PathBuf;
 use std::sync::{Arc, Mutex};

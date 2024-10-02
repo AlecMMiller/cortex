@@ -1,6 +1,6 @@
 use crate::search::{write_note as update_note_in_index, TextIndexWriter};
 use crate::{
-    models::{AbsoluteTimestamp, Note, NoteId},
+    models::notes::{AbsoluteTimestamp, Note, NoteId},
     schema::notes::{body, dsl::notes, title, updated_at},
     utils::get_connection,
     SqlitePool,

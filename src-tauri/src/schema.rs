@@ -9,3 +9,10 @@ diesel::table! {
         updated_at -> BigInt,
     }
 }
+
+diesel::table! {
+  settings (key) {
+    key -> Text,
+    value -> Text
+  }
+}
