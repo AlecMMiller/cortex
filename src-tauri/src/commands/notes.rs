@@ -1,8 +1,9 @@
 use crate::commands::Error;
-use crate::models::{Note, NoteId};
-use crate::notes::NoteTitle;
+use crate::db;
+use crate::db::notes::NoteTitle;
+use crate::models::notes::{Note, NoteId};
 use crate::search::search_by_title;
-use crate::{notes, WriterWrapper};
+use crate::WriterWrapper;
 use crate::{PoolWrapper, SearcherWrapper};
 use tauri::State;
 
@@ -13,7 +14,7 @@ pub fn update_note(
     uuid: NoteId,
     body: &str,
 ) -> Result<(), ()> {
-    let result = notes::update_body(
+    let result = db::notes::update_body(
         pool_wrapper.pool.clone(),
         index_wrapper.writer.clone(),
         uuid,
@@ -27,7 +28,7 @@ pub fn update_note(
 
 #[tauri::command]
 pub fn get_last_updated_note<'a>(state: State<'_, PoolWrapper>) -> Result<String, ()> {
-    let last_updated = notes::get_last_updated_or_create(state.pool.clone());
+    let last_updated = db::notes::get_last_updated_or_create(state.pool.clone());
     match last_updated {
         Ok(note) => {
             let json = serde_json::to_string(&note);
@@ -42,7 +43,7 @@ pub fn get_last_updated_note<'a>(state: State<'_, PoolWrapper>) -> Result<String
 
 #[tauri::command]
 pub fn get_all_notes<'a>(state: State<'_, PoolWrapper>) -> Result<Vec<NoteTitle>, Error> {
-    Ok(notes::get_all_titles(state.pool.clone())?)
+    Ok(db::notes::get_all_titles(state.pool.clone())?)
 }
 
 #[tauri::command]
@@ -56,7 +57,7 @@ pub fn get_notes_by_title<'a>(
 
 #[tauri::command]
 pub fn get_note<'a>(state: State<'_, PoolWrapper>, uuid: NoteId) -> Result<Note, Error> {
-    Ok(notes::get_by_uuid(state.pool.clone(), &uuid)?)
+    Ok(db::notes::get_by_uuid(state.pool.clone(), &uuid)?)
 }
 
 #[tauri::command]
@@ -66,7 +67,7 @@ pub fn rename_note(
     uuid: NoteId,
     title: &str,
 ) -> Result<(), ()> {
-    let result = notes::rename_note(
+    let result = db::notes::rename_note(
         pool_wrapper.pool.clone(),
         writer_wrapper.writer.clone(),
         uuid,
@@ -80,5 +81,5 @@ pub fn rename_note(
 
 #[tauri::command]
 pub fn create_note(state: State<'_, PoolWrapper>, title: &str) -> Result<Note, Error> {
-    Ok(notes::create_note(state.pool.clone(), title)?)
+    Ok(db::notes::create_note(state.pool.clone(), title)?)
 }

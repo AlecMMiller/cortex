@@ -1,13 +1,12 @@
 use tantivy::TantivyError;
 
 pub mod notes;
+pub mod settings;
 
 #[derive(Debug, thiserror::Error)]
 pub enum Error {
     #[error("Failed to read file: {0}")]
     Diesel(#[from] diesel::result::Error),
-    #[error("Not found")]
-    NotFoundError,
     #[error("Tantivy stuff")]
     Tantivy(#[from] TantivyError),
 }

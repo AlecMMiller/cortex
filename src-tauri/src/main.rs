@@ -1,9 +1,5 @@
 // Prevents additional console window on Windows in release, DO NOT REMOVE!!
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
-use commands::notes::{
-    create_note, get_all_notes, get_last_updated_note, get_note, get_notes_by_title, rename_note,
-    update_note,
-};
 use diesel::{
     prelude::*,
     r2d2::{ConnectionManager, Pool},
@@ -15,13 +11,13 @@ use search::{TextIndexSearcher, TextIndexWriter};
 use std::fs::create_dir_all;
 use std::sync::Arc;
 use tauri::Manager;
-mod models;
 mod schema;
 
 mod commands;
+mod db;
 mod lexical;
 mod macros;
-mod notes;
+mod models;
 mod search;
 mod utils;
 
@@ -83,7 +79,7 @@ fn main() {
 
             if needs_reindex {
                 println!("Initializing tantivy index");
-                let all_notes = notes::get_all(pool.clone()).expect("should work");
+                let all_notes = db::notes::get_all(pool.clone()).expect("should work");
                 for note in all_notes {
                     let _ = search::write_note(note, tantivy_writer.clone());
                 }
@@ -92,13 +88,16 @@ fn main() {
             Ok(())
         })
         .invoke_handler(tauri::generate_handler![
-            get_note,
-            get_all_notes,
-            get_last_updated_note,
-            update_note,
-            get_notes_by_title,
-            create_note,
-            rename_note
+            commands::notes::get_note,
+            commands::notes::get_all_notes,
+            commands::notes::get_last_updated_note,
+            commands::notes::update_note,
+            commands::notes::get_notes_by_title,
+            commands::notes::create_note,
+            commands::notes::rename_note,
+            commands::settings::get_setting,
+            commands::settings::get_setting_or_set,
+            commands::settings::update_setting,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
