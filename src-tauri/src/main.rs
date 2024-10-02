@@ -97,6 +97,7 @@ fn main() {
             commands::notes::rename_note,
             commands::settings::get_setting,
             commands::settings::get_setting_or_set,
+            commands::settings::update_setting,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

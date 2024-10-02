@@ -13,6 +13,7 @@ import { createFileRoute } from '@tanstack/react-router'
 // Import Routes
 
 import { Route as rootRoute } from './routes/__root'
+import { Route as SettingsImport } from './routes/settings'
 import { Route as NotesNoteIdImport } from './routes/notes/$noteId'
 
 // Create Virtual Routes
@@ -20,6 +21,11 @@ import { Route as NotesNoteIdImport } from './routes/notes/$noteId'
 const IndexLazyImport = createFileRoute('/')()
 
 // Create/Update Routes
+
+const SettingsRoute = SettingsImport.update({
+  path: '/settings',
+  getParentRoute: () => rootRoute,
+} as any)
 
 const IndexLazyRoute = IndexLazyImport.update({
   path: '/',
@@ -42,6 +48,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexLazyImport
       parentRoute: typeof rootRoute
     }
+    '/settings': {
+      id: '/settings'
+      path: '/settings'
+      fullPath: '/settings'
+      preLoaderRoute: typeof SettingsImport
+      parentRoute: typeof rootRoute
+    }
     '/notes/$noteId': {
       id: '/notes/$noteId'
       path: '/notes/$noteId'
@@ -56,36 +69,41 @@ declare module '@tanstack/react-router' {
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexLazyRoute
+  '/settings': typeof SettingsRoute
   '/notes/$noteId': typeof NotesNoteIdRoute
 }
 
 export interface FileRoutesByTo {
   '/': typeof IndexLazyRoute
+  '/settings': typeof SettingsRoute
   '/notes/$noteId': typeof NotesNoteIdRoute
 }
 
 export interface FileRoutesById {
   __root__: typeof rootRoute
   '/': typeof IndexLazyRoute
+  '/settings': typeof SettingsRoute
   '/notes/$noteId': typeof NotesNoteIdRoute
 }
 
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/notes/$noteId'
+  fullPaths: '/' | '/settings' | '/notes/$noteId'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/notes/$noteId'
-  id: '__root__' | '/' | '/notes/$noteId'
+  to: '/' | '/settings' | '/notes/$noteId'
+  id: '__root__' | '/' | '/settings' | '/notes/$noteId'
   fileRoutesById: FileRoutesById
 }
 
 export interface RootRouteChildren {
   IndexLazyRoute: typeof IndexLazyRoute
+  SettingsRoute: typeof SettingsRoute
   NotesNoteIdRoute: typeof NotesNoteIdRoute
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexLazyRoute: IndexLazyRoute,
+  SettingsRoute: SettingsRoute,
   NotesNoteIdRoute: NotesNoteIdRoute,
 }
 
@@ -102,11 +120,15 @@ export const routeTree = rootRoute
       "filePath": "__root.tsx",
       "children": [
         "/",
+        "/settings",
         "/notes/$noteId"
       ]
     },
     "/": {
       "filePath": "index.lazy.tsx"
+    },
+    "/settings": {
+      "filePath": "settings.tsx"
     },
     "/notes/$noteId": {
       "filePath": "notes/$noteId.tsx"

@@ -86,7 +86,7 @@ export function Sidebar(): JSX.Element {
         <CreateNoteDialog setOpen={setOpen} />
       </Dialog>
       <div className="grow" />
-      <NavButton icon={Settings} tooltip="Settings" />
+      <NavButton icon={Settings} tooltip="Settings" to="/settings" />
     </div>
   )
 }

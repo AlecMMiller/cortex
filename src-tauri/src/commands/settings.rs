@@ -16,3 +16,14 @@ pub fn get_setting_or_set<'a>(
 ) -> Result<Setting, Error> {
     Ok(db::settings::get_or_set(state.pool.clone(), key, value)?)
 }
+
+#[tauri::command]
+pub fn update_setting<'a>(
+    state: State<'_, PoolWrapper>,
+    key: &str,
+    value: &str,
+) -> Result<(), Error> {
+    println!("Set setting {key} to {value}");
+    db::settings::update(state.pool.clone(), key, value)?;
+    Ok(())
+}
