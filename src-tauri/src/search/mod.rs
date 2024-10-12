@@ -7,7 +7,7 @@ use std::sync::{Arc, Mutex};
 use std::usize;
 use tantivy::collector::TopDocs;
 use tantivy::query::{QueryParser, RegexQuery};
-use tantivy::{schema::*, Index, IndexReader, IndexWriter, ReloadPolicy};
+use tantivy::{schema::*, Index, IndexReader, IndexSettings, IndexWriter, ReloadPolicy};
 
 pub struct TextIndexSearcher {
     pub schema: Schema,
@@ -41,14 +41,28 @@ pub fn initialize(
 
     let mut schema_builder = Schema::builder();
 
-    schema_builder.add_text_field(TITLE, TEXT | STORED);
-    schema_builder.add_text_field(CONTENT, TEXT);
+    let text_options = TextOptions::default()
+        .set_indexing_options(
+            TextFieldIndexing::default()
+                .set_tokenizer("en_stem")
+                .set_index_option(IndexRecordOption::Basic),
+        )
+        .set_stored();
+
+    schema_builder.add_text_field(TITLE, text_options.clone());
+    schema_builder.add_text_field(CONTENT, text_options);
     schema_builder.add_text_field(ID, STRING | STORED);
 
     let schema = schema_builder.build();
     let directory = tantivy::directory::MmapDirectory::open(path)?;
 
-    let index = Index::open_or_create(directory, schema.clone())?;
+    let index = match Index::open_or_create(directory.clone(), schema.clone()) {
+        Ok(index) => index,
+        Err(_err) => {
+            needs_reindex = true;
+            Index::create(directory, schema.clone(), IndexSettings::default())?
+        }
+    };
 
     let writer = index
         .writer(50_000_000)
