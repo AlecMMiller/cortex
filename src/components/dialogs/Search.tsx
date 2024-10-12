@@ -3,35 +3,42 @@ import { DialogContent } from '../ui/dialog'
 import { DialogFunctionProps } from '../ui/nav-button'
 import { Search } from 'lucide-react'
 import { useEffect, useState } from 'react'
-import { useSearchNotesByContent } from '@/commands/note'
-import { NoteTitle } from '@/types'
+import { TitleWithContext, useSearchNotesByContent } from '@/commands/note'
 import { NoteLink } from '../ui/note-link'
 
 interface SearchResultProps {
-  readonly note: NoteTitle
+  readonly note: TitleWithContext
   readonly setOpen: (open: boolean) => void
 }
 
 function SearchResult(props: SearchResultProps): JSX.Element {
   return (
-    <NoteLink
-      onClick={() => {
-        props.setOpen(false)
-      }}
-      note={props.note}
-    />
+    <div className="flex flex-col gap-1">
+      <NoteLink
+        className="text-xl"
+        onClick={() => {
+          props.setOpen(false)
+        }}
+        note={props.note.title}
+      />
+      <div
+        className="text-sm"
+        dangerouslySetInnerHTML={{ __html: props.note.context }}
+      />
+    </div>
   )
 }
 
 export function SearchDialog(props: DialogFunctionProps) {
   const [queryPhrase, setQueryPhrase] = useState('')
-  const [cachedResults, setCachedResults] = useState<NoteTitle[]>([])
+  const [cachedResults, setCachedResults] = useState<TitleWithContext[]>([])
   const { t } = useTranslation()
 
   const { data } = useSearchNotesByContent(
     {
       maxResults: 10,
       content: queryPhrase,
+      snippetSize: 40,
     },
     {},
   )
@@ -41,7 +48,11 @@ export function SearchDialog(props: DialogFunctionProps) {
   }, [data])
 
   const results = cachedResults.map((result) => (
-    <SearchResult setOpen={props.setOpen} key={result.uuid} note={result} />
+    <SearchResult
+      setOpen={props.setOpen}
+      key={result.title.uuid}
+      note={result}
+    />
   ))
 
   return (

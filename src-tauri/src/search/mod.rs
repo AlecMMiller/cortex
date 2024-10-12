@@ -7,7 +7,9 @@ use std::sync::{Arc, Mutex};
 use std::usize;
 use tantivy::collector::TopDocs;
 use tantivy::query::{QueryParser, RegexQuery};
-use tantivy::{schema::*, Index, IndexReader, IndexSettings, IndexWriter, ReloadPolicy};
+use tantivy::{
+    schema::*, Index, IndexReader, IndexSettings, IndexWriter, ReloadPolicy, SnippetGenerator,
+};
 
 pub struct TextIndexSearcher {
     pub schema: Schema,
@@ -136,11 +138,19 @@ impl NoteTitle {
     }
 }
 
+use serde::Serialize;
+#[derive(Serialize, Debug, PartialEq)]
+pub struct TitleWithContext {
+    title: NoteTitle,
+    context: String,
+}
+
 pub fn search_by_content(
     search: &str,
     limit: usize,
+    snippet_size: usize,
     searcher: Arc<TextIndexSearcher>,
-) -> tantivy::Result<Vec<NoteTitle>> {
+) -> tantivy::Result<Vec<TitleWithContext>> {
     let index = searcher.index.clone();
     let schema = searcher.schema.clone();
     let searcher = searcher.reader.searcher();
@@ -154,18 +164,31 @@ pub fn search_by_content(
 
     let top_results = searcher.search(&query, &TopDocs::with_limit(limit))?;
 
-    let all_titles: tantivy::Result<Vec<NoteTitle>> = top_results
+    let mut snippet_generator = SnippetGenerator::create(&searcher, &*query, content)?;
+    snippet_generator.set_max_num_chars(snippet_size);
+
+    let all_titles: tantivy::Result<Vec<TitleWithContext>> = top_results
         .into_iter()
-        .map(|(_score, doc_address)| -> tantivy::Result<NoteTitle> {
-            let retrieved_doc: TantivyDocument = searcher.doc(doc_address)?;
-            let note_id = retrieved_doc.get_first(id).unwrap();
-            let note_id = note_id.as_str().unwrap();
+        .map(
+            |(_score, doc_address)| -> tantivy::Result<TitleWithContext> {
+                let retrieved_doc: TantivyDocument = searcher.doc(doc_address)?;
+                let note_id = retrieved_doc.get_first(id).unwrap();
+                let note_id = note_id.as_str().unwrap();
 
-            let note_title = retrieved_doc.get_first(title).unwrap();
-            let note_title = note_title.as_str().unwrap();
+                let note_title = retrieved_doc.get_first(title).unwrap();
+                let note_title = note_title.as_str().unwrap();
 
-            Ok(NoteTitle::from_tantivy(note_id, note_title))
-        })
+                let note_title = NoteTitle::from_tantivy(note_id, note_title);
+
+                let snippet = snippet_generator.snippet_from_doc(&retrieved_doc);
+                let context = snippet.to_html();
+
+                Ok(TitleWithContext {
+                    title: note_title,
+                    context,
+                })
+            },
+        )
         .collect();
 
     Ok(all_titles?)
