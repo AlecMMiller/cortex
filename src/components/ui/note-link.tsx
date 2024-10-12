@@ -4,8 +4,8 @@ import { buildPrefetchNote } from '@/commands/note'
 import { Link } from '@tanstack/react-router'
 
 interface NoteLinkProps {
-  note: NoteTitle
-  onClick?: () => void
+  readonly note: NoteTitle
+  readonly onClick?: () => void
 }
 
 export function NoteLink(props: NoteLinkProps): JSX.Element {

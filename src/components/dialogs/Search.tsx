@@ -8,8 +8,8 @@ import { NoteTitle } from '@/types'
 import { NoteLink } from '../ui/note-link'
 
 interface SearchResultProps {
-  note: NoteTitle
-  setOpen: (open: boolean) => void
+  readonly note: NoteTitle
+  readonly setOpen: (open: boolean) => void
 }
 
 function SearchResult(props: SearchResultProps): JSX.Element {

@@ -6,7 +6,7 @@ import { Dialog } from './dialog'
 type SetOpen = (open: boolean) => void
 
 export interface DialogFunctionProps {
-  setOpen: SetOpen
+  readonly setOpen: SetOpen
 }
 
 type DialogFunction = (props: DialogFunctionProps) => JSX.Element
