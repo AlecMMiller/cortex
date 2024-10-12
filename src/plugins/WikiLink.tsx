@@ -113,7 +113,6 @@ export default function WikiLinkPlugin(): JSX.Element {
       nodeToReplace: TextNode | null,
       closeMenu: () => void,
     ) => {
-      console.log('Doing a thing')
       editor.update(() => {
         const linkNode = $createInternalLinkNode(
           selectedOption.uuid,
@@ -121,7 +120,6 @@ export default function WikiLinkPlugin(): JSX.Element {
         )
 
         if (nodeToReplace) {
-          console.log(nodeToReplace)
           nodeToReplace.replace(linkNode)
         }
         linkNode.select()

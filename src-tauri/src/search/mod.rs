@@ -1,4 +1,5 @@
 use crate::db::notes::NoteTitle;
+use crate::lexical::{EditorState, GetRawText};
 use crate::models::notes::Note;
 use std::fs::create_dir;
 use std::path::PathBuf;
@@ -93,9 +94,16 @@ pub fn write_note(note: Note, writer: Arc<TextIndexWriter>) -> tantivy::Result<(
 
     let mut doc = TantivyDocument::default();
 
+    let body = note.body;
+    let body: EditorState = serde_json::from_str(&body).expect("Foo");
+    let body = match body.get_raw_text() {
+        Some(body) => body,
+        None => "".to_string(),
+    };
+
     doc.add_text(title, note.title);
     doc.add_text(id, uuid);
-    doc.add_text(content, note.body);
+    doc.add_text(content, body);
 
     writer.add_document(doc)?;
 
