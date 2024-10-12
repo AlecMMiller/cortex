@@ -23,6 +23,7 @@ interface NavButtonProps {
 export function NavButton(props: NavButtonProps): JSX.Element {
   const { icon: Icon, DialogContent, ...rest } = props
 
+  const [open, setOpen] = useState(false)
   const isDialog = DialogContent !== undefined
 
   const button = (
@@ -38,7 +39,6 @@ export function NavButton(props: NavButtonProps): JSX.Element {
   )
 
   if (DialogContent !== undefined) {
-    const [open, setOpen] = useState(false)
     return (
       <Dialog open={open} onOpenChange={setOpen}>
         {button}

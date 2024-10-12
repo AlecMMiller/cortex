@@ -1,4 +1,4 @@
-import { createLazyFileRoute, Link } from '@tanstack/react-router'
+import { createLazyFileRoute } from '@tanstack/react-router'
 import { useAllNotes } from '@/commands/note'
 import { useTranslation } from 'react-i18next'
 import { NoteLink } from '@/components/ui/note-link'
