@@ -1,5 +1,15 @@
+import { useState } from 'react'
 import { TooltipButton } from './button-tooltip'
 import { LucideIcon } from 'lucide-react'
+import { Dialog } from './dialog'
+
+type SetOpen = (open: boolean) => void
+
+interface DialogFunctionProps {
+  setOpen: SetOpen
+}
+
+type DialogFunction = (props: DialogFunctionProps) => JSX.Element
 
 interface NavButtonProps {
   readonly icon: LucideIcon
@@ -7,15 +17,17 @@ interface NavButtonProps {
   readonly onClick?: () => void
   readonly prefetch?: () => void
   readonly to?: string
-  readonly isDialog?: boolean
+  readonly DialogContent?: DialogFunction
 }
 
 export function NavButton(props: NavButtonProps): JSX.Element {
-  const { icon: Icon, ...rest } = props
+  const { icon: Icon, DialogContent, ...rest } = props
 
-  return (
+  const isDialog = DialogContent !== undefined
+
+  const button = (
     <TooltipButton
-      isDialog={props.isDialog}
+      isDialog={isDialog}
       size="icon"
       variant="ghost"
       side="right"
@@ -24,4 +36,16 @@ export function NavButton(props: NavButtonProps): JSX.Element {
       <Icon className="m-2 text-subtext1 hover:text-text" size={24} />
     </TooltipButton>
   )
+
+  if (DialogContent !== undefined) {
+    const [open, setOpen] = useState(false)
+    return (
+      <Dialog open={open} onOpenChange={setOpen}>
+        {button}
+        <DialogContent setOpen={setOpen} />
+      </Dialog>
+    )
+  }
+
+  return button
 }

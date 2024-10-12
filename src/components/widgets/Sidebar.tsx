@@ -1,7 +1,7 @@
 import { NavButton } from '@/components/ui/nav-button'
 import { Search, FilePlus2, Settings, House } from 'lucide-react'
 import { createNote } from '@/commands/note'
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '../ui/dialog'
+import { DialogContent, DialogHeader, DialogTitle } from '../ui/dialog'
 import { Input } from '../ui/input'
 import { useForm } from 'react-hook-form'
 import { Button } from '../ui/button'
@@ -9,7 +9,6 @@ import { Form, FormControl, FormField, FormItem, FormLabel } from '../ui/form'
 import { z } from 'zod'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useTranslation } from 'react-i18next'
-import { useState } from 'react'
 import { useNavigate } from '@tanstack/react-router'
 const noteCreateSchema = z.object({
   title: z
@@ -22,7 +21,7 @@ interface CreateNoteDialogProps {
   readonly setOpen: (open: boolean) => void
 }
 
-function CreateNoteDialog(props: CreateNoteDialogProps) {
+function CreateNoteDialog(props: CreateNoteDialogProps): JSX.Element {
   const form = useForm<z.infer<typeof noteCreateSchema>>({
     resolver: zodResolver(noteCreateSchema),
     defaultValues: {
@@ -75,16 +74,15 @@ function CreateNoteDialog(props: CreateNoteDialogProps) {
 }
 
 export function Sidebar(): JSX.Element {
-  const [open, setOpen] = useState(false)
-
   return (
     <div className="flex flex-col">
       <NavButton icon={House} tooltip="Home" to="/" />
       <NavButton icon={Search} tooltip="Search" />
-      <Dialog open={open} onOpenChange={setOpen}>
-        <NavButton isDialog icon={FilePlus2} tooltip="New Note" />
-        <CreateNoteDialog setOpen={setOpen} />
-      </Dialog>
+      <NavButton
+        icon={FilePlus2}
+        tooltip="New Note"
+        DialogContent={CreateNoteDialog}
+      />
       <div className="grow" />
       <NavButton icon={Settings} tooltip="Settings" to="/settings" />
     </div>
