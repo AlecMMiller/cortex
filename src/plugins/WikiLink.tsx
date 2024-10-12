@@ -93,7 +93,6 @@ export default function WikiLinkPlugin(): JSX.Element {
     {
       title: actualQueryString,
       maxResults: SUGGESTION_LIST_LENGTH_LIMIT,
-      snippetSize: 20,
     },
     {},
   )
