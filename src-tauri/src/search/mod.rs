@@ -51,7 +51,7 @@ pub fn initialize(
         )
         .set_stored();
 
-    schema_builder.add_text_field(TITLE, text_options.clone());
+    schema_builder.add_text_field(TITLE, TEXT | STORED);
     schema_builder.add_text_field(CONTENT, text_options);
     schema_builder.add_text_field(ID, STRING | STORED);
 
@@ -177,6 +177,8 @@ pub fn search_by_content(
 
                 let note_title = retrieved_doc.get_first(title).unwrap();
                 let note_title = note_title.as_str().unwrap();
+
+                println!("{note_title}");
 
                 let note_title = NoteTitle::from_tantivy(note_id, note_title);
 
