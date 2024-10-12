@@ -8,6 +8,7 @@ import { z } from 'zod'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from '@tanstack/react-router'
+import { DialogFunctionProps } from '../ui/nav-button'
 
 const noteCreateSchema = z.object({
   title: z
@@ -16,11 +17,7 @@ const noteCreateSchema = z.object({
     .max(50),
 })
 
-interface CreateNoteDialogProps {
-  readonly setOpen: (open: boolean) => void
-}
-
-export function CreateNoteDialog(props: CreateNoteDialogProps): JSX.Element {
+export function CreateNoteDialog(props: DialogFunctionProps): JSX.Element {
   const form = useForm<z.infer<typeof noteCreateSchema>>({
     resolver: zodResolver(noteCreateSchema),
     defaultValues: {

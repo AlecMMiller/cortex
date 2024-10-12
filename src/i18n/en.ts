@@ -8,5 +8,6 @@ export const en = {
     'Note Title': 'Note Title',
     Create: 'Create',
     'Recent Notes': 'Recent Notes',
+    'Search Notes': 'Search Notes',
   },
 }

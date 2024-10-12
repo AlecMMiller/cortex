@@ -122,6 +122,41 @@ impl NoteTitle {
     }
 }
 
+pub fn search_by_content(
+    search: &str,
+    limit: usize,
+    searcher: Arc<TextIndexSearcher>,
+) -> tantivy::Result<Vec<NoteTitle>> {
+    let index = searcher.index.clone();
+    let schema = searcher.schema.clone();
+    let searcher = searcher.reader.searcher();
+
+    let title = schema.get_field(TITLE).unwrap();
+    let content = schema.get_field(CONTENT).unwrap();
+    let id = schema.get_field(ID).unwrap();
+
+    let query_parser = QueryParser::for_index(&index, vec![title, content]);
+    let query = query_parser.parse_query(search)?;
+
+    let top_results = searcher.search(&query, &TopDocs::with_limit(limit))?;
+
+    let all_titles: tantivy::Result<Vec<NoteTitle>> = top_results
+        .into_iter()
+        .map(|(_score, doc_address)| -> tantivy::Result<NoteTitle> {
+            let retrieved_doc: TantivyDocument = searcher.doc(doc_address)?;
+            let note_id = retrieved_doc.get_first(id).unwrap();
+            let note_id = note_id.as_str().unwrap();
+
+            let note_title = retrieved_doc.get_first(title).unwrap();
+            let note_title = note_title.as_str().unwrap();
+
+            Ok(NoteTitle::from_tantivy(note_id, note_title))
+        })
+        .collect();
+
+    Ok(all_titles?)
+}
+
 pub fn search_by_title(
     search: &str,
     limit: usize,

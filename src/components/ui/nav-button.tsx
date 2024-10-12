@@ -5,7 +5,7 @@ import { Dialog } from './dialog'
 
 type SetOpen = (open: boolean) => void
 
-interface DialogFunctionProps {
+export interface DialogFunctionProps {
   setOpen: SetOpen
 }
 
