@@ -42,7 +42,6 @@ function onChange(
 }
 
 function onTitleChange(uuid: string, title: string): void {
-  console.log('title changed', uuid, title)
   renameNote(uuid, title)
 }
 

@@ -1,32 +1,11 @@
-import { createLazyFileRoute, Link } from '@tanstack/react-router'
-import { buildPrefetchNote, useAllNotes } from '@/commands/note'
-import { NoteTitle } from '@/types'
-import { useQueryClient } from '@tanstack/react-query'
+import { createLazyFileRoute } from '@tanstack/react-router'
+import { useAllNotes } from '@/commands/note'
 import { useTranslation } from 'react-i18next'
+import { NoteLink } from '@/components/ui/note-link'
 
 export const Route = createLazyFileRoute('/')({
   component: Index,
 })
-
-interface RecentNoteProps {
-  readonly note: NoteTitle
-}
-
-function RecentNote(props: RecentNoteProps): JSX.Element {
-  const note = props.note
-  const client = useQueryClient()
-  const prefetch = buildPrefetchNote(client, { uuid: note.uuid })
-  return (
-    <Link
-      to={`notes/${note.uuid}`}
-      className="text-blue"
-      onFocus={prefetch}
-      onMouseEnter={prefetch}
-    >
-      {note.title}
-    </Link>
-  )
-}
 
 function Index(): JSX.Element {
   const { status, data } = useAllNotes({}, {})
@@ -38,7 +17,7 @@ function Index(): JSX.Element {
   }
 
   const noteElements = data.map((note) => (
-    <RecentNote key={note.uuid} note={note} />
+    <NoteLink key={note.uuid} note={note} />
   ))
 
   return (

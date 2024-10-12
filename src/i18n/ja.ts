@@ -8,5 +8,6 @@ export const ja = {
     'Note Title': 'メモのタイトル',
     Create: '作成',
     'Recent Notes': '最近のメモ',
+    'Search Notes': 'メモを検索',
   },
 }

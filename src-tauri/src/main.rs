@@ -93,6 +93,7 @@ fn main() {
             commands::notes::get_last_updated_note,
             commands::notes::update_note,
             commands::notes::get_notes_by_title,
+            commands::notes::get_notes_by_content,
             commands::notes::create_note,
             commands::notes::rename_note,
             commands::settings::get_setting,

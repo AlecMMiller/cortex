@@ -39,7 +39,22 @@ export const {
 } = buildQueryMethods<TitleSearch, NoteTitle[]>({
   command: 'get_notes_by_title',
   makeKey: (data: TitleSearch) => {
-    return ['notes', 'search', data.title]
+    return ['notes', 'by_title', data.title]
+  },
+})
+
+type ContentSearch = {
+  content: string
+  maxResults: number
+}
+
+export const {
+  useType: useSearchNotesByContent,
+  buildPrefetchType: buildPretchNotesByContent,
+} = buildQueryMethods<ContentSearch, NoteTitle[]>({
+  command: 'get_notes_by_content',
+  makeKey: (data: ContentSearch) => {
+    return ['notes', 'by_content', data.content]
   },
 })
 
