@@ -5,7 +5,7 @@ pub mod macros {
             $id_name:ident
         ) => {
             #[derive(AsExpression, FromSqlRow, Debug, PartialEq, Eq)]
-            #[sql_type = "diesel::sql_types::Binary"]
+            #[diesel(sql_type = diesel::sql_types::Binary)]
             pub struct $id_name(Vec<u8>);
 
             impl FromSql<Binary, Sqlite> for $id_name {

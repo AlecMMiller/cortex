@@ -16,7 +16,7 @@ use serde::{Deserialize, Serialize};
 create_id!(NoteId);
 
 #[derive(AsExpression, FromSqlRow, Debug, PartialEq, Eq)]
-#[sql_type = "diesel::sql_types::BigInt"]
+#[diesel(sql_type = diesel::sql_types::BigInt)]
 pub struct AbsoluteTimestamp(i64);
 
 impl FromSql<BigInt, Sqlite> for AbsoluteTimestamp {
