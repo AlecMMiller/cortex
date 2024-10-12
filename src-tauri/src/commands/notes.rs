@@ -2,7 +2,7 @@ use crate::commands::Error;
 use crate::db;
 use crate::db::notes::NoteTitle;
 use crate::models::notes::{Note, NoteId};
-use crate::search::{search_by_content, search_by_title};
+use crate::search::{search_by_content, search_by_title, TitleWithContext};
 use crate::WriterWrapper;
 use crate::{PoolWrapper, SearcherWrapper};
 use tauri::State;
@@ -60,10 +60,12 @@ pub fn get_notes_by_content<'a>(
     state: State<'_, SearcherWrapper>,
     content: &str,
     max_results: usize,
-) -> Result<Vec<NoteTitle>, Error> {
+    snippet_size: usize,
+) -> Result<Vec<TitleWithContext>, Error> {
     Ok(search_by_content(
         content,
         max_results,
+        snippet_size,
         state.searcher.clone(),
     )?)
 }

@@ -46,12 +46,18 @@ export const {
 type ContentSearch = {
   content: string
   maxResults: number
+  snippetSize: number
+}
+
+export interface TitleWithContext {
+  title: NoteTitle
+  context: string
 }
 
 export const {
   useType: useSearchNotesByContent,
   buildPrefetchType: buildPretchNotesByContent,
-} = buildQueryMethods<ContentSearch, NoteTitle[]>({
+} = buildQueryMethods<ContentSearch, TitleWithContext[]>({
   command: 'get_notes_by_content',
   makeKey: (data: ContentSearch) => {
     return ['notes', 'by_content', data.content]
