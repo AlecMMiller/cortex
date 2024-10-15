@@ -107,7 +107,7 @@ export default function Editor(props: EditorProps): JSX.Element {
       <ExternalLinkPlugin />
       <TableOfContentsPlugin>
         {(tableOfContentsArray) => {
-          return <PageNavigator tableOfContents={tableOfContentsArray} />
+          return <PageNavigator toc={tableOfContentsArray} />
         }}
       </TableOfContentsPlugin>
       <InternalLinkPlugin />
