@@ -112,11 +112,33 @@ interface NoteTagsProps {
 export function NoteTags(props: NoteTagsProps): JSX.Element {
   const { t } = useTranslation()
   const { data } = useNoteDirectTags({ uuid: props.uuid }, {})
-  return (
-    <div className="flex flex-col gap-4">
+
+  const tagData = data ?? []
+
+  const tags = (
+    <div className="flex gap-2 flex-wrap p-2 justify-center">
+      {tagData.map((tag) => {
+        return (
+          <div className="bg-surface1 rounded-sm p-1 px-2 text-sm text-text">
+            {tag.title}
+          </div>
+        )
+      })}
+    </div>
+  )
+
+  const body =
+    tagData.length > 0 ? (
+      tags
+    ) : (
       <div className="mt-6 text-center w-full text-subtext0">
         {t('No Tags')}
       </div>
+    )
+
+  return (
+    <div className="flex flex-col gap-4">
+      {body}
       <div className="flex w-full justify-center text-subtext0">
         <Popover>
           <PopoverTrigger>
