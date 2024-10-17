@@ -2,20 +2,21 @@ import { TooltipButton } from '@/components/ui/button-tooltip'
 import { Link, LucideIcon, TableOfContents, Tag } from 'lucide-react'
 import { TableOfContentsNavigator, TocContents } from './TableOfContents'
 import { useState } from 'react'
+import { NoteTags } from './NoteTags'
 
 interface TabProps<TabEnum> {
-  currentTab: TabEnum
-  icon: LucideIcon
-  tooltip: string
-  id: TabEnum
-  setCurrentTab: (tab: TabEnum) => void
+  readonly currentTab: TabEnum
+  readonly icon: LucideIcon
+  readonly tooltip: string
+  readonly id: TabEnum
+  readonly setCurrentTab: (tab: TabEnum) => void
 }
 
 function Tab<TabEnum>(props: TabProps<TabEnum>): JSX.Element {
   const isSelected = props.currentTab === props.id
   const Icon = props.icon
 
-  let icon = (
+  const icon = (
     <TooltipButton
       onClick={() => props.setCurrentTab(props.id)}
       tooltip={props.tooltip}
@@ -52,12 +53,12 @@ enum NavigatorTab {
 }
 
 interface PageNavigatorProps {
-  toc: TocContents
+  readonly uuid: string
+  readonly toc: TocContents
 }
 
 export default function PageNavigator(props: PageNavigatorProps): JSX.Element {
   const [currentTab, setCurrentTab] = useState(NavigatorTab.ToC)
-  console.log(currentTab)
   const tabs = [
     <Tab
       setCurrentTab={setCurrentTab}
@@ -89,12 +90,14 @@ export default function PageNavigator(props: PageNavigatorProps): JSX.Element {
 
   if (currentTab === NavigatorTab.ToC) {
     body = <TableOfContentsNavigator toc={props.toc} />
+  } else if (currentTab === NavigatorTab.Tags) {
+    body = <NoteTags uuid={props.uuid} />
   }
 
   return (
     <div className="flex flex-col bg-mantle">
       <div className="flex flex-row mt-1 px-1.5">{tabs}</div>
-      <div className="grow w-56 bg-base">{body}</div>
+      <div className="grow w-64 bg-base">{body}</div>
     </div>
   )
 }

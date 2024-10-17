@@ -1,5 +1,6 @@
 use crate::commands::Error;
 use crate::models::notes::{Note, NoteId, NoteTitle};
+use crate::models::tags::{NoteTag, Tag};
 use crate::search::{search_by_content, search_by_title, TitleWithContext};
 use crate::utils::get_connection;
 use crate::WriterWrapper;
@@ -79,4 +80,25 @@ pub fn create_note(
     let mut conn = get_connection(pool_wrapper.pool.clone());
     let writer = writer_wrapper.writer.clone();
     Ok(Note::new(&mut conn, writer, title, "")?)
+}
+
+#[tauri::command]
+pub fn get_direct_tags(
+    pool_wrapper: State<'_, PoolWrapper>,
+    uuid: NoteId,
+) -> Result<Vec<Tag>, Error> {
+    let mut conn = get_connection(pool_wrapper.pool.clone());
+    Ok(Tag::get_direct_by_note(&mut conn, &uuid)?)
+}
+
+#[tauri::command]
+pub fn add_new_tag(
+    pool_wrapper: State<'_, PoolWrapper>,
+    uuid: NoteId,
+    tag_text: &str,
+) -> Result<(), Error> {
+    let mut conn = get_connection(pool_wrapper.pool.clone());
+    let tag = Tag::new(&mut conn, &tag_text)?;
+    NoteTag::new(&mut conn, &uuid, &tag.uuid)?;
+    Ok(())
 }

@@ -13,5 +13,6 @@ export const en = {
     Tags: 'Tags',
     Links: 'Links',
     'No Tags': 'No Tags',
+    add_value: 'Add "{{value}}"',
   },
 }

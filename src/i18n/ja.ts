@@ -13,5 +13,6 @@ export const ja = {
     Tags: 'タグ',
     Links: 'リンク',
     'No Tags': 'タグがない',
+    add_value: '「{{value}}」を加える',
   },
 }

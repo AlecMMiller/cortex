@@ -98,6 +98,8 @@ fn main() {
             commands::notes::get_notes_by_content,
             commands::notes::create_note,
             commands::notes::rename_note,
+            commands::notes::get_direct_tags,
+            commands::notes::add_new_tag,
             commands::settings::get_setting,
             commands::settings::get_setting_or_set,
             commands::settings::update_setting,

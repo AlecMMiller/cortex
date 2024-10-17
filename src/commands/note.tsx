@@ -28,6 +28,25 @@ export const {
   },
 })
 
+type TagSearch = {
+  uuid: string
+}
+
+type Tag = {
+  uuid: string
+  title: string
+}
+
+export const {
+  useType: useNoteDirectTags,
+  buildPrefetchType: buildPrefetchDirectTags,
+} = buildQueryMethods<TagSearch, Tag[]>({
+  command: 'get_direct_tags',
+  makeKey: (data: TagSearch) => {
+    return ['notes', 'tags', data.uuid, 'direct']
+  },
+})
+
 type TitleSearch = {
   title: string
   maxResults: number
@@ -71,4 +90,8 @@ export async function createNote(name: string): Promise<NoteData> {
 
 export async function renameNote(uuid: string, title: string): Promise<void> {
   await invoke('rename_note', { uuid, title })
+}
+
+export async function addNewTag(uuid: string, tagText: string): Promise<void> {
+  await invoke('add_new_tag', { uuid, tagText })
 }
