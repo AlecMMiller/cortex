@@ -1,6 +1,6 @@
 use crate::commands::Error;
 use crate::models::notes::{Note, NoteId, NoteTitle};
-use crate::models::tags::{NoteTag, Tag};
+use crate::models::tags::{NoteTag, Tag, TagId};
 use crate::search::{search_by_content, search_by_title, TitleWithContext};
 use crate::utils::get_connection;
 use crate::WriterWrapper;
@@ -100,5 +100,16 @@ pub fn add_new_tag(
     let mut conn = get_connection(pool_wrapper.pool.clone());
     let tag = Tag::new(&mut conn, &tag_text)?;
     NoteTag::new(&mut conn, &uuid, &tag.uuid)?;
+    Ok(())
+}
+
+#[tauri::command]
+pub fn add_tag(
+    pool_wrapper: State<'_, PoolWrapper>,
+    note_uuid: NoteId,
+    tag_uuid: TagId,
+) -> Result<(), Error> {
+    let mut conn = get_connection(pool_wrapper.pool.clone());
+    NoteTag::new(&mut conn, &note_uuid, &tag_uuid)?;
     Ok(())
 }

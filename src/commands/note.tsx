@@ -1,6 +1,7 @@
 import { invoke } from '@tauri-apps/api/core'
 import { NoteData, NoteTitle } from '../types'
 import { buildQueryMethods } from './common'
+import { QueryClient } from '@tanstack/react-query'
 
 type NoteSelect = {
   uuid: string
@@ -92,6 +93,21 @@ export async function renameNote(uuid: string, title: string): Promise<void> {
   await invoke('rename_note', { uuid, title })
 }
 
-export async function addNewTag(uuid: string, tagText: string): Promise<void> {
+export async function addNewTag(
+  uuid: string,
+  tagText: string,
+  queryClient: QueryClient,
+): Promise<void> {
   await invoke('add_new_tag', { uuid, tagText })
+  queryClient.invalidateQueries({ queryKey: ['tags'] })
+  queryClient.invalidateQueries({ queryKey: ['notes', 'tags', uuid] })
+}
+
+export async function addTag(
+  noteUuid: string,
+  tagUuid: string,
+  queryClient: QueryClient,
+): Promise<void> {
+  await invoke('add_tag', { noteUuid, tagUuid })
+  queryClient.invalidateQueries({ queryKey: ['notes', 'tags', noteUuid] })
 }

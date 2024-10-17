@@ -1,4 +1,4 @@
-import { addNewTag, useNoteDirectTags } from '@/commands/note'
+import { addNewTag, addTag, useNoteDirectTags } from '@/commands/note'
 import { useTagsContaining } from '@/commands/tags'
 import { Input } from '@/components/ui/input'
 import {
@@ -6,6 +6,7 @@ import {
   PopoverTrigger,
   PopoverContent,
 } from '@/components/ui/popover'
+import { useQueryClient } from '@tanstack/react-query'
 import { CirclePlus, Tag } from 'lucide-react'
 import { KeyboardEventHandler, useState } from 'react'
 import { useTranslation } from 'react-i18next'
@@ -18,9 +19,10 @@ function TagSelector(props: TagSelectorProps): JSX.Element {
   const [addText, setAddText] = useState('')
   const [selected, setSelected] = useState(-1)
   const { data } = useTagsContaining({ content: addText, maxResults: 5 }, {})
+  const { t } = useTranslation()
+  const qc = useQueryClient()
 
   const options: Array<[string, string | undefined]> = []
-  const { t } = useTranslation()
 
   if (data !== undefined) {
     data.forEach((datum) => {
@@ -60,9 +62,10 @@ function TagSelector(props: TagSelectorProps): JSX.Element {
   const handleSelect = async (uuid: string | undefined) => {
     if (uuid === undefined) {
       console.log(`Creating new tag ${addText}`)
-      await addNewTag(props.uuid, addText)
+      await addNewTag(props.uuid, addText, qc)
     } else {
       console.log(`Adding tag ${uuid}`)
+      await addTag(props.uuid, uuid, qc)
     }
   }
 
@@ -109,7 +112,6 @@ interface NoteTagsProps {
 export function NoteTags(props: NoteTagsProps): JSX.Element {
   const { t } = useTranslation()
   const { data } = useNoteDirectTags({ uuid: props.uuid }, {})
-  console.log(data)
   return (
     <div className="flex flex-col gap-4">
       <div className="mt-6 text-center w-full text-subtext0">

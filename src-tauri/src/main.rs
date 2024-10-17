@@ -100,6 +100,7 @@ fn main() {
             commands::notes::rename_note,
             commands::notes::get_direct_tags,
             commands::notes::add_new_tag,
+            commands::notes::add_tag,
             commands::settings::get_setting,
             commands::settings::get_setting_or_set,
             commands::settings::update_setting,
