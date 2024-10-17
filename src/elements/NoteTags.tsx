@@ -1,4 +1,5 @@
 import { addNewTag, useNoteDirectTags } from '@/commands/note'
+import { useTagsContaining } from '@/commands/tags'
 import { Input } from '@/components/ui/input'
 import {
   Popover,
@@ -16,26 +17,42 @@ interface TagSelectorProps {
 function TagSelector(props: TagSelectorProps): JSX.Element {
   const [addText, setAddText] = useState('')
   const [selected, setSelected] = useState(-1)
+  const { data } = useTagsContaining({ content: addText, maxResults: 5 }, {})
 
   const options: Array<[string, string | undefined]> = []
   const { t } = useTranslation()
 
-  if (addText !== '') {
+  if (data !== undefined) {
+    data.forEach((datum) => {
+      options.push([datum.title, datum.uuid])
+    })
+  }
+
+  const first = data ? data[0]?.title.toLowerCase() : ''
+
+  if (addText !== '' && addText.toLowerCase() !== first) {
     options.push([t('add_value', { value: addText }), undefined])
   }
 
   const handleKeyDown: KeyboardEventHandler = (e) => {
-    if (e.key === 'ArrowDown') {
+    const key = e.key
+    if (key === 'ArrowDown') {
       setSelected(
         selected < options.length - 1 ? selected + 1 : options.length - 1,
       )
-    } else if (e.key === 'ArrowUp') {
+    } else if (key === 'ArrowUp') {
       setSelected(selected >= 0 ? selected - 1 : -1)
-    } else if (e.key === 'Enter') {
+    } else if (key === 'Enter') {
       const selectedOption = options[selected]
 
       if (selectedOption !== undefined) {
         handleSelect(selectedOption[1])
+      }
+    } else if (key === 'Tab') {
+      if (selected < options.length - 1) {
+        setSelected(selected + 1)
+      } else {
+        setSelected(-1)
       }
     }
   }
@@ -76,7 +93,7 @@ function TagSelector(props: TagSelectorProps): JSX.Element {
               onMouseOver={() => setSelected(index)}
               onClick={() => handleSelect(option[1])}
             >
-              {option}
+              {option[0]}
             </li>
           )
         })}

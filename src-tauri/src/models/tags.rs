@@ -88,6 +88,19 @@ impl Tag {
             .get_result(conn)
     }
 
+    pub fn get_containing(
+        conn: &mut PooledConnection,
+        content: &str,
+        max_results: i64,
+    ) -> Result<Vec<Self>, Error> {
+        tags::table
+            .filter(tags::title.like(format!("{content}%")))
+            .order(tags::title.asc())
+            .select(Tag::as_select())
+            .limit(max_results)
+            .load(conn)
+    }
+
     pub fn rename(conn: &mut PooledConnection, uuid: &TagId, title: &str) -> Result<(), Error> {
         diesel::update(tags::table.find(uuid))
             .set(tags::title.eq(title))
