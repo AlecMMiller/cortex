@@ -1,8 +1,7 @@
 # Cortex - a local-first personal knowledge management app
 
 [![OpenSSF Scorecard](https://api.scorecard.dev/projects/github.com/AlecMMiller/cortex/badge)](https://scorecard.dev/viewer/?uri=github.com/AlecMMiller/cortex)
-![build](https://github.com/alecmmiller/cortex/workflows/release/badge.svg?branch=main)
-![CodeQL](https://github.com/alecmmiller/cortex/workflows/CodeQL/badge.svg?branch=main)
+![CodeQL](https://github.com/alecmmiller/cortex/workflows/codeql/badge.svg?branch=main)
 
 ## What is Cortex
 
