@@ -8,7 +8,7 @@ import {
 } from '@/components/ui/popover'
 import { useQueryClient } from '@tanstack/react-query'
 import { CirclePlus } from 'lucide-react'
-import { KeyboardEventHandler, useState } from 'react'
+import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
 interface TagSelectorProps {
