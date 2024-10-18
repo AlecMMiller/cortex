@@ -18,7 +18,6 @@ interface TagSelectorProps {
 
 function TagSelector(props: TagSelectorProps): JSX.Element {
   const [addText, setAddText] = useState('')
-  const [selected, setSelected] = useState(-1)
   const { data } = useAvailableTagsContaining(
     { content: addText, maxResults: 5, noteUuid: props.uuid },
     {},
@@ -42,29 +41,6 @@ function TagSelector(props: TagSelectorProps): JSX.Element {
     options.push([t('add_value', { value: addText }), undefined])
   }
 
-  const handleKeyDown: KeyboardEventHandler = (e) => {
-    const key = e.key
-    if (key === 'ArrowDown') {
-      setSelected(
-        selected < options.length - 1 ? selected + 1 : options.length - 1,
-      )
-    } else if (key === 'ArrowUp') {
-      setSelected(selected >= 0 ? selected - 1 : -1)
-    } else if (key === 'Enter') {
-      const selectedOption = options[selected]
-
-      if (selectedOption !== undefined) {
-        handleSelect(selectedOption[1])
-      }
-    } else if (key === 'Tab') {
-      if (selected < options.length - 1) {
-        setSelected(selected + 1)
-      } else {
-        setSelected(-1)
-      }
-    }
-  }
-
   const handleSelect = async (uuid: string | undefined) => {
     if (uuid === undefined) {
       console.log(`Creating new tag ${addText}`)
@@ -77,7 +53,7 @@ function TagSelector(props: TagSelectorProps): JSX.Element {
   }
 
   return (
-    <div onKeyDown={handleKeyDown} className="bg-surface0 rounded-lg p-0.5">
+    <div role="menu" className="bg-surface0 rounded-lg p-0.5">
       <div className="flex items-center bg-crust rounded-md m-0.5">
         <Input
           placeholder="tag"
@@ -87,26 +63,19 @@ function TagSelector(props: TagSelectorProps): JSX.Element {
           }}
         />
       </div>
-      <ul
-        onMouseLeave={() => {
-          setSelected(-1)
-        }}
-      >
-        {options.map((option, index) => {
-          let className = index === selected ? 'bg-surface1' : 'bg-surface0'
-          className += ' m-0.5 p-1 hover:cursor-pointer rounded-md text-text'
+      <div className="flex flex-col">
+        {options.map((option) => {
           return (
-            <li
-              className={className}
+            <button
+              className="m-0.5 p-1 rounded-md text-text focus:bg-surface1 focus:outline-none"
               key={option[0]}
-              onMouseOver={() => setSelected(index)}
               onClick={() => handleSelect(option[1])}
             >
               {option[0]}
-            </li>
+            </button>
           )
         })}
-      </ul>
+      </div>
     </div>
   )
 }
