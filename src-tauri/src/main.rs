@@ -104,7 +104,7 @@ fn main() {
             commands::settings::get_setting,
             commands::settings::get_setting_or_set,
             commands::settings::update_setting,
-            commands::tags::get_tags_containing,
+            commands::tags::get_available_tags_containing,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

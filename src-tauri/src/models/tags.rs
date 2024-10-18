@@ -88,17 +88,36 @@ impl Tag {
             .get_result(conn)
     }
 
-    pub fn get_containing(
+    pub fn get_available_containing(
         conn: &mut PooledConnection,
         content: &str,
         max_results: i64,
-    ) -> Result<Vec<Self>, Error> {
-        tags::table
+        note_uuid: NoteId,
+    ) -> Result<(Vec<Self>, bool), Error> {
+        let already_has = note_tags::table
+            .filter(note_tags::note_uuid.eq(note_uuid))
+            .select(note_tags::tag_uuid)
+            .into_boxed();
+
+        let available = tags::table
+            .filter(tags::uuid.ne_all(already_has))
             .filter(tags::title.like(format!("{content}%")))
             .order(tags::title.asc())
             .select(Tag::as_select())
             .limit(max_results)
-            .load(conn)
+            .load(conn)?;
+
+        let exists = match tags::table
+            .filter(tags::title.like(content))
+            .select(tags::uuid)
+            .first::<TagId>(conn)
+            .optional()?
+        {
+            Some(..) => true,
+            None => false,
+        };
+
+        Ok((available, exists))
     }
 
     pub fn rename(conn: &mut PooledConnection, uuid: &TagId, title: &str) -> Result<(), Error> {

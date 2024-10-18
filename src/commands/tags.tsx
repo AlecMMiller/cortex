@@ -1,6 +1,7 @@
 import { buildQueryMethods } from './common'
 
 type TagSearch = {
+  noteUuid: string
   content: string
   maxResults: number
 }
@@ -11,10 +12,10 @@ interface Tag {
 }
 
 export const {
-  useType: useTagsContaining,
-  buildPrefetchType: buildPretchTagsContaining,
-} = buildQueryMethods<TagSearch, Tag[]>({
-  command: 'get_tags_containing',
+  useType: useAvailableTagsContaining,
+  buildPrefetchType: buildPretchAvailableTagsContaining,
+} = buildQueryMethods<TagSearch, [Tag[], boolean]>({
+  command: 'get_available_tags_containing',
   makeKey: (data: TagSearch) => {
     return ['tags', 'containing', data.content]
   },
