@@ -7,6 +7,7 @@ use diesel::{
 };
 use diesel_migrations::EmbeddedMigrations;
 use diesel_migrations::{embed_migrations, MigrationHarness};
+use models::notes::Note;
 use search::{TextIndexSearcher, TextIndexWriter};
 use std::fs::create_dir_all;
 use std::sync::Arc;
@@ -14,12 +15,13 @@ use tauri::Manager;
 mod schema;
 
 mod commands;
-mod db;
 mod lexical;
 mod macros;
 mod models;
 mod search;
 mod utils;
+
+use crate::utils::get_connection;
 
 pub const MIGRATIONS: EmbeddedMigrations = embed_migrations!();
 
@@ -79,7 +81,8 @@ fn main() {
 
             if needs_reindex {
                 println!("Initializing tantivy index");
-                let all_notes = db::notes::get_all(pool.clone()).expect("should work");
+                let mut conn = get_connection(pool.clone());
+                let all_notes = Note::get_all(&mut conn).expect("It should be able to get notes");
                 for note in all_notes {
                     let _ = search::write_note(note, tantivy_writer.clone());
                 }
@@ -90,15 +93,18 @@ fn main() {
         .invoke_handler(tauri::generate_handler![
             commands::notes::get_note,
             commands::notes::get_all_notes,
-            commands::notes::get_last_updated_note,
             commands::notes::update_note,
             commands::notes::get_notes_by_title,
             commands::notes::get_notes_by_content,
             commands::notes::create_note,
             commands::notes::rename_note,
+            commands::notes::get_direct_tags,
+            commands::notes::add_new_tag,
+            commands::notes::add_tag,
             commands::settings::get_setting,
             commands::settings::get_setting_or_set,
             commands::settings::update_setting,
+            commands::tags::get_available_tags_containing,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

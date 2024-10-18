@@ -9,5 +9,10 @@ export const ja = {
     Create: '作成',
     'Recent Notes': '最近のメモ',
     'Search Notes': 'メモを検索',
+    Contents: '目次',
+    Tags: 'タグ',
+    Links: 'リンク',
+    'No Tags': 'タグがない',
+    add_value: '「{{value}}」を加える',
   },
 }

@@ -1,8 +1,8 @@
 use crate::commands::Error;
-use crate::db;
-use crate::db::notes::NoteTitle;
-use crate::models::notes::{Note, NoteId};
+use crate::models::notes::{Note, NoteId, NoteTitle};
+use crate::models::tags::{NoteTag, Tag, TagId};
 use crate::search::{search_by_content, search_by_title, TitleWithContext};
+use crate::utils::get_connection;
 use crate::WriterWrapper;
 use crate::{PoolWrapper, SearcherWrapper};
 use tauri::State;
@@ -13,37 +13,16 @@ pub fn update_note(
     index_wrapper: State<'_, WriterWrapper>,
     uuid: NoteId,
     body: &str,
-) -> Result<(), ()> {
-    let result = db::notes::update_body(
-        pool_wrapper.pool.clone(),
-        index_wrapper.writer.clone(),
-        uuid,
-        body,
-    );
-    match result {
-        Ok(_) => Ok(()),
-        Err(_) => Err(()),
-    }
-}
-
-#[tauri::command]
-pub fn get_last_updated_note<'a>(state: State<'_, PoolWrapper>) -> Result<String, ()> {
-    let last_updated = db::notes::get_last_updated_or_create(state.pool.clone());
-    match last_updated {
-        Ok(note) => {
-            let json = serde_json::to_string(&note);
-            match json {
-                Ok(json) => Ok(json),
-                Err(_) => Err(()),
-            }
-        }
-        Err(_) => Err(()),
-    }
+) -> Result<(), Error> {
+    let mut conn = get_connection(pool_wrapper.pool.clone());
+    let index = index_wrapper.writer.clone();
+    Ok(Note::update_body(&mut conn, index, &uuid, &body)?)
 }
 
 #[tauri::command]
 pub fn get_all_notes<'a>(state: State<'_, PoolWrapper>) -> Result<Vec<NoteTitle>, Error> {
-    Ok(db::notes::get_all_titles(state.pool.clone())?)
+    let mut conn = get_connection(state.pool.clone());
+    Ok(NoteTitle::get_all(&mut conn)?)
 }
 
 #[tauri::command]
@@ -72,7 +51,8 @@ pub fn get_notes_by_content<'a>(
 
 #[tauri::command]
 pub fn get_note<'a>(state: State<'_, PoolWrapper>, uuid: NoteId) -> Result<Note, Error> {
-    Ok(db::notes::get_by_uuid(state.pool.clone(), &uuid)?)
+    let mut conn = get_connection(state.pool.clone());
+    Ok(Note::get(&mut conn, &uuid)?)
 }
 
 #[tauri::command]
@@ -81,20 +61,55 @@ pub fn rename_note(
     writer_wrapper: State<'_, WriterWrapper>,
     uuid: NoteId,
     title: &str,
-) -> Result<(), ()> {
-    let result = db::notes::rename_note(
-        pool_wrapper.pool.clone(),
+) -> Result<(), Error> {
+    let mut conn = get_connection(pool_wrapper.pool.clone());
+    Ok(Note::rename(
+        &mut conn,
         writer_wrapper.writer.clone(),
-        uuid,
-        title,
-    );
-    match result {
-        Ok(_) => Ok(()),
-        Err(_) => Err(()),
-    }
+        &uuid,
+        &title,
+    )?)
 }
 
 #[tauri::command]
-pub fn create_note(state: State<'_, PoolWrapper>, title: &str) -> Result<Note, Error> {
-    Ok(db::notes::create_note(state.pool.clone(), title)?)
+pub fn create_note(
+    pool_wrapper: State<'_, PoolWrapper>,
+    writer_wrapper: State<'_, WriterWrapper>,
+    title: &str,
+) -> Result<Note, Error> {
+    let mut conn = get_connection(pool_wrapper.pool.clone());
+    let writer = writer_wrapper.writer.clone();
+    Ok(Note::new(&mut conn, writer, title, "")?)
+}
+
+#[tauri::command]
+pub fn get_direct_tags(
+    pool_wrapper: State<'_, PoolWrapper>,
+    uuid: NoteId,
+) -> Result<Vec<Tag>, Error> {
+    let mut conn = get_connection(pool_wrapper.pool.clone());
+    Ok(Tag::get_direct_by_note(&mut conn, &uuid)?)
+}
+
+#[tauri::command]
+pub fn add_new_tag(
+    pool_wrapper: State<'_, PoolWrapper>,
+    uuid: NoteId,
+    tag_text: &str,
+) -> Result<(), Error> {
+    let mut conn = get_connection(pool_wrapper.pool.clone());
+    let tag = Tag::new(&mut conn, &tag_text)?;
+    NoteTag::new(&mut conn, &uuid, &tag.uuid)?;
+    Ok(())
+}
+
+#[tauri::command]
+pub fn add_tag(
+    pool_wrapper: State<'_, PoolWrapper>,
+    note_uuid: NoteId,
+    tag_uuid: TagId,
+) -> Result<(), Error> {
+    let mut conn = get_connection(pool_wrapper.pool.clone());
+    NoteTag::new(&mut conn, &note_uuid, &tag_uuid)?;
+    Ok(())
 }

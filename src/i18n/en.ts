@@ -9,5 +9,10 @@ export const en = {
     Create: 'Create',
     'Recent Notes': 'Recent Notes',
     'Search Notes': 'Search Notes',
+    Contents: 'Contents',
+    Tags: 'Tags',
+    Links: 'Links',
+    'No Tags': 'No Tags',
+    add_value: 'Add "{{value}}"',
   },
 }

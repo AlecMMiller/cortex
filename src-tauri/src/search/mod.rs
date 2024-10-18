@@ -1,6 +1,5 @@
-use crate::db::notes::NoteTitle;
 use crate::lexical::{EditorState, GetRawText};
-use crate::models::notes::Note;
+use crate::models::notes::{Note, NoteTitle};
 use std::fs::create_dir;
 use std::path::PathBuf;
 use std::sync::{Arc, Mutex};
@@ -24,9 +23,9 @@ pub struct TextIndexWriter {
     pub writer: Mutex<IndexWriter>,
 }
 
-const TITLE: &str = "title";
-const CONTENT: &str = "content";
-const ID: &str = "id";
+pub const TITLE: &str = "title";
+pub const CONTENT: &str = "content";
+pub const ID: &str = "id";
 
 pub fn initialize(
     path: PathBuf,
