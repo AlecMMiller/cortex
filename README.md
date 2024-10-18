@@ -6,6 +6,8 @@
 
 _This project is currently under heavy development and is not yet stable_
 
+![alt text](./screenshot.png)
+
 Cortex aims to become an app designed to store knowledge in many forms. The primary mode of navigation is via WikiLinks style links between notes. Rather tthan using a traditional tree hierarchy, Cortex organizes notes via tags, which can be children of other tags. For example, in a traditional tree structure, you might have `movies/sci-fi/Star Wars/A New Hope`. But you might also want to categorize it under `archetypes/Hero's Journey/A New Hope`. In a traditional file tree, you have to pick only a single organizational system.
 
 Tags solve this by creating multiple categories that a single item can be a part of, but traditionally tags must be applied manually. However, if the tag `sci-fi movie` is a child of tag `movie`, and `Star Wars` is a child of tag `sci-fi movie`, by applying the tag `Star Wars` to the note A New Hope, it is automatically tagged as `sci-fi movie` and `movie` as well. This also means that it will show up in a list of all items tagged with `movie` or `sci-fi movie`.
