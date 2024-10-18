@@ -7,7 +7,7 @@ export type TocContents = Array<
   [key: NodeKey, text: string, tag: HeadingTagType]
 >
 interface TableOfContentsProps {
-  toc: TocContents
+  readonly toc: TocContents
 }
 
 export function TableOfContentsNavigator(
