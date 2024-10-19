@@ -4,6 +4,7 @@ import '../src/styles.css'
 const preview: Preview = {
   parameters: {
     backgrounds: {
+      default: 'Dark',
       values: [{ name: 'Dark', value: '#1e1e2e' }],
     },
     controls: {
