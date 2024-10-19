@@ -97,24 +97,3 @@ jobs:
           releaseDraft: false
           prerelease: ${{ github.ref != 'refs/heads/release' }}
           args: ${{ matrix.args }}
-
-  sign:
-    name: Sign the distribution package
-    runs-on: ubuntu-latest
-    needs: [publish]
-    permissions:
-      contents: write # IMPORTANT: mandatory for making GitHub Releases
-      id-token: write # IMPORTANT: mandatory for attestations
-      attestations: write # IMPORTANT: mandatory for attestations
-
-    steps:
-      - uses: actions/attest-build-provenance@1c608d11d69870c2092266b3f9a6f3abbf17002c # v1.4.3
-        id: attest
-        with:
-          subject-path: './**/src-tauri/target/release/bundle/*/cortex*'
-      - uses: svenstaro/upload-release-action@04733e069f2d7f7f0b4aebc4fbdbce8613b03ccd # 2.9.0
-        with:
-          file: ${{ steps.attest.outputs.bundle-path }}
-          tag: ${{ github.event.inputs.tag || github.ref }}
-          overwrite: false
-          asset_name: attestations.intoto.jsonl
