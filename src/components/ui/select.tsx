@@ -1,10 +1,61 @@
 import * as React from 'react'
+import { useState, useEffect } from 'react'
 import * as SelectPrimitive from '@radix-ui/react-select'
 import { Check, ChevronDown, ChevronUp } from 'lucide-react'
 
 import { cn } from '@/lib/utils'
 
-const Select = SelectPrimitive.Root
+export interface SelectOption {
+  readonly value: string
+  readonly content: JSX.Element | string
+}
+
+interface SelectProps {
+  readonly options: SelectOption[]
+  readonly value?: string
+  readonly triggerClassname?: string
+  readonly onValueChange?: (value: string) => void
+}
+
+function Select(props: SelectProps) {
+  const [selected, setSelected] = useState(props.value)
+
+  useEffect(() => {
+    setSelected(props.value)
+  }, [props.value])
+
+  const onChange = (value: string) => {
+    setSelected(value)
+    if (props.onValueChange !== undefined) {
+      props.onValueChange(value)
+    }
+  }
+
+  return (
+    <SelectRoot onValueChange={onChange} value={selected}>
+      <SelectTrigger
+        data-testid="select-trigger"
+        className={`bg-surface0 ${props.triggerClassname}`}
+      >
+        <SelectValue />
+      </SelectTrigger>
+      <SelectContent>
+        {props.options.map((option) => (
+          <SelectItem
+            data-testid="a"
+            key={option.value}
+            className="text-text bg-surface0"
+            value={option.value}
+          >
+            {option.content}
+          </SelectItem>
+        ))}
+      </SelectContent>
+    </SelectRoot>
+  )
+}
+
+const SelectRoot = SelectPrimitive.Root
 
 const SelectGroup = SelectPrimitive.Group
 
