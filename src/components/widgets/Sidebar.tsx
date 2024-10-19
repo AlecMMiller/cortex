@@ -5,8 +5,8 @@ import { SearchDialog } from '../dialogs/Search'
 
 export function Sidebar(): JSX.Element {
   return (
-    <div className="flex flex-col">
-      <NavButton icon={House} tooltip="Home" to="/" />
+    <div className="flex flex-col h-full">
+      <NavButton testid="home" icon={House} tooltip="Home" to="/" />
       <NavButton icon={Search} tooltip="Search" DialogContent={SearchDialog} />
       <NavButton
         icon={FilePlus2}

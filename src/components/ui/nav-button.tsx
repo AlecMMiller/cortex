@@ -18,10 +18,11 @@ interface NavButtonProps {
   readonly prefetch?: () => void
   readonly to?: string
   readonly DialogContent?: DialogFunction
+  readonly testid?: string
 }
 
 export function NavButton(props: NavButtonProps): JSX.Element {
-  const { icon: Icon, DialogContent, ...rest } = props
+  const { icon: Icon, DialogContent, testid, ...rest } = props
 
   const [open, setOpen] = useState(false)
   const isDialog = DialogContent !== undefined
@@ -34,7 +35,11 @@ export function NavButton(props: NavButtonProps): JSX.Element {
       side="right"
       {...rest}
     >
-      <Icon className="m-2 text-subtext1 hover:text-text" size={24} />
+      <Icon
+        data-testid={props.testid}
+        className="m-2 text-subtext1 hover:text-text"
+        size={24}
+      />
     </TooltipButton>
   )
 
