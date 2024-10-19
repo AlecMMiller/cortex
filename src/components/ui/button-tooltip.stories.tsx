@@ -3,7 +3,7 @@ import { TooltipButton } from './button-tooltip'
 import { Meta, StoryObj } from '@storybook/react'
 import { userEvent, within } from '@storybook/test'
 
-type ButtonPropsAndCustomArgs = React.ComponentProps<typeof TooltipButton> & {}
+type ButtonPropsAndCustomArgs = React.ComponentProps<typeof TooltipButton>
 
 const meta: Meta<ButtonPropsAndCustomArgs> = {
   component: TooltipButton,

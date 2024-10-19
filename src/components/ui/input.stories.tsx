@@ -3,7 +3,7 @@ import { Meta, StoryObj } from '@storybook/react'
 import { userEvent, within } from '@storybook/test'
 
 const Component = Input
-type ComponentPropsAndCustomArgs = React.ComponentProps<typeof Component> & {}
+type ComponentPropsAndCustomArgs = React.ComponentProps<typeof Component>
 
 const meta: Meta<ComponentPropsAndCustomArgs> = {
   args: {

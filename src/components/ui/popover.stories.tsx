@@ -4,7 +4,7 @@ import { Meta, StoryObj } from '@storybook/react'
 import { userEvent, within } from '@storybook/test'
 import { PopoverContent, PopoverTrigger } from '@radix-ui/react-popover'
 
-type PopoverPropsAndCustomArgs = React.ComponentProps<typeof Popover> & {}
+type PopoverPropsAndCustomArgs = React.ComponentProps<typeof Popover>
 
 const meta: Meta<PopoverPropsAndCustomArgs> = {
   component: Popover,

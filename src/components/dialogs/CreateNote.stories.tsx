@@ -3,7 +3,7 @@ import { CreateNoteDialog } from './CreateNote'
 import { Meta, StoryObj } from '@storybook/react'
 
 const Component = CreateNoteDialog
-type ComponentPropsAndCustomArgs = React.ComponentProps<typeof Component> & {}
+type ComponentPropsAndCustomArgs = React.ComponentProps<typeof Component>
 
 const meta: Meta<ComponentPropsAndCustomArgs> = {
   component: Component,

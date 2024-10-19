@@ -8,7 +8,7 @@ const queryClient = new QueryClient({
 })
 
 const Component = Sidebar
-type ComponentPropsAndCustomArgs = React.ComponentProps<typeof Component> & {}
+type ComponentPropsAndCustomArgs = React.ComponentProps<typeof Component>
 
 const meta: Meta<ComponentPropsAndCustomArgs> = {
   component: Component,
@@ -27,10 +27,10 @@ const meta: Meta<ComponentPropsAndCustomArgs> = {
   parameters: {
     layout: 'fullscreen',
   },
-  render: ({ ...args }) => {
+  render: () => {
     return (
       <div className="h-screen bg-crust w-fit">
-        <Sidebar {...args} />
+        <Sidebar />
       </div>
     )
   },

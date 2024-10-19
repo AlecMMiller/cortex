@@ -8,7 +8,7 @@ const queryClient = new QueryClient({
 })
 
 const Component = SearchDialog
-type ComponentPropsAndCustomArgs = React.ComponentProps<typeof Component> & {}
+type ComponentPropsAndCustomArgs = React.ComponentProps<typeof Component>
 
 const meta: Meta<ComponentPropsAndCustomArgs> = {
   component: Component,

@@ -8,8 +8,8 @@ enum ChildOptions {
 }
 
 type ButtonPropsAndCustomArgs = React.ComponentProps<typeof Button> & {
-  child: ChildOptions
-  text?: string
+  readonly child: ChildOptions
+  readonly text?: string
 }
 
 const meta: Meta<ButtonPropsAndCustomArgs> = {
@@ -39,7 +39,7 @@ const meta: Meta<ButtonPropsAndCustomArgs> = {
     },
   },
   render: ({ child, text, ...args }) => {
-    let childElement = child === ChildOptions.Icon ? <Search /> : text
+    const childElement = child === ChildOptions.Icon ? <Search /> : text
 
     return (
       <Button className="text-text" {...args}>

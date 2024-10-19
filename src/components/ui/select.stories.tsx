@@ -1,8 +1,8 @@
 import { Select } from './select'
 import { Meta, StoryObj } from '@storybook/react'
-import { userEvent, within, expect, waitFor } from '@storybook/test'
+import { userEvent, within } from '@storybook/test'
 
-type SelectPropsAndCustomArgs = React.ComponentProps<typeof Select> & {}
+type SelectPropsAndCustomArgs = React.ComponentProps<typeof Select>
 
 const meta: Meta<SelectPropsAndCustomArgs> = {
   component: Select,
