@@ -11,27 +11,27 @@ type FunctionType<A extends Array<any>, T> = (
   ...args: A
 ) => Promise<Result<T, Error>>
 
-type NewUseTypeFunction<Args extends Array<any>, R> = (
+type UseTypeFunction<Args extends Array<any>, R> = (
   options: QueryOptions,
   ...args: Args
 ) => UseQueryResult<R>
 
-type NewBuildPrefetchTypeFunction<Args extends Array<any>> = (
+type BuildPrefetchTypeFunction<Args extends Array<any>> = (
   client: QueryClient,
   ...args: Args
 ) => PrefetchTypeFunction
 
-interface NewQueryMethods<Args extends Array<any>, R> {
-  useType: NewUseTypeFunction<Args, R>
-  buildPrefetchType: NewBuildPrefetchTypeFunction<Args>
+interface QueryMethods<Args extends Array<any>, R> {
+  useType: UseTypeFunction<Args, R>
+  buildPrefetchType: BuildPrefetchTypeFunction<Args>
 }
 
 type KeyFunction<Args extends Array<any>> = (...args: Args) => string[]
 
-export function newBuildQueryMethods<Args extends Array<any>, R>(
+export function buildQueryMethods<Args extends Array<any>, R>(
   baseFunction: FunctionType<Args, R>,
   makeKey: KeyFunction<Args>,
-): NewQueryMethods<Args, R> {
+): QueryMethods<Args, R> {
   const buildGetType = (...args: Args): (() => Promise<R>) => {
     return async (): Promise<R> => {
       const result = await baseFunction(...args)
@@ -43,7 +43,7 @@ export function newBuildQueryMethods<Args extends Array<any>, R>(
     }
   }
 
-  const useType: NewUseTypeFunction<Args, R> = (
+  const useType: UseTypeFunction<Args, R> = (
     options: QueryOptions,
     ...args: Args
   ): UseQueryResult<R> => {
@@ -54,7 +54,7 @@ export function newBuildQueryMethods<Args extends Array<any>, R>(
     })
   }
 
-  const buildPrefetchType: NewBuildPrefetchTypeFunction<Args> = (
+  const buildPrefetchType: BuildPrefetchTypeFunction<Args> = (
     client: QueryClient,
     ...args: Args
   ): (() => void) => {
