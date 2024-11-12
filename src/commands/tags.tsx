@@ -6,9 +6,9 @@ export const {
   buildPrefetchType: buildPretchAvailableTagsContaining,
 } = newBuildQueryMethods(
   commands.getAvailableTagsContaining,
-  (content: string, _max_results, note_uuid: string) => [
+  (content: string, _maxResults, noteUuid: string) => [
     'note',
-    note_uuid,
+    noteUuid,
     'tags_containing',
     content,
   ],
