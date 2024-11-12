@@ -1,10 +1,10 @@
 import { commands } from '@/bindings'
-import { newBuildQueryMethods } from './common'
+import { buildQueryMethods } from './common'
 
 export const {
   useType: useAvailableTagsContaining,
   buildPrefetchType: buildPretchAvailableTagsContaining,
-} = newBuildQueryMethods(
+} = buildQueryMethods(
   commands.getAvailableTagsContaining,
   (content: string, _maxResults, noteUuid: string) => [
     'note',

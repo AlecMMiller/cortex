@@ -1,5 +1,5 @@
 import { invoke } from '@tauri-apps/api/core'
-import { newBuildQueryMethods } from './common'
+import { buildQueryMethods } from './common'
 import { QueryClient } from '@tanstack/react-query'
 import { commands, Note, NoteTitle } from '@/bindings'
 
@@ -8,29 +8,26 @@ export function makeNoteQueryKey(uuid: string) {
 }
 
 export const { useType: useNote, buildPrefetchType: buildPrefetchNote } =
-  newBuildQueryMethods(commands.getNote, makeNoteQueryKey)
+  buildQueryMethods(commands.getNote, makeNoteQueryKey)
 
 export const {
   useType: useAllNotes,
   buildPrefetchType: buildPrefetchAllNotes,
-} = newBuildQueryMethods(commands.getAllNotes, () => ['note_titles'])
+} = buildQueryMethods(commands.getAllNotes, () => ['note_titles'])
 
 export const {
   useType: useNoteDirectTags,
   buildPrefetchType: buildPrefetchDirectTags,
-} = newBuildQueryMethods(commands.getDirectTags, (uuid: string) => {
+} = buildQueryMethods(commands.getDirectTags, (uuid: string) => {
   return ['notes', 'tags', uuid, 'direct']
 })
 
 export const {
   useType: useSearchNotesByTitle,
   buildPrefetchType: buildPretchNotesByTitle,
-} = newBuildQueryMethods(
-  commands.getNotesByTitle,
-  (title: string, ..._rest) => {
-    return ['notes', 'by_title', title]
-  },
-)
+} = buildQueryMethods(commands.getNotesByTitle, (title: string, ..._rest) => {
+  return ['notes', 'by_title', title]
+})
 
 export interface TitleWithContext {
   title: NoteTitle
@@ -40,7 +37,7 @@ export interface TitleWithContext {
 export const {
   useType: useSearchNotesByContent,
   buildPrefetchType: buildPretchNotesByContent,
-} = newBuildQueryMethods(
+} = buildQueryMethods(
   commands.getNotesByContent,
   (content: string, ..._rest) => ['notes', 'by_content', content],
 )
