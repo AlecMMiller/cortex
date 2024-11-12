@@ -1,73 +1,36 @@
 import { invoke } from '@tauri-apps/api/core'
-import { NoteData, NoteTitle } from '../types'
-import { buildQueryMethods } from './common'
+import { newBuildQueryMethods } from './common'
 import { QueryClient } from '@tanstack/react-query'
-
-type NoteSelect = {
-  uuid: string
-}
+import { commands, Note, NoteTitle } from '@/bindings'
 
 export function makeNoteQueryKey(uuid: string) {
   return ['note', uuid]
 }
 
 export const { useType: useNote, buildPrefetchType: buildPrefetchNote } =
-  buildQueryMethods<NoteSelect, NoteData>({
-    command: 'get_note',
-    makeKey: (data: NoteSelect) => {
-      return makeNoteQueryKey(data.uuid)
-    },
-  })
+  newBuildQueryMethods(commands.getNote, makeNoteQueryKey)
 
 export const {
   useType: useAllNotes,
   buildPrefetchType: buildPrefetchAllNotes,
-} = buildQueryMethods<{}, NoteTitle[]>({
-  command: 'get_all_notes',
-  makeKey: (_data: {}) => {
-    return ['note_titles']
-  },
-})
-
-type TagSearch = {
-  uuid: string
-}
-
-type Tag = {
-  uuid: string
-  title: string
-}
+} = newBuildQueryMethods(commands.getAllNotes, () => ['note_titles'])
 
 export const {
   useType: useNoteDirectTags,
   buildPrefetchType: buildPrefetchDirectTags,
-} = buildQueryMethods<TagSearch, Tag[]>({
-  command: 'get_direct_tags',
-  makeKey: (data: TagSearch) => {
-    return ['notes', 'tags', data.uuid, 'direct']
-  },
+} = newBuildQueryMethods(commands.getDirectTags, (uuid: string) => {
+  return ['notes', 'tags', uuid, 'direct']
 })
-
-type TitleSearch = {
-  title: string
-  maxResults: number
-}
 
 export const {
   useType: useSearchNotesByTitle,
   buildPrefetchType: buildPretchNotesByTitle,
-} = buildQueryMethods<TitleSearch, NoteTitle[]>({
-  command: 'get_notes_by_title',
-  makeKey: (data: TitleSearch) => {
-    return ['notes', 'by_title', data.title]
+} = newBuildQueryMethods(
+  commands.getNotesByTitle,
+  (title: string, ..._rest) => {
+    return ['notes', 'by_title', title]
   },
-})
-
-type ContentSearch = {
-  content: string
-  maxResults: number
-  snippetSize: number
-}
+)
 
 export interface TitleWithContext {
   title: NoteTitle
@@ -77,16 +40,14 @@ export interface TitleWithContext {
 export const {
   useType: useSearchNotesByContent,
   buildPrefetchType: buildPretchNotesByContent,
-} = buildQueryMethods<ContentSearch, TitleWithContext[]>({
-  command: 'get_notes_by_content',
-  makeKey: (data: ContentSearch) => {
-    return ['notes', 'by_content', data.content]
-  },
-})
+} = newBuildQueryMethods(
+  commands.getNotesByContent,
+  (content: string, ..._rest) => ['notes', 'by_content', content],
+)
 
-export async function createNote(name: string): Promise<NoteData> {
+export async function createNote(name: string): Promise<Note> {
   const result = invoke('create_note', { title: name })
-  return (await result) as NoteData
+  return (await result) as Note
 }
 
 export async function renameNote(uuid: string, title: string): Promise<void> {

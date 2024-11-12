@@ -35,12 +35,10 @@ export function SearchDialog(props: DialogFunctionProps) {
   const { t } = useTranslation()
 
   const { data } = useSearchNotesByContent(
-    {
-      maxResults: 10,
-      content: queryPhrase,
-      snippetSize: 40,
-    },
     {},
+    queryPhrase,
+    BigInt(10),
+    BigInt(40),
   )
 
   useEffect(() => {

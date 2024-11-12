@@ -1,22 +1,15 @@
-import { buildQueryMethods } from './common'
-
-type TagSearch = {
-  noteUuid: string
-  content: string
-  maxResults: number
-}
-
-interface Tag {
-  uuid: string
-  title: string
-}
+import { commands } from '@/bindings'
+import { newBuildQueryMethods } from './common'
 
 export const {
   useType: useAvailableTagsContaining,
   buildPrefetchType: buildPretchAvailableTagsContaining,
-} = buildQueryMethods<TagSearch, [Tag[], boolean]>({
-  command: 'get_available_tags_containing',
-  makeKey: (data: TagSearch) => {
-    return ['tags', 'containing', data.content]
-  },
-})
+} = newBuildQueryMethods(
+  commands.getAvailableTagsContaining,
+  (content: string, _max_results, note_uuid: string) => [
+    'note',
+    note_uuid,
+    'tags_containing',
+    content,
+  ],
+)

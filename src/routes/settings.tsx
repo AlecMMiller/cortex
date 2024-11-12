@@ -9,7 +9,7 @@ interface OptionSelectProps {
 
 function OptionSelect(props: OptionSelectProps) {
   const { options } = props
-  const { data } = useSetting({ key: props.settingKey }, {})
+  const { data } = useSetting({}, props.settingKey)
   const queryClient = useQueryClient()
 
   const onChange = async (choice: string) => {

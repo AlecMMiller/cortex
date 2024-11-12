@@ -1,67 +1,67 @@
+import { Error, Result } from '@/bindings'
 import { UseQueryResult, QueryClient, useQuery } from '@tanstack/react-query'
-import { invoke, InvokeArgs } from '@tauri-apps/api/core'
 
 interface QueryOptions {
   readonly staleTime?: number
 }
 
-interface QueryMethods<InputType, ReturnType> {
-  useType: UseTypeFunction<InputType, ReturnType>
-  buildPrefetchType: BuildPrefetchTypeFunction<InputType>
-}
-
-interface BuilderArgs<InputType> {
-  command: string
-  makeKey: (data: InputType) => string[]
-}
-
-type UseTypeFunction<InputType, ReturnType> = (
-  data: InputType,
-  options: QueryOptions,
-) => UseQueryResult<ReturnType>
-
 type PrefetchTypeFunction = () => void
 
-type BuildPrefetchTypeFunction<InputType> = (
+type FunctionType<A extends Array<any>, T> = (
+  ...args: A
+) => Promise<Result<T, Error>>
+
+type NewUseTypeFunction<Args extends Array<any>, R> = (
+  options: QueryOptions,
+  ...args: Args
+) => UseQueryResult<R>
+
+type NewBuildPrefetchTypeFunction<Args extends Array<any>> = (
   client: QueryClient,
-  data: InputType,
+  ...args: Args
 ) => PrefetchTypeFunction
 
-export function buildQueryMethods<InputType extends InvokeArgs, ReturnType>(
-  args: BuilderArgs<InputType>,
-): QueryMethods<InputType, ReturnType> {
-  const buildGetType = (data: InputType): (() => Promise<ReturnType>) => {
-    return async (): Promise<ReturnType> => {
-      console.debug(`${args.command} ${JSON.stringify(data)}`)
-      try {
-        const result = await invoke(args.command, data)
-        return result as ReturnType
-      } catch (error) {
-        console.log(error)
-        throw error
+interface NewQueryMethods<Args extends Array<any>, R> {
+  useType: NewUseTypeFunction<Args, R>
+  buildPrefetchType: NewBuildPrefetchTypeFunction<Args>
+}
+
+type KeyFunction<Args extends Array<any>> = (...args: Args) => string[]
+
+export function newBuildQueryMethods<Args extends Array<any>, R>(
+  baseFunction: FunctionType<Args, R>,
+  makeKey: KeyFunction<Args>,
+): NewQueryMethods<Args, R> {
+  const buildGetType = (...args: Args): (() => Promise<R>) => {
+    return async (): Promise<R> => {
+      const result = await baseFunction(...args)
+      if (result.status === 'ok') {
+        return result.data
+      } else {
+        throw result.error
       }
     }
   }
 
-  const useType: UseTypeFunction<InputType, ReturnType> = (
-    data: InputType,
+  const useType: NewUseTypeFunction<Args, R> = (
     options: QueryOptions,
-  ): UseQueryResult<ReturnType> => {
+    ...args: Args
+  ): UseQueryResult<R> => {
     return useQuery({
-      queryKey: args.makeKey(data),
-      queryFn: buildGetType(data),
+      queryKey: makeKey(...args),
+      queryFn: buildGetType(...args),
       ...options,
     })
   }
 
-  const buildPrefetchType: BuildPrefetchTypeFunction<InputType> = (
+  const buildPrefetchType: NewBuildPrefetchTypeFunction<Args> = (
     client: QueryClient,
-    data: InputType,
+    ...args: Args
   ): (() => void) => {
     return () => {
       client.prefetchQuery({
-        queryKey: args.makeKey(data),
-        queryFn: buildGetType(data),
+        queryKey: makeKey(...args),
+        queryFn: buildGetType(...args),
         staleTime: 10000,
       })
     }

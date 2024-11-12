@@ -23,11 +23,11 @@ import { CodeNode } from '@lexical/code'
 import { AutoLinkNode, LinkNode } from '@lexical/link'
 import { EditorState, TextNode } from 'lexical'
 import { invoke } from '@tauri-apps/api/core'
-import { NoteData } from './types'
 import { makeNoteQueryKey, renameNote } from './commands/note'
 import WikiLinkPlugin from './plugins/WikiLink'
 import { InternalLinkNode } from './nodes/InternalLink'
 import { useQueryClient, QueryClient } from '@tanstack/react-query'
+import { Note } from './bindings'
 
 function onChange(
   queryClient: QueryClient,
@@ -49,7 +49,7 @@ function onError(error: any): void {
   console.error(error)
 }
 interface EditorProps {
-  readonly note: NoteData
+  readonly note: Note
 }
 
 export default function Editor(props: EditorProps): JSX.Element {
