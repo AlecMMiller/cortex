@@ -1,5 +1,6 @@
 use crate::lexical::{EditorState, GetRawText};
 use crate::models::notes::{Note, NoteTitle};
+use specta::Type;
 use std::fs::create_dir;
 use std::path::PathBuf;
 use std::sync::{Arc, Mutex};
@@ -138,7 +139,7 @@ impl NoteTitle {
 }
 
 use serde::Serialize;
-#[derive(Serialize, Debug, PartialEq)]
+#[derive(Serialize, Debug, PartialEq, Type)]
 pub struct TitleWithContext {
     title: NoteTitle,
     context: String,

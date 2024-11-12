@@ -8,8 +8,9 @@ use diesel::{
     sqlite::Sqlite,
 };
 use serde::Serialize;
+use specta::Type;
 
-#[derive(AsExpression, FromSqlRow, Debug, PartialEq, Eq)]
+#[derive(AsExpression, FromSqlRow, Debug, PartialEq, Eq, Type)]
 #[diesel(sql_type = diesel::sql_types::BigInt)]
 pub struct AbsoluteTimestamp(pub i64);
 
