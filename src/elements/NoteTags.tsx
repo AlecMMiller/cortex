@@ -18,12 +18,7 @@ interface TagSelectorProps {
 
 function TagSelector(props: TagSelectorProps): JSX.Element {
   const [addText, setAddText] = useState('')
-  const { data } = useAvailableTagsContaining(
-    {},
-    addText,
-    BigInt(5),
-    props.uuid,
-  )
+  const { data } = useAvailableTagsContaining({}, addText, 5, props.uuid)
   const { t } = useTranslation()
   const qc = useQueryClient()
 

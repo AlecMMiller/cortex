@@ -92,7 +92,7 @@ export default function WikiLinkPlugin(): JSX.Element {
   const { data, status } = useSearchNotesByTitle(
     {},
     actualQueryString,
-    BigInt(SUGGESTION_LIST_LENGTH_LIMIT),
+    SUGGESTION_LIST_LENGTH_LIMIT,
   )
 
   const results = status === 'success' ? data : []
