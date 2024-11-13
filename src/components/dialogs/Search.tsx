@@ -34,14 +34,7 @@ export function SearchDialog(props: DialogFunctionProps) {
   const [cachedResults, setCachedResults] = useState<TitleWithContext[]>([])
   const { t } = useTranslation()
 
-  const { data } = useSearchNotesByContent(
-    {
-      maxResults: 10,
-      content: queryPhrase,
-      snippetSize: 40,
-    },
-    {},
-  )
+  const { data } = useSearchNotesByContent({}, queryPhrase, 10, 40)
 
   useEffect(() => {
     setCachedResults(data ?? [])

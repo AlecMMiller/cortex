@@ -4,8 +4,9 @@ use crate::{
 };
 use diesel::{prelude::*, result::Error, Selectable};
 use serde::Serialize;
+use specta::Type;
 
-#[derive(Queryable, Selectable, Insertable, Serialize, Identifiable)]
+#[derive(Queryable, Selectable, Insertable, Serialize, Identifiable, Type)]
 #[diesel(table_name = schema::settings)]
 #[diesel(check_for_backend(diesel::sqlite::Sqlite))]
 #[diesel(primary_key(key))]

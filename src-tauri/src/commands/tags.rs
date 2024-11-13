@@ -6,6 +6,7 @@ use crate::PoolWrapper;
 use tauri::State;
 
 #[tauri::command]
+#[specta::specta]
 pub fn get_available_tags_containing<'a>(
     state: State<'_, PoolWrapper>,
     content: &str,

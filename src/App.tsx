@@ -27,13 +27,7 @@ function LanguageProvider(props: LanguageProviderProps): JSX.Element {
 
   const [detectedLanguage, setDetectedLanguage] = useState<string>('')
 
-  const { data, status } = useGetSettingOrSet(
-    {
-      key: 'locale',
-      value: detectedLanguage,
-    },
-    {},
-  )
+  const { data, status } = useGetSettingOrSet({}, 'locale', detectedLanguage)
 
   useEffect(() => {
     const doSetLanguage = async () => {

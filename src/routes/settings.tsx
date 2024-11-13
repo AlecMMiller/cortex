@@ -9,11 +9,11 @@ interface OptionSelectProps {
 
 function OptionSelect(props: OptionSelectProps) {
   const { options } = props
-  const { data } = useSetting({ key: props.settingKey }, {})
+  const { data } = useSetting({}, props.settingKey)
   const queryClient = useQueryClient()
 
   const onChange = async (choice: string) => {
-    await updateSetting({ key: props.settingKey, value: choice })
+    await updateSetting(props.settingKey, choice)
     const queryKey = makeSettingKey(props.settingKey)
     queryClient.invalidateQueries({ queryKey })
   }

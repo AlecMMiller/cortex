@@ -8,7 +8,7 @@ export const Route = createLazyFileRoute('/')({
 })
 
 function Index(): JSX.Element {
-  const { status, data } = useAllNotes({}, {})
+  const { status, data } = useAllNotes({})
 
   const { t } = useTranslation()
 

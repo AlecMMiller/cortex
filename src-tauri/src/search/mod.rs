@@ -1,9 +1,9 @@
 use crate::lexical::{EditorState, GetRawText};
 use crate::models::notes::{Note, NoteTitle};
+use specta::Type;
 use std::fs::create_dir;
 use std::path::PathBuf;
 use std::sync::{Arc, Mutex};
-use std::usize;
 use tantivy::collector::TopDocs;
 use tantivy::query::{QueryParser, RegexQuery};
 use tantivy::{
@@ -138,7 +138,7 @@ impl NoteTitle {
 }
 
 use serde::Serialize;
-#[derive(Serialize, Debug, PartialEq)]
+#[derive(Serialize, Debug, PartialEq, Type)]
 pub struct TitleWithContext {
     title: NoteTitle,
     context: String,
@@ -146,8 +146,8 @@ pub struct TitleWithContext {
 
 pub fn search_by_content(
     search: &str,
-    limit: usize,
-    snippet_size: usize,
+    limit: u16,
+    snippet_size: u16,
     searcher: Arc<TextIndexSearcher>,
 ) -> tantivy::Result<Vec<TitleWithContext>> {
     let index = searcher.index.clone();
@@ -161,10 +161,10 @@ pub fn search_by_content(
     let query_parser = QueryParser::for_index(&index, vec![title, content]);
     let query = query_parser.parse_query(search)?;
 
-    let top_results = searcher.search(&query, &TopDocs::with_limit(limit))?;
+    let top_results = searcher.search(&query, &TopDocs::with_limit(limit.into()))?;
 
     let mut snippet_generator = SnippetGenerator::create(&searcher, &*query, content)?;
-    snippet_generator.set_max_num_chars(snippet_size);
+    snippet_generator.set_max_num_chars(snippet_size.into());
 
     let all_titles: tantivy::Result<Vec<TitleWithContext>> = top_results
         .into_iter()
@@ -197,7 +197,7 @@ pub fn search_by_content(
 
 pub fn search_by_title(
     search: &str,
-    limit: usize,
+    limit: u16,
     searcher: Arc<TextIndexSearcher>,
 ) -> tantivy::Result<Vec<NoteTitle>> {
     let index = searcher.index.clone();
@@ -212,13 +212,13 @@ pub fn search_by_title(
             let query = format!("\"{search}\"*");
             let query_parser = QueryParser::for_index(&index, vec![title]);
             let query = query_parser.parse_query(&query)?;
-            searcher.search(&query, &TopDocs::with_limit(limit))?
+            searcher.search(&query, &TopDocs::with_limit(limit.into()))?
         }
         false => {
             let query = regex::escape(search).to_lowercase();
             let query = format!(r"{query}.*");
             let query = RegexQuery::from_pattern(&query, title)?;
-            searcher.search(&query, &TopDocs::with_limit(limit))?
+            searcher.search(&query, &TopDocs::with_limit(limit.into()))?
         }
     };
 
