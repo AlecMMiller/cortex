@@ -12,7 +12,7 @@ use specta::Type;
 
 #[derive(AsExpression, FromSqlRow, Debug, PartialEq, Eq, Type)]
 #[diesel(sql_type = diesel::sql_types::BigInt)]
-pub struct AbsoluteTimestamp(pub i64);
+pub struct AbsoluteTimestamp(#[specta(type = String)] pub i64);
 
 impl FromSql<BigInt, Sqlite> for AbsoluteTimestamp {
     fn from_sql(bytes: <Sqlite as Backend>::RawValue<'_>) -> deserialize::Result<Self> {

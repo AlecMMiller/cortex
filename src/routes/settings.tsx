@@ -13,7 +13,7 @@ function OptionSelect(props: OptionSelectProps) {
   const queryClient = useQueryClient()
 
   const onChange = async (choice: string) => {
-    await updateSetting({ key: props.settingKey, value: choice })
+    await updateSetting(props.settingKey, choice)
     const queryKey = makeSettingKey(props.settingKey)
     queryClient.invalidateQueries({ queryKey })
   }

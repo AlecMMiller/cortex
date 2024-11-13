@@ -1,10 +1,5 @@
-import { invoke } from '@tauri-apps/api/core'
 import { commands } from '@/bindings'
 import { buildQueryMethods } from './common'
-type Setting = {
-  key: string
-  value: string
-}
 
 export const { useType: useGetSettingOrSet } = buildQueryMethods(
   commands.getSettingOrSet,
@@ -20,6 +15,6 @@ export const { useType: useSetting } = buildQueryMethods(
   makeSettingKey,
 )
 
-export async function updateSetting(setting: Setting) {
-  await invoke('update_setting', setting)
+export async function updateSetting(key: string, value: string) {
+  await commands.updateSetting(key, value)
 }

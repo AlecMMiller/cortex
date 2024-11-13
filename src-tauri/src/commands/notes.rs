@@ -32,7 +32,7 @@ pub fn get_all_notes<'a>(state: State<'_, PoolWrapper>) -> Result<Vec<NoteTitle>
 pub fn get_notes_by_title<'a>(
     state: State<'_, SearcherWrapper>,
     title: &str,
-    max_results: usize,
+    max_results: u16,
 ) -> Result<Vec<NoteTitle>, Error> {
     Ok(search_by_title(title, max_results, state.searcher.clone())?)
 }
@@ -42,8 +42,8 @@ pub fn get_notes_by_title<'a>(
 pub fn get_notes_by_content<'a>(
     state: State<'_, SearcherWrapper>,
     content: &str,
-    max_results: usize,
-    snippet_size: usize,
+    max_results: u16,
+    snippet_size: u16,
 ) -> Result<Vec<TitleWithContext>, Error> {
     Ok(search_by_content(
         content,

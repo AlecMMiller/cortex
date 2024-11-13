@@ -1,4 +1,3 @@
-import { invoke } from '@tauri-apps/api/core'
 import { buildQueryMethods } from './common'
 import { QueryClient } from '@tanstack/react-query'
 import { commands, Note, NoteTitle } from '@/bindings'
@@ -43,12 +42,17 @@ export const {
 )
 
 export async function createNote(name: string): Promise<Note> {
-  const result = invoke('create_note', { title: name })
-  return (await result) as Note
+  const result = await commands.createNote(name)
+
+  if (result.status === 'ok') {
+    return result.data
+  } else {
+    throw new Error(result.error.type)
+  }
 }
 
 export async function renameNote(uuid: string, title: string): Promise<void> {
-  await invoke('rename_note', { uuid, title })
+  await commands.renameNote(uuid, title)
 }
 
 export async function addNewTag(
@@ -56,7 +60,12 @@ export async function addNewTag(
   tagText: string,
   queryClient: QueryClient,
 ): Promise<void> {
-  await invoke('add_new_tag', { uuid, tagText })
+  const result = await commands.addNewTag(uuid, tagText)
+
+  if (result.status === 'error') {
+    throw new Error(result.error.type)
+  }
+
   queryClient.invalidateQueries({ queryKey: ['tags'] })
   queryClient.invalidateQueries({ queryKey: ['notes', 'tags', uuid] })
 }
@@ -66,6 +75,11 @@ export async function addTag(
   tagUuid: string,
   queryClient: QueryClient,
 ): Promise<void> {
-  await invoke('add_tag', { noteUuid, tagUuid })
+  const result = await commands.addTag(noteUuid, tagUuid)
+
+  if (result.status === 'error') {
+    throw new Error(result.error.type)
+  }
+
   queryClient.invalidateQueries({ queryKey: ['notes', 'tags', noteUuid] })
 }

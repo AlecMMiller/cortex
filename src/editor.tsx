@@ -22,12 +22,11 @@ import { HeadingNode, QuoteNode } from '@lexical/rich-text'
 import { CodeNode } from '@lexical/code'
 import { AutoLinkNode, LinkNode } from '@lexical/link'
 import { EditorState, TextNode } from 'lexical'
-import { invoke } from '@tauri-apps/api/core'
 import { makeNoteQueryKey, renameNote } from './commands/note'
 import WikiLinkPlugin from './plugins/WikiLink'
 import { InternalLinkNode } from './nodes/InternalLink'
 import { useQueryClient, QueryClient } from '@tanstack/react-query'
-import { Note } from './bindings'
+import { commands, Note } from './bindings'
 
 function onChange(
   queryClient: QueryClient,
@@ -37,7 +36,7 @@ function onChange(
   const queryKey = makeNoteQueryKey(uuid)
   const json = state.toJSON()
   const serialized = JSON.stringify(json)
-  invoke('update_note', { uuid, body: serialized })
+  commands.updateNote(uuid, serialized)
   queryClient.invalidateQueries({ queryKey })
 }
 

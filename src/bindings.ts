@@ -32,7 +32,7 @@ export const commands = {
   },
   async getNotesByTitle(
     title: string,
-    maxResults: bigint,
+    maxResults: number,
   ): Promise<Result<NoteTitle[], Error>> {
     try {
       return {
@@ -46,8 +46,8 @@ export const commands = {
   },
   async getNotesByContent(
     content: string,
-    maxResults: bigint,
-    snippetSize: bigint,
+    maxResults: number,
+    snippetSize: number,
   ): Promise<Result<TitleWithContext[], Error>> {
     try {
       return {
@@ -156,7 +156,7 @@ export const commands = {
   },
   async getAvailableTagsContaining(
     content: string,
-    maxResults: bigint,
+    maxResults: number,
     noteUuid: NoteId,
   ): Promise<Result<[Tag[], boolean], Error>> {
     try {
@@ -181,7 +181,7 @@ export const commands = {
 
 /** user-defined types **/
 
-export type AbsoluteTimestamp = bigint
+export type AbsoluteTimestamp = string
 export type Error = { type: 'Tantivy' } | { type: 'Diesel' } | { type: 'Serde' }
 export type Note = {
   uuid: NoteId

@@ -1,4 +1,4 @@
-import { Error, Result } from '@/bindings'
+import { Result } from '@/bindings'
 import { UseQueryResult, QueryClient, useQuery } from '@tanstack/react-query'
 
 interface QueryOptions {
@@ -7,9 +7,9 @@ interface QueryOptions {
 
 type PrefetchTypeFunction = () => void
 
-type FunctionType<A extends Array<any>, T> = (
+type FunctionType<A extends Array<any>, R, E> = (
   ...args: A
-) => Promise<Result<T, Error>>
+) => Promise<Result<R, E>>
 
 type UseTypeFunction<Args extends Array<any>, R> = (
   options: QueryOptions,
@@ -28,8 +28,8 @@ interface QueryMethods<Args extends Array<any>, R> {
 
 type KeyFunction<Args extends Array<any>> = (...args: Args) => string[]
 
-export function buildQueryMethods<Args extends Array<any>, R>(
-  baseFunction: FunctionType<Args, R>,
+export function buildQueryMethods<Args extends Array<any>, R, E>(
+  baseFunction: FunctionType<Args, R, E>,
   makeKey: KeyFunction<Args>,
 ): QueryMethods<Args, R> {
   const buildGetType = (...args: Args): (() => Promise<R>) => {
