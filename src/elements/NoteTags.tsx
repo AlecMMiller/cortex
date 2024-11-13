@@ -18,10 +18,7 @@ interface TagSelectorProps {
 
 function TagSelector(props: TagSelectorProps): JSX.Element {
   const [addText, setAddText] = useState('')
-  const { data } = useAvailableTagsContaining(
-    { content: addText, maxResults: 5, noteUuid: props.uuid },
-    {},
-  )
+  const { data } = useAvailableTagsContaining({}, addText, 5, props.uuid)
   const { t } = useTranslation()
   const qc = useQueryClient()
 
@@ -86,7 +83,7 @@ interface NoteTagsProps {
 
 export function NoteTags(props: NoteTagsProps): JSX.Element {
   const { t } = useTranslation()
-  const { data } = useNoteDirectTags({ uuid: props.uuid }, {})
+  const { data } = useNoteDirectTags({}, props.uuid)
   const [open, setOpen] = useState(false)
 
   const tagData = data ?? []
