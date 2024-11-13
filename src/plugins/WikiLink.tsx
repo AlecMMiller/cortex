@@ -8,8 +8,8 @@ import { TextNode } from 'lexical'
 import { useState, useMemo, useCallback, ReactPortal } from 'react'
 import { createPortal } from 'react-dom'
 import { useSearchNotesByTitle } from '@/commands/note'
-import { NoteTitle } from '@/types'
 import { $createInternalLinkNode } from '@/nodes/InternalLink'
+import { NoteTitle } from '@/bindings'
 
 const SUGGESTION_LIST_LENGTH_LIMIT = 5
 
@@ -90,11 +90,9 @@ export default function WikiLinkPlugin(): JSX.Element {
   const actualQueryString = queryString === null ? '' : queryString.slice(2)
 
   const { data, status } = useSearchNotesByTitle(
-    {
-      title: actualQueryString,
-      maxResults: SUGGESTION_LIST_LENGTH_LIMIT,
-    },
     {},
+    actualQueryString,
+    SUGGESTION_LIST_LENGTH_LIMIT,
   )
 
   const results = status === 'success' ? data : []

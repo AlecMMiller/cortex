@@ -1,4 +1,5 @@
 pub use super::time::AbsoluteTimestamp;
+use crate::commands::Error;
 use crate::lexical::{EditorState, GetRawText};
 use crate::search::{TextIndexWriter, CONTENT, ID, TITLE};
 use crate::{macros::macros::create_id, schema::notes};
@@ -17,11 +18,12 @@ use diesel::{
 };
 use serde::Deserializer;
 use serde::{Deserialize, Serialize};
+use specta::Type;
 use std::sync::Arc;
 use tantivy::{TantivyDocument, Term};
 create_id!(NoteId);
 
-#[derive(Queryable, Selectable, Insertable, Serialize, Identifiable)]
+#[derive(Queryable, Selectable, Insertable, Serialize, Identifiable, Type)]
 #[diesel(table_name = crate::schema::notes)]
 #[diesel(primary_key(uuid))]
 #[diesel(check_for_backend(diesel::sqlite::Sqlite))]
@@ -31,31 +33,6 @@ pub struct Note {
     pub body: String,
     pub created_at: AbsoluteTimestamp,
     pub updated_at: AbsoluteTimestamp,
-}
-
-#[derive(Debug)]
-pub enum Error {
-    Diesel(diesel::result::Error),
-    Tantivy(tantivy::TantivyError),
-    Serde(serde_json::Error),
-}
-
-impl From<diesel::result::Error> for Error {
-    fn from(err: diesel::result::Error) -> Self {
-        Self::Diesel(err)
-    }
-}
-
-impl From<tantivy::TantivyError> for Error {
-    fn from(err: tantivy::TantivyError) -> Self {
-        Self::Tantivy(err)
-    }
-}
-
-impl From<serde_json::Error> for Error {
-    fn from(err: serde_json::Error) -> Self {
-        Self::Serde(err)
-    }
 }
 
 impl Note {
@@ -186,7 +163,7 @@ impl Note {
     }
 }
 
-#[derive(Serialize, Debug, PartialEq, Queryable, Selectable, Identifiable)]
+#[derive(Serialize, Debug, PartialEq, Queryable, Selectable, Identifiable, Type)]
 #[diesel(table_name = crate::schema::notes)]
 #[diesel(primary_key(uuid))]
 pub struct NoteTitle {

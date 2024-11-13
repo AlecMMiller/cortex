@@ -1,73 +1,32 @@
-import { invoke } from '@tauri-apps/api/core'
-import { NoteData, NoteTitle } from '../types'
 import { buildQueryMethods } from './common'
 import { QueryClient } from '@tanstack/react-query'
-
-type NoteSelect = {
-  uuid: string
-}
+import { commands, Note, NoteTitle } from '@/bindings'
 
 export function makeNoteQueryKey(uuid: string) {
   return ['note', uuid]
 }
 
 export const { useType: useNote, buildPrefetchType: buildPrefetchNote } =
-  buildQueryMethods<NoteSelect, NoteData>({
-    command: 'get_note',
-    makeKey: (data: NoteSelect) => {
-      return makeNoteQueryKey(data.uuid)
-    },
-  })
+  buildQueryMethods(commands.getNote, makeNoteQueryKey)
 
 export const {
   useType: useAllNotes,
   buildPrefetchType: buildPrefetchAllNotes,
-} = buildQueryMethods<{}, NoteTitle[]>({
-  command: 'get_all_notes',
-  makeKey: (_data: {}) => {
-    return ['note_titles']
-  },
-})
-
-type TagSearch = {
-  uuid: string
-}
-
-type Tag = {
-  uuid: string
-  title: string
-}
+} = buildQueryMethods(commands.getAllNotes, () => ['note_titles'])
 
 export const {
   useType: useNoteDirectTags,
   buildPrefetchType: buildPrefetchDirectTags,
-} = buildQueryMethods<TagSearch, Tag[]>({
-  command: 'get_direct_tags',
-  makeKey: (data: TagSearch) => {
-    return ['notes', 'tags', data.uuid, 'direct']
-  },
+} = buildQueryMethods(commands.getDirectTags, (uuid: string) => {
+  return ['notes', 'tags', uuid, 'direct']
 })
-
-type TitleSearch = {
-  title: string
-  maxResults: number
-}
 
 export const {
   useType: useSearchNotesByTitle,
   buildPrefetchType: buildPretchNotesByTitle,
-} = buildQueryMethods<TitleSearch, NoteTitle[]>({
-  command: 'get_notes_by_title',
-  makeKey: (data: TitleSearch) => {
-    return ['notes', 'by_title', data.title]
-  },
+} = buildQueryMethods(commands.getNotesByTitle, (title: string, ..._rest) => {
+  return ['notes', 'by_title', title]
 })
-
-type ContentSearch = {
-  content: string
-  maxResults: number
-  snippetSize: number
-}
 
 export interface TitleWithContext {
   title: NoteTitle
@@ -77,20 +36,23 @@ export interface TitleWithContext {
 export const {
   useType: useSearchNotesByContent,
   buildPrefetchType: buildPretchNotesByContent,
-} = buildQueryMethods<ContentSearch, TitleWithContext[]>({
-  command: 'get_notes_by_content',
-  makeKey: (data: ContentSearch) => {
-    return ['notes', 'by_content', data.content]
-  },
-})
+} = buildQueryMethods(
+  commands.getNotesByContent,
+  (content: string, ..._rest) => ['notes', 'by_content', content],
+)
 
-export async function createNote(name: string): Promise<NoteData> {
-  const result = invoke('create_note', { title: name })
-  return (await result) as NoteData
+export async function createNote(name: string): Promise<Note> {
+  const result = await commands.createNote(name)
+
+  if (result.status === 'ok') {
+    return result.data
+  } else {
+    throw new Error(result.error.type)
+  }
 }
 
 export async function renameNote(uuid: string, title: string): Promise<void> {
-  await invoke('rename_note', { uuid, title })
+  await commands.renameNote(uuid, title)
 }
 
 export async function addNewTag(
@@ -98,7 +60,12 @@ export async function addNewTag(
   tagText: string,
   queryClient: QueryClient,
 ): Promise<void> {
-  await invoke('add_new_tag', { uuid, tagText })
+  const result = await commands.addNewTag(uuid, tagText)
+
+  if (result.status === 'error') {
+    throw new Error(result.error.type)
+  }
+
   queryClient.invalidateQueries({ queryKey: ['tags'] })
   queryClient.invalidateQueries({ queryKey: ['notes', 'tags', uuid] })
 }
@@ -108,6 +75,11 @@ export async function addTag(
   tagUuid: string,
   queryClient: QueryClient,
 ): Promise<void> {
-  await invoke('add_tag', { noteUuid, tagUuid })
+  const result = await commands.addTag(noteUuid, tagUuid)
+
+  if (result.status === 'error') {
+    throw new Error(result.error.type)
+  }
+
   queryClient.invalidateQueries({ queryKey: ['notes', 'tags', noteUuid] })
 }

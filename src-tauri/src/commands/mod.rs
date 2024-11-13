@@ -2,47 +2,30 @@ pub mod notes;
 pub mod settings;
 pub mod tags;
 
+use specta::Type;
 use tantivy::TantivyError;
 
-use crate::models::notes::Error as NoteError;
-
-#[derive(Debug)]
+#[derive(Debug, Type, thiserror::Error)]
+#[serde(tag = "type", content = "data")]
 pub enum Error {
-    Tantivy(TantivyError),
-    Diesel(diesel::result::Error),
-    Serde(serde_json::Error),
-}
-
-impl ToString for Error {
-    fn to_string(&self) -> String {
-        match self {
-            Self::Tantivy(err) => err.to_string(),
-            Self::Diesel(err) => err.to_string(),
-            Self::Serde(err) => err.to_string(),
-        }
-    }
-}
-
-impl From<NoteError> for Error {
-    fn from(err: NoteError) -> Self {
-        match err {
-            NoteError::Tantivy(err) => Self::Tantivy(err),
-            NoteError::Diesel(err) => Self::Diesel(err),
-            NoteError::Serde(err) => Self::Serde(err),
-        }
-    }
-}
-
-impl From<TantivyError> for Error {
-    fn from(err: TantivyError) -> Self {
-        Self::Tantivy(err)
-    }
-}
-
-impl From<diesel::result::Error> for Error {
-    fn from(err: diesel::result::Error) -> Self {
-        Self::Diesel(err)
-    }
+    #[error("io error: {0}")]
+    Tantivy(
+        #[serde(skip)]
+        #[from]
+        TantivyError,
+    ),
+    #[error("foo")]
+    Diesel(
+        #[serde(skip)]
+        #[from]
+        diesel::result::Error,
+    ),
+    #[error("bar")]
+    Serde(
+        #[serde(skip)]
+        #[from]
+        serde_json::Error,
+    ),
 }
 
 impl serde::Serialize for Error {

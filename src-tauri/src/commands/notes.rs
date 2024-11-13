@@ -8,6 +8,7 @@ use crate::{PoolWrapper, SearcherWrapper};
 use tauri::State;
 
 #[tauri::command]
+#[specta::specta]
 pub fn update_note(
     pool_wrapper: State<'_, PoolWrapper>,
     index_wrapper: State<'_, WriterWrapper>,
@@ -20,26 +21,29 @@ pub fn update_note(
 }
 
 #[tauri::command]
+#[specta::specta]
 pub fn get_all_notes<'a>(state: State<'_, PoolWrapper>) -> Result<Vec<NoteTitle>, Error> {
     let mut conn = get_connection(state.pool.clone());
     Ok(NoteTitle::get_all(&mut conn)?)
 }
 
 #[tauri::command]
+#[specta::specta]
 pub fn get_notes_by_title<'a>(
     state: State<'_, SearcherWrapper>,
     title: &str,
-    max_results: usize,
+    max_results: u16,
 ) -> Result<Vec<NoteTitle>, Error> {
     Ok(search_by_title(title, max_results, state.searcher.clone())?)
 }
 
 #[tauri::command]
+#[specta::specta]
 pub fn get_notes_by_content<'a>(
     state: State<'_, SearcherWrapper>,
     content: &str,
-    max_results: usize,
-    snippet_size: usize,
+    max_results: u16,
+    snippet_size: u16,
 ) -> Result<Vec<TitleWithContext>, Error> {
     Ok(search_by_content(
         content,
@@ -50,12 +54,14 @@ pub fn get_notes_by_content<'a>(
 }
 
 #[tauri::command]
+#[specta::specta]
 pub fn get_note<'a>(state: State<'_, PoolWrapper>, uuid: NoteId) -> Result<Note, Error> {
     let mut conn = get_connection(state.pool.clone());
     Ok(Note::get(&mut conn, &uuid)?)
 }
 
 #[tauri::command]
+#[specta::specta]
 pub fn rename_note(
     pool_wrapper: State<'_, PoolWrapper>,
     writer_wrapper: State<'_, WriterWrapper>,
@@ -72,6 +78,7 @@ pub fn rename_note(
 }
 
 #[tauri::command]
+#[specta::specta]
 pub fn create_note(
     pool_wrapper: State<'_, PoolWrapper>,
     writer_wrapper: State<'_, WriterWrapper>,
@@ -83,6 +90,7 @@ pub fn create_note(
 }
 
 #[tauri::command]
+#[specta::specta]
 pub fn get_direct_tags(
     pool_wrapper: State<'_, PoolWrapper>,
     uuid: NoteId,
@@ -92,6 +100,7 @@ pub fn get_direct_tags(
 }
 
 #[tauri::command]
+#[specta::specta]
 pub fn add_new_tag(
     pool_wrapper: State<'_, PoolWrapper>,
     uuid: NoteId,
@@ -104,6 +113,7 @@ pub fn add_new_tag(
 }
 
 #[tauri::command]
+#[specta::specta]
 pub fn add_tag(
     pool_wrapper: State<'_, PoolWrapper>,
     note_uuid: NoteId,

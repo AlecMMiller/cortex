@@ -14,6 +14,7 @@ use diesel::{
 };
 use serde::Deserializer;
 use serde::{Deserialize, Serialize};
+use specta::Type;
 
 use crate::schema::{note_tags, tag_parents, tags};
 
@@ -21,7 +22,7 @@ use super::notes::NoteId;
 
 create_id!(TagId);
 
-#[derive(Insertable, Queryable, Selectable, Debug, PartialEq, Identifiable, Serialize)]
+#[derive(Insertable, Queryable, Selectable, Debug, PartialEq, Identifiable, Serialize, Type)]
 #[diesel(table_name = tags)]
 #[diesel(primary_key(uuid))]
 pub struct Tag {

@@ -4,9 +4,9 @@ pub mod macros {
         (
             $id_name:ident
         ) => {
-            #[derive(Hash, AsExpression, FromSqlRow, Debug, PartialEq, Eq)]
+            #[derive(Hash, AsExpression, FromSqlRow, Debug, PartialEq, Eq, specta::Type)]
             #[diesel(sql_type = diesel::sql_types::Binary)]
-            pub struct $id_name(Vec<u8>);
+            pub struct $id_name(#[specta(type = String)] Vec<u8>);
 
             impl FromSql<Binary, Sqlite> for $id_name {
                 fn from_sql(bytes: <Sqlite as Backend>::RawValue<'_>) -> deserialize::Result<Self> {
