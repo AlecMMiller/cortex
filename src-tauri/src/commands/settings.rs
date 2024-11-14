@@ -1,6 +1,6 @@
 use crate::commands::Error;
 use crate::utils::get_connection;
-use crate::{models::settings::Setting, PoolWrapper};
+use crate::{models::settings::Setting, setup::PoolWrapper};
 use tauri::State;
 
 #[tauri::command]
