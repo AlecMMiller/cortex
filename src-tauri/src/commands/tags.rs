@@ -1,8 +1,8 @@
 use crate::commands::Error;
 use crate::models::notes::NoteId;
 use crate::models::tags::Tag;
+use crate::setup::PoolWrapper;
 use crate::utils::get_connection;
-use crate::PoolWrapper;
 use tauri::State;
 
 #[tauri::command]

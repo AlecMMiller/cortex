@@ -9,6 +9,7 @@ use tantivy::query::{QueryParser, RegexQuery};
 use tantivy::{
     schema::*, Index, IndexReader, IndexSettings, IndexWriter, ReloadPolicy, SnippetGenerator,
 };
+use tokio::sync::oneshot::Sender;
 
 pub struct TextIndexSearcher {
     pub schema: Schema,
@@ -27,21 +28,34 @@ pub const TITLE: &str = "title";
 pub const CONTENT: &str = "content";
 pub const ID: &str = "id";
 
-pub fn initialize(
-    path: PathBuf,
-) -> tantivy::Result<(Arc<TextIndexWriter>, Arc<TextIndexSearcher>, bool)> {
+pub async fn initialize(
+    path: &PathBuf,
+    writer_sender: Sender<Arc<TextIndexWriter>>,
+    searcher_sender: Sender<Arc<TextIndexSearcher>>,
+    needs_reindex: Sender<bool>,
+) {
+    let mut needs_reindex = Some(needs_reindex);
     let path = path.join("tantivy");
+    let path_str = path
+        .clone()
+        .into_os_string()
+        .into_string()
+        .expect("Tantivy index location should be valid");
+    println!("Initializing tantivy index as {path_str}");
 
-    let mut needs_reindex = false;
     match create_dir(path.clone()) {
         Ok(_) => {
-            needs_reindex = true;
+            if let Some(tx) = needs_reindex.take() {
+                println!("No existing tantivy index, directory created");
+                let _ = tx.send(true);
+            }
         }
         Err(_) => {}
     };
 
     let mut schema_builder = Schema::builder();
 
+    println!("Creating tantivy schema");
     let text_options = TextOptions::default()
         .set_indexing_options(
             TextFieldIndexing::default()
@@ -55,25 +69,33 @@ pub fn initialize(
     schema_builder.add_text_field(ID, STRING | STORED);
 
     let schema = schema_builder.build();
-    let directory = tantivy::directory::MmapDirectory::open(path)?;
+    let directory = tantivy::directory::MmapDirectory::open(path)
+        .expect("The tantivy directory should be valid");
 
     let index = match Index::open_or_create(directory.clone(), schema.clone()) {
-        Ok(index) => index,
+        Ok(index) => {
+            if let Some(tx) = needs_reindex.take() {
+                println!("Schema matches detected schema");
+                let _ = tx.send(false);
+            }
+            index
+        }
         Err(_err) => {
-            needs_reindex = true;
-            Index::create(directory, schema.clone(), IndexSettings::default())?
+            if let Some(tx) = needs_reindex.take() {
+                println!("Tantivy index does not match existing schema, reindex needed");
+                let _ = tx.send(true);
+            }
+            Index::create(directory, schema.clone(), IndexSettings::default())
+                .expect("Tantivy should be able to create a schema")
         }
     };
 
-    let writer = index
-        .writer(50_000_000)
-        .expect("a writer should be able to be created");
-    let writer = Mutex::new(writer);
-
+    println!("Creating tantivy reader");
     let reader = index
         .reader_builder()
         .reload_policy(ReloadPolicy::OnCommitWithDelay)
-        .try_into()?;
+        .try_into()
+        .expect("Tantivy should be able to create a reader");
 
     let searcher = TextIndexSearcher {
         index: index.clone(),
@@ -81,6 +103,13 @@ pub fn initialize(
         reader: reader.clone(),
     };
     let searcher = Arc::new(searcher);
+    let _ = searcher_sender.send(searcher);
+
+    println!("Creating tantivy writer");
+    let writer = index
+        .writer(50_000_000)
+        .expect("a writer should be able to be created");
+    let writer = Mutex::new(writer);
 
     let writer = TextIndexWriter {
         index: index.clone(),
@@ -89,8 +118,7 @@ pub fn initialize(
         writer,
     };
     let writer = Arc::new(writer);
-
-    Ok((writer, searcher, needs_reindex))
+    let _ = writer_sender.send(writer);
 }
 
 pub fn write_note(note: Note, writer: Arc<TextIndexWriter>) -> tantivy::Result<()> {

@@ -2,9 +2,8 @@ use crate::commands::Error;
 use crate::models::notes::{Note, NoteId, NoteTitle};
 use crate::models::tags::{NoteTag, Tag, TagId};
 use crate::search::{search_by_content, search_by_title, TitleWithContext};
+use crate::setup::{PoolWrapper, SearcherWrapper, WriterWrapper};
 use crate::utils::get_connection;
-use crate::WriterWrapper;
-use crate::{PoolWrapper, SearcherWrapper};
 use tauri::State;
 
 #[tauri::command]
