@@ -5,7 +5,7 @@
     "devUrl": "http://localhost:1420",
     "frontendDist": "../dist"
   },
-  "identifier": "technomancery.com",
+  "identifier": "cortex.denmachi.dev",
   "productName": "cortex",
   "version": "../package.json",
   "app": {
@@ -34,9 +34,7 @@
       "icons/icon.icns",
       "icons/icon.ico"
     ],
-    "resources": [
-      "migrations/*"
-    ]
+    "resources": ["migrations/*"]
   },
   "plugins": {}
 }
