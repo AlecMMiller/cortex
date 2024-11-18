@@ -39,11 +39,11 @@ impl Setting {
                 };
 
                 if value == "" {
-                    println!("Empty value for setter, ignoring");
+                    println!("Empty value for setter to {key}, ignoring");
                     return Ok(setting);
                 }
 
-                println!("No existing value found, setting to {value}");
+                println!("No existing value found for {key}, setting to {value}");
 
                 diesel::insert_into(settings::table)
                     .values(&setting)

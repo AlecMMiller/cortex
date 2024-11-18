@@ -48,13 +48,14 @@ function LanguageProvider(props: LanguageProviderProps): JSX.Element {
 }
 
 function App(): JSX.Element {
-  return (
-    <QueryClientProvider client={queryClient}>
-      <LanguageProvider>
-        <RouterProvider router={router} />
-      </LanguageProvider>
-    </QueryClientProvider>
-  )
+  return <div>Hello</div>
+  //return (
+  //   <QueryClientProvider client={queryClient}>
+  //     <LanguageProvider>
+  //       <RouterProvider router={router} />
+  //     </LanguageProvider>
+  //   </QueryClientProvider>
+  // )
 }
 
 export default App

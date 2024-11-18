@@ -18,6 +18,13 @@ diesel::table! {
 }
 
 diesel::table! {
+    schemas (uuid) {
+        uuid -> Binary,
+        name -> Text,
+    }
+}
+
+diesel::table! {
     settings (key) {
         key -> Text,
         value -> Text,
@@ -44,6 +51,7 @@ diesel::joinable!(note_tags -> tags (tag_uuid));
 diesel::allow_tables_to_appear_in_same_query!(
     note_tags,
     notes,
+    schemas,
     settings,
     tag_parents,
     tags,

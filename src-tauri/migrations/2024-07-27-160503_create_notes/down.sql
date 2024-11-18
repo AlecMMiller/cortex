@@ -1,1 +1,1 @@
-DROP TABLE notes
+DROP TABLE schemas;
