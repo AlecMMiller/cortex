@@ -39,6 +39,7 @@ pub fn setup<'a>(app: &'a mut tauri::App) -> Result<(), Box<dyn std::error::Erro
     let handle = app.handle();
 
     tauri::async_runtime::block_on(async_setup(path, handle));
+
     println!("Completed in {:.2?}", start.elapsed());
     Ok(())
 }

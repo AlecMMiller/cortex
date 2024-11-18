@@ -5,7 +5,7 @@
     "devUrl": "http://localhost:1420",
     "frontendDist": "../dist"
   },
-  "identifier": "cortex.denmachi.dev",
+  "identifier": "dev.denmachi.cortex",
   "productName": "cortex",
   "version": "../package.json",
   "app": {
@@ -16,8 +16,8 @@
         "height": 600,
         "minWidth": 800,
         "minHeight": 600,
-        "decorations": true,
-        "transparent": false
+        "decorations": false,
+        "transparent": true
       }
     ],
     "security": {
