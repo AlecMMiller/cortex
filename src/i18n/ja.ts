@@ -3,6 +3,7 @@ export const ja = {
     Home: 'ホーム',
     Search: '検索',
     'New Note': '新しいメモ',
+    Objects: '実体',
     Settings: '設定',
     Title: 'タイトル',
     'Note Title': 'メモのタイトル',

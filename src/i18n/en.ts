@@ -12,6 +12,7 @@ export const en = {
     Contents: 'Contents',
     Tags: 'Tags',
     Links: 'Links',
+    Objects: 'Objects',
     'No Tags': 'No Tags',
     add_value: 'Add "{{value}}"',
   },

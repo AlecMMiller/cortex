@@ -23,6 +23,8 @@ fn main() {
         commands::notes::get_direct_tags,
         commands::notes::add_new_tag,
         commands::notes::add_tag,
+        commands::objects::get_all_schemas,
+        commands::objects::create_schema,
         commands::settings::get_setting,
         commands::settings::get_setting_or_set,
         commands::settings::update_setting,

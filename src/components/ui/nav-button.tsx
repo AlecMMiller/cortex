@@ -2,10 +2,12 @@ import { useState } from 'react'
 import { TooltipButton } from './button-tooltip'
 import { LucideIcon } from 'lucide-react'
 import { Dialog } from './dialog'
+import { QueryClient } from '@tanstack/react-query'
 
 type SetOpen = (open: boolean) => void
 
 export interface DialogFunctionProps {
+  readonly queryClient: QueryClient
   readonly setOpen: SetOpen
 }
 
@@ -19,10 +21,11 @@ interface NavButtonProps {
   readonly to?: string
   readonly DialogContent?: DialogFunction
   readonly testid?: string
+  readonly queryClient: QueryClient
 }
 
 export function NavButton(props: NavButtonProps): JSX.Element {
-  const { icon: Icon, DialogContent, testid, ...rest } = props
+  const { icon: Icon, DialogContent, queryClient, testid, ...rest } = props
 
   const [open, setOpen] = useState(false)
   const isDialog = DialogContent !== undefined
@@ -47,7 +50,7 @@ export function NavButton(props: NavButtonProps): JSX.Element {
     return (
       <Dialog open={open} onOpenChange={setOpen}>
         {button}
-        <DialogContent setOpen={setOpen} />
+        <DialogContent queryClient={queryClient} setOpen={setOpen} />
       </Dialog>
     )
   }
