@@ -2,20 +2,47 @@ import { NavButton } from '@/components/ui/nav-button'
 import { Search, FilePlus2, Settings, House, Sprout } from 'lucide-react'
 import { CreateNoteDialog } from '../dialogs/CreateNote'
 import { SearchDialog } from '../dialogs/Search'
+import { useQueryClient } from '@tanstack/react-query'
+import { useTranslation } from 'react-i18next'
 
 export function Sidebar(): JSX.Element {
+  const queryClient = useQueryClient()
+  const { t } = useTranslation()
+
   return (
     <div className="flex flex-col h-full">
-      <NavButton testid="home" icon={House} tooltip="Home" to="/" />
-      <NavButton icon={Search} tooltip="Search" DialogContent={SearchDialog} />
       <NavButton
+        queryClient={queryClient}
+        testid="home"
+        icon={House}
+        tooltip={t('Home')}
+        to="/"
+      />
+      <NavButton
+        queryClient={queryClient}
+        icon={Search}
+        tooltip={t('Search')}
+        DialogContent={SearchDialog}
+      />
+      <NavButton
+        queryClient={queryClient}
         icon={FilePlus2}
-        tooltip="New Note"
+        tooltip={t('new_noun', { noun: t('Note', { count: 1 }) })}
         DialogContent={CreateNoteDialog}
       />
-      <NavButton icon={Sprout} tooltip="Objects" to="/objects" />
+      <NavButton
+        queryClient={queryClient}
+        icon={Sprout}
+        tooltip={t('Schema', { count: 100 })}
+        to="/objects"
+      />
       <div className="grow" />
-      <NavButton icon={Settings} tooltip="Settings" to="/settings" />
+      <NavButton
+        queryClient={queryClient}
+        icon={Settings}
+        tooltip={t('Settings')}
+        to="/settings"
+      />
     </div>
   )
 }

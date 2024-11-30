@@ -4,6 +4,7 @@ import { useQueryClient } from '@tanstack/react-query'
 import { Plus } from 'lucide-react'
 import { NavButton } from '@/components/ui/nav-button'
 import { CreateSchemaDialog } from '@/components/dialogs/CreateSchema'
+import { useTranslation } from 'react-i18next'
 
 export const Route = createFileRoute('/objects')({
   component: RouteComponent,
@@ -11,6 +12,7 @@ export const Route = createFileRoute('/objects')({
 
 function RouteComponent() {
   const { data: schemas, status } = useAvailableSchemas({})
+  const { t } = useTranslation()
 
   if (status !== 'success') {
     return <div>Loading</div>
@@ -36,7 +38,7 @@ function RouteComponent() {
       <NavButton
         queryClient={queryClient}
         icon={Plus}
-        tooltip="New Schema"
+        tooltip={t('new_noun', { noun: t('Schema', { count: 1 }) })}
         DialogContent={CreateSchemaDialog}
       />
     </div>
