@@ -3,9 +3,9 @@ import {
   renameSchema,
   useSchemaSuspense,
 } from '@/commands/objects'
-import { useQueryClient } from '@tanstack/react-query'
+import { QueryClient, useQueryClient } from '@tanstack/react-query'
 import { createFileRoute } from '@tanstack/react-router'
-import { useRef, useState } from 'react'
+import { useRef } from 'react'
 
 export const Route = createFileRoute('/schemas/$uuid')({
   loader: ({ context, params }) =>
@@ -26,11 +26,8 @@ interface ContentEditableProps {
 const ContentEditableWithRef = (props: ContentEditableProps) => {
   const defaultValue = useRef(props.value)
 
-  const handleInput = (e) => {
-    console.log(e)
-    if (props.onChange) {
-      props.onChange(e.target.textContent)
-    }
+  const handleInput = (e: any) => {
+    props.onChange(e.target.textContent)
   }
 
   return (
