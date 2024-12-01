@@ -40,6 +40,18 @@ impl Schema {
             .get_result(conn)
     }
 
+    pub fn rename(
+        conn: &mut PooledConnection,
+        uuid: &SchemaId,
+        name: &str,
+    ) -> Result<(), diesel::result::Error> {
+        diesel::update(schemas::table.find(uuid))
+            .set(schemas::name.eq(name))
+            .execute(conn)?;
+
+        Ok(())
+    }
+
     pub fn new(conn: &mut PooledConnection, name: &str) -> Result<Self, diesel::result::Error> {
         let new_schema = Self {
             uuid: SchemaId::new(),

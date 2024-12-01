@@ -26,6 +26,7 @@ fn main() {
         commands::objects::get_all_schemas,
         commands::objects::get_schema,
         commands::objects::create_schema,
+        commands::objects::rename_schema,
         commands::settings::get_setting,
         commands::settings::get_setting_or_set,
         commands::settings::update_setting,

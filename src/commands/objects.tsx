@@ -28,3 +28,16 @@ export async function createSchema(
 
   return new_schema
 }
+
+export async function renameSchema(
+  queryClient: QueryClient,
+  uuid: string,
+  name: string,
+): Promise<void> {
+  const result = await commands.renameSchema(uuid, name)
+
+  if (result.status !== 'ok') throw new Error(result.error.type)
+
+  queryClient.invalidateQueries({ queryKey: ['schemas'] })
+  queryClient.invalidateQueries({ queryKey: ['schema', uuid] })
+}
