@@ -1,5 +1,11 @@
 import { Result } from '@/bindings'
-import { UseQueryResult, QueryClient, useQuery } from '@tanstack/react-query'
+import {
+  UseQueryResult,
+  QueryClient,
+  useQuery,
+  useSuspenseQuery,
+  UseSuspenseQueryResult,
+} from '@tanstack/react-query'
 
 interface QueryOptions {
   readonly staleTime?: number
@@ -19,9 +25,22 @@ type UseTypeFunction<Args extends Array<any>, R> = (
   ...args: Args
 ) => UseQueryResult<R>
 
+type UseTypeSuspenseFunction<Args extends Array<any>, R> = (
+  options: QueryOptions,
+  ...args: Args
+) => UseSuspenseQueryResult<R>
+
+type EnsureTypeData<Args extends Array<any>, R> = (
+  client: QueryClient,
+  options: QueryOptions,
+  ...args: Args
+) => Promise<R>
+
 interface QueryMethods<Args extends Array<any>, R> {
   useType: UseTypeFunction<Args, R>
+  useTypeSuspense: UseTypeSuspenseFunction<Args, R>
   prefetchType: PrefetchTypeFunction<Args>
+  ensureTypeData: EnsureTypeData<Args, R>
 }
 
 type KeyFunction<Args extends Array<any>> = (...args: Args) => string[]
@@ -52,6 +71,17 @@ export function buildQueryMethods<Args extends Array<any>, R, E>(
     })
   }
 
+  const useTypeSuspense: UseTypeSuspenseFunction<Args, R> = (
+    options: QueryOptions,
+    ...args: Args
+  ): UseSuspenseQueryResult<R> => {
+    return useSuspenseQuery({
+      queryKey: makeKey(...args),
+      queryFn: buildGetType(...args),
+      ...options,
+    })
+  }
+
   const prefetchType: PrefetchTypeFunction<Args> = (
     client: QueryClient,
     ...args: Args
@@ -63,5 +93,17 @@ export function buildQueryMethods<Args extends Array<any>, R, E>(
     })
   }
 
-  return { useType, prefetchType }
+  const ensureTypeData: EnsureTypeData<Args, R> = (
+    client: QueryClient,
+    options: QueryOptions,
+    ...args: Args
+  ): Promise<R> => {
+    return client.ensureQueryData({
+      queryKey: makeKey(...args),
+      queryFn: buildGetType(...args),
+      ...options,
+    })
+  }
+
+  return { useType, prefetchType, ensureTypeData, useTypeSuspense }
 }

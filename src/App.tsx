@@ -6,11 +6,16 @@ import { useEffect, useState } from 'react'
 import { locale } from '@tauri-apps/plugin-os'
 import { useGetSettingOrSet } from './commands/settings'
 
-const router = createRouter({
-  routeTree,
-})
+export interface RouterContext {
+  queryClient: QueryClient
+}
 
 const queryClient = new QueryClient()
+
+const router = createRouter({
+  routeTree,
+  context: { queryClient },
+})
 
 declare module '@tanstack/react-router' {
   interface Register {
@@ -51,7 +56,7 @@ function App(): JSX.Element {
   return (
     <QueryClientProvider client={queryClient}>
       <LanguageProvider>
-        <RouterProvider router={router} />
+        <RouterProvider router={router} context={{ queryClient }} />
       </LanguageProvider>
     </QueryClientProvider>
   )

@@ -7,6 +7,13 @@ export const {
   prefetchType: pretchAvailableSchemas,
 } = buildQueryMethods(commands.getAllSchemas, () => ['schemas'])
 
+export const {
+  useType: useSchema,
+  prefetchType: pretchSchema,
+  useTypeSuspense: useSchemaSuspense,
+  ensureTypeData: ensureSchema,
+} = buildQueryMethods(commands.getSchema, (uuid: string) => ['schema', uuid])
+
 export async function createSchema(
   queryClient: QueryClient,
   name: string,

@@ -24,6 +24,7 @@ fn main() {
         commands::notes::add_new_tag,
         commands::notes::add_tag,
         commands::objects::get_all_schemas,
+        commands::objects::get_schema,
         commands::objects::create_schema,
         commands::settings::get_setting,
         commands::settings::get_setting_or_set,

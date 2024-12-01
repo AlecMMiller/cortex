@@ -126,6 +126,14 @@ export const commands = {
       else return { status: 'error', error: e as any }
     }
   },
+  async getSchema(uuid: SchemaId): Promise<Result<Schema, Error>> {
+    try {
+      return { status: 'ok', data: await TAURI_INVOKE('get_schema', { uuid }) }
+    } catch (e) {
+      if (e instanceof Error) throw e
+      else return { status: 'error', error: e as any }
+    }
+  },
   async createSchema(name: string): Promise<Result<Schema, Error>> {
     try {
       return {

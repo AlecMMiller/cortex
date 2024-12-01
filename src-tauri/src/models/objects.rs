@@ -30,6 +30,16 @@ impl Schema {
         schemas::table.select(Self::as_select()).get_results(conn)
     }
 
+    pub fn get(
+        conn: &mut PooledConnection,
+        uuid: &SchemaId,
+    ) -> Result<Self, diesel::result::Error> {
+        schemas::table
+            .find(uuid)
+            .select(Schema::as_select())
+            .get_result(conn)
+    }
+
     pub fn new(conn: &mut PooledConnection, name: &str) -> Result<Self, diesel::result::Error> {
         let new_schema = Self {
             uuid: SchemaId::new(),
