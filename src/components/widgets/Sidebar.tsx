@@ -4,6 +4,7 @@ import { CreateNoteDialog } from '../dialogs/CreateNote'
 import { SearchDialog } from '../dialogs/Search'
 import { useQueryClient } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
+import { pretchAvailableSchemas } from '@/commands/objects'
 
 export function Sidebar(): JSX.Element {
   const queryClient = useQueryClient()
@@ -34,7 +35,8 @@ export function Sidebar(): JSX.Element {
         queryClient={queryClient}
         icon={Sprout}
         tooltip={t('Schema', { count: 100 })}
-        to="/objects"
+        to="/schemas"
+        prefetch={pretchAvailableSchemas}
       />
       <div className="grow" />
       <NavButton

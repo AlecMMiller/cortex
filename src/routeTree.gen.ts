@@ -14,7 +14,8 @@ import { createFileRoute } from '@tanstack/react-router'
 
 import { Route as rootRoute } from './routes/__root'
 import { Route as SettingsImport } from './routes/settings'
-import { Route as ObjectsImport } from './routes/objects'
+import { Route as SchemasIndexImport } from './routes/schemas/index'
+import { Route as SchemasUuidImport } from './routes/schemas/$uuid'
 import { Route as NotesNoteIdImport } from './routes/notes/$noteId'
 
 // Create Virtual Routes
@@ -29,17 +30,23 @@ const SettingsRoute = SettingsImport.update({
   getParentRoute: () => rootRoute,
 } as any)
 
-const ObjectsRoute = ObjectsImport.update({
-  id: '/objects',
-  path: '/objects',
-  getParentRoute: () => rootRoute,
-} as any)
-
 const IndexLazyRoute = IndexLazyImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRoute,
 } as any).lazy(() => import('./routes/index.lazy').then((d) => d.Route))
+
+const SchemasIndexRoute = SchemasIndexImport.update({
+  id: '/schemas/',
+  path: '/schemas/',
+  getParentRoute: () => rootRoute,
+} as any)
+
+const SchemasUuidRoute = SchemasUuidImport.update({
+  id: '/schemas/$uuid',
+  path: '/schemas/$uuid',
+  getParentRoute: () => rootRoute,
+} as any)
 
 const NotesNoteIdRoute = NotesNoteIdImport.update({
   id: '/notes/$noteId',
@@ -58,13 +65,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexLazyImport
       parentRoute: typeof rootRoute
     }
-    '/objects': {
-      id: '/objects'
-      path: '/objects'
-      fullPath: '/objects'
-      preLoaderRoute: typeof ObjectsImport
-      parentRoute: typeof rootRoute
-    }
     '/settings': {
       id: '/settings'
       path: '/settings'
@@ -79,6 +79,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof NotesNoteIdImport
       parentRoute: typeof rootRoute
     }
+    '/schemas/$uuid': {
+      id: '/schemas/$uuid'
+      path: '/schemas/$uuid'
+      fullPath: '/schemas/$uuid'
+      preLoaderRoute: typeof SchemasUuidImport
+      parentRoute: typeof rootRoute
+    }
+    '/schemas/': {
+      id: '/schemas/'
+      path: '/schemas'
+      fullPath: '/schemas'
+      preLoaderRoute: typeof SchemasIndexImport
+      parentRoute: typeof rootRoute
+    }
   }
 }
 
@@ -86,47 +100,63 @@ declare module '@tanstack/react-router' {
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexLazyRoute
-  '/objects': typeof ObjectsRoute
   '/settings': typeof SettingsRoute
   '/notes/$noteId': typeof NotesNoteIdRoute
+  '/schemas/$uuid': typeof SchemasUuidRoute
+  '/schemas': typeof SchemasIndexRoute
 }
 
 export interface FileRoutesByTo {
   '/': typeof IndexLazyRoute
-  '/objects': typeof ObjectsRoute
   '/settings': typeof SettingsRoute
   '/notes/$noteId': typeof NotesNoteIdRoute
+  '/schemas/$uuid': typeof SchemasUuidRoute
+  '/schemas': typeof SchemasIndexRoute
 }
 
 export interface FileRoutesById {
   __root__: typeof rootRoute
   '/': typeof IndexLazyRoute
-  '/objects': typeof ObjectsRoute
   '/settings': typeof SettingsRoute
   '/notes/$noteId': typeof NotesNoteIdRoute
+  '/schemas/$uuid': typeof SchemasUuidRoute
+  '/schemas/': typeof SchemasIndexRoute
 }
 
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/objects' | '/settings' | '/notes/$noteId'
+  fullPaths:
+    | '/'
+    | '/settings'
+    | '/notes/$noteId'
+    | '/schemas/$uuid'
+    | '/schemas'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/objects' | '/settings' | '/notes/$noteId'
-  id: '__root__' | '/' | '/objects' | '/settings' | '/notes/$noteId'
+  to: '/' | '/settings' | '/notes/$noteId' | '/schemas/$uuid' | '/schemas'
+  id:
+    | '__root__'
+    | '/'
+    | '/settings'
+    | '/notes/$noteId'
+    | '/schemas/$uuid'
+    | '/schemas/'
   fileRoutesById: FileRoutesById
 }
 
 export interface RootRouteChildren {
   IndexLazyRoute: typeof IndexLazyRoute
-  ObjectsRoute: typeof ObjectsRoute
   SettingsRoute: typeof SettingsRoute
   NotesNoteIdRoute: typeof NotesNoteIdRoute
+  SchemasUuidRoute: typeof SchemasUuidRoute
+  SchemasIndexRoute: typeof SchemasIndexRoute
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexLazyRoute: IndexLazyRoute,
-  ObjectsRoute: ObjectsRoute,
   SettingsRoute: SettingsRoute,
   NotesNoteIdRoute: NotesNoteIdRoute,
+  SchemasUuidRoute: SchemasUuidRoute,
+  SchemasIndexRoute: SchemasIndexRoute,
 }
 
 export const routeTree = rootRoute
@@ -140,22 +170,26 @@ export const routeTree = rootRoute
       "filePath": "__root.tsx",
       "children": [
         "/",
-        "/objects",
         "/settings",
-        "/notes/$noteId"
+        "/notes/$noteId",
+        "/schemas/$uuid",
+        "/schemas/"
       ]
     },
     "/": {
       "filePath": "index.lazy.tsx"
-    },
-    "/objects": {
-      "filePath": "objects.tsx"
     },
     "/settings": {
       "filePath": "settings.tsx"
     },
     "/notes/$noteId": {
       "filePath": "notes/$noteId.tsx"
+    },
+    "/schemas/$uuid": {
+      "filePath": "schemas/$uuid.tsx"
+    },
+    "/schemas/": {
+      "filePath": "schemas/index.tsx"
     }
   }
 }

@@ -8,22 +8,35 @@ import {
 } from './tooltip'
 type Side = 'left' | 'right' | 'top' | 'bottom'
 import { DialogTrigger } from './dialog'
+import { PrefetchTypeFunction } from '@/commands/common'
+import { QueryClient } from '@tanstack/react-query'
 
-export interface TooltipButtonProps extends ButtonProps {
+export interface TooltipButtonProps<Args extends Array<any>>
+  extends ButtonProps {
   readonly side?: Side
   readonly to?: string
-  readonly prefetch?: () => void
+  readonly prefetch?: PrefetchTypeFunction<Args>
   readonly tooltip?: string
   readonly isDialog?: boolean
+  readonly client: QueryClient
+  readonly args: Args
 }
 
-export function TooltipButton(props: TooltipButtonProps): JSX.Element {
-  const { side, tooltip, to, prefetch, isDialog, ...rest } = props
+export function TooltipButton<Args extends Array<any> | never[]>(
+  props: TooltipButtonProps<Args>,
+): JSX.Element {
+  const { side, tooltip, to, prefetch, isDialog, client, args, ...rest } = props
+
+  const doPrefetch = prefetch
+    ? () => {
+        prefetch(client, ...args)
+      }
+    : undefined
 
   const element = (to !== undefined && (
     <Link
-      onMouseEnter={prefetch}
-      onFocus={prefetch}
+      onMouseEnter={doPrefetch}
+      onFocus={doPrefetch}
       className={props.className}
       to={to}
     >
@@ -31,7 +44,7 @@ export function TooltipButton(props: TooltipButtonProps): JSX.Element {
     </Link>
   )) ||
     (isDialog === true && <DialogTrigger>{props.children}</DialogTrigger>) || (
-      <Button onMouseEnter={prefetch} onFocus={prefetch} {...rest} />
+      <Button onMouseEnter={doPrefetch} onFocus={doPrefetch} {...rest} />
     )
 
   if (tooltip === undefined) return element

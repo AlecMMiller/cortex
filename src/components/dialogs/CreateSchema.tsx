@@ -29,7 +29,7 @@ export function CreateSchemaDialog(props: DialogFunctionProps): JSX.Element {
     <GenericCreateDialog
       noun="Schema"
       schema={schemaCreateSchema}
-      baseNavigate="/objects"
+      baseNavigate="/schemas"
       createCb={doCreate}
       fields={fields}
       {...props}

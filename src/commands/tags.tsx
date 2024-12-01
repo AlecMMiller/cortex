@@ -3,7 +3,7 @@ import { buildQueryMethods } from './common'
 
 export const {
   useType: useAvailableTagsContaining,
-  buildPrefetchType: buildPretchAvailableTagsContaining,
+  prefetchType: pretchAvailableTagsContaining,
 } = buildQueryMethods(
   commands.getAvailableTagsContaining,
   (content: string, _maxResults, noteUuid: string) => [

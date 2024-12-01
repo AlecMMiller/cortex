@@ -4,7 +4,7 @@ import { QueryClient } from '@tanstack/react-query'
 
 export const {
   useType: useAvailableSchemas,
-  buildPrefetchType: buildPretchAvailableSchemas,
+  prefetchType: pretchAvailableSchemas,
 } = buildQueryMethods(commands.getAllSchemas, () => ['schemas'])
 
 export async function createSchema(

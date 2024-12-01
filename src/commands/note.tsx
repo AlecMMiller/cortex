@@ -6,24 +6,20 @@ export function makeNoteQueryKey(uuid: string) {
   return ['note', uuid]
 }
 
-export const { useType: useNote, buildPrefetchType: buildPrefetchNote } =
+export const { useType: useNote, prefetchType: prefetchNote } =
   buildQueryMethods(commands.getNote, makeNoteQueryKey)
 
-export const {
-  useType: useAllNotes,
-  buildPrefetchType: buildPrefetchAllNotes,
-} = buildQueryMethods(commands.getAllNotes, () => ['note_titles'])
+export const { useType: useAllNotes, prefetchType: prefetchAllNotes } =
+  buildQueryMethods(commands.getAllNotes, () => ['note_titles'])
 
-export const {
-  useType: useNoteDirectTags,
-  buildPrefetchType: buildPrefetchDirectTags,
-} = buildQueryMethods(commands.getDirectTags, (uuid: string) => {
-  return ['notes', 'tags', uuid, 'direct']
-})
+export const { useType: useNoteDirectTags, prefetchType: prefetchDirectTags } =
+  buildQueryMethods(commands.getDirectTags, (uuid: string) => {
+    return ['notes', 'tags', uuid, 'direct']
+  })
 
 export const {
   useType: useSearchNotesByTitle,
-  buildPrefetchType: buildPretchNotesByTitle,
+  prefetchType: pretchNotesByTitle,
 } = buildQueryMethods(commands.getNotesByTitle, (title: string, ..._rest) => {
   return ['notes', 'by_title', title]
 })
@@ -35,7 +31,7 @@ export interface TitleWithContext {
 
 export const {
   useType: useSearchNotesByContent,
-  buildPrefetchType: buildPretchNotesByContent,
+  prefetchType: pretchNotesByContent,
 } = buildQueryMethods(
   commands.getNotesByContent,
   (content: string, ..._rest) => ['notes', 'by_content', content],

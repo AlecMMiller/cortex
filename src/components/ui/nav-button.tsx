@@ -3,6 +3,8 @@ import { TooltipButton } from './button-tooltip'
 import { LucideIcon } from 'lucide-react'
 import { Dialog } from './dialog'
 import { QueryClient } from '@tanstack/react-query'
+import { PrefetchTypeFunction } from '@/commands/common'
+import { array } from 'zod'
 
 type SetOpen = (open: boolean) => void
 
@@ -13,29 +15,41 @@ export interface DialogFunctionProps {
 
 type DialogFunction = (props: DialogFunctionProps) => JSX.Element
 
-interface NavButtonProps {
+interface NavButtonProps<Args extends Array<any> | never[]> {
   readonly icon: LucideIcon
   readonly tooltip: string
   readonly onClick?: () => void
-  readonly prefetch?: () => void
+  readonly prefetch?: PrefetchTypeFunction<Args>
   readonly to?: string
   readonly DialogContent?: DialogFunction
   readonly testid?: string
   readonly queryClient: QueryClient
+  readonly args?: Args
 }
 
-export function NavButton(props: NavButtonProps): JSX.Element {
-  const { icon: Icon, DialogContent, queryClient, testid, ...rest } = props
+export function NavButton<Args extends Array<any>>(
+  props: NavButtonProps<Args>,
+): JSX.Element {
+  const {
+    icon: Icon,
+    DialogContent,
+    queryClient,
+    testid,
+    args,
+    ...rest
+  } = props
 
   const [open, setOpen] = useState(false)
   const isDialog = DialogContent !== undefined
 
   const button = (
     <TooltipButton
+      client={queryClient}
       isDialog={isDialog}
       size="icon"
       variant="ghost"
       side="right"
+      args={args ?? []}
       {...rest}
     >
       <Icon

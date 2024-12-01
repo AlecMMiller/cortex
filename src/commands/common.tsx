@@ -5,7 +5,10 @@ interface QueryOptions {
   readonly staleTime?: number
 }
 
-type PrefetchTypeFunction = () => void
+export type PrefetchTypeFunction<Args extends Array<any>> = (
+  client: QueryClient,
+  ...args: Args
+) => void
 
 type FunctionType<A extends Array<any>, R, E> = (
   ...args: A
@@ -16,14 +19,9 @@ type UseTypeFunction<Args extends Array<any>, R> = (
   ...args: Args
 ) => UseQueryResult<R>
 
-type BuildPrefetchTypeFunction<Args extends Array<any>> = (
-  client: QueryClient,
-  ...args: Args
-) => PrefetchTypeFunction
-
 interface QueryMethods<Args extends Array<any>, R> {
   useType: UseTypeFunction<Args, R>
-  buildPrefetchType: BuildPrefetchTypeFunction<Args>
+  prefetchType: PrefetchTypeFunction<Args>
 }
 
 type KeyFunction<Args extends Array<any>> = (...args: Args) => string[]
@@ -54,18 +52,16 @@ export function buildQueryMethods<Args extends Array<any>, R, E>(
     })
   }
 
-  const buildPrefetchType: BuildPrefetchTypeFunction<Args> = (
+  const prefetchType: PrefetchTypeFunction<Args> = (
     client: QueryClient,
     ...args: Args
-  ): (() => void) => {
-    return () => {
-      client.prefetchQuery({
-        queryKey: makeKey(...args),
-        queryFn: buildGetType(...args),
-        staleTime: 10000,
-      })
-    }
+  ) => {
+    client.prefetchQuery({
+      queryKey: makeKey(...args),
+      queryFn: buildGetType(...args),
+      staleTime: 10000,
+    })
   }
 
-  return { useType, buildPrefetchType }
+  return { useType, prefetchType }
 }
