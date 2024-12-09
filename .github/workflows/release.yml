@@ -13,7 +13,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Harden Runner
-        uses: step-security/harden-runner@91182cccc01eb5e619899d80e4e971d6181294a7 # v2.10.1
+        uses: step-security/harden-runner@0080882f6c36860b6ba35c610c98ce87d4e2f26f # v2.10.2
         with:
           egress-policy: audit
 
@@ -24,12 +24,12 @@ jobs:
           fetch-depth: 0 # fetch the whole repo history
 
       - name: Install GitVersion
-        uses: gittools/actions/gitversion/setup@0ad7bfbfd1988727907373a39f29154117ea5205 # v3.0.2
+        uses: gittools/actions/gitversion/setup@8a84c306953900f3c70294cc05f1fbe665d4ba0a # v3.0.3
         with:
           versionSpec: '6.x'
       - name: Determine Version
         id: version
-        uses: gittools/actions/gitversion/execute@0ad7bfbfd1988727907373a39f29154117ea5205 # v3.0.2
+        uses: gittools/actions/gitversion/execute@8a84c306953900f3c70294cc05f1fbe665d4ba0a # v3.0.3
         with:
           useConfigFile: true
     outputs:
@@ -50,7 +50,7 @@ jobs:
     needs: version
     steps:
       - name: Harden Runner
-        uses: step-security/harden-runner@91182cccc01eb5e619899d80e4e971d6181294a7 # v2.10.1
+        uses: step-security/harden-runner@0080882f6c36860b6ba35c610c98ce87d4e2f26f # v2.10.2
         with:
           egress-policy: audit
 
@@ -87,7 +87,7 @@ jobs:
       - name: install frontend dependencies
         run: yarn install
 
-      - uses: tauri-apps/tauri-action@8c3e0753aa015d00d03631d6d4f64ad59489251d # v0.5.15
+      - uses: tauri-apps/tauri-action@ecd2eff64572601ddde25cc4962c2704435736e9 # v0.5.16
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
