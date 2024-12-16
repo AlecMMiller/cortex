@@ -24,12 +24,12 @@ jobs:
           fetch-depth: 0 # fetch the whole repo history
 
       - name: Install GitVersion
-        uses: gittools/actions/gitversion/setup@8a84c306953900f3c70294cc05f1fbe665d4ba0a # v3.0.3
+        uses: gittools/actions/gitversion/setup@26a89e5dd4fa9ba66a853e04706ba52755ca4057 # v3.1.1
         with:
           versionSpec: '6.x'
       - name: Determine Version
         id: version
-        uses: gittools/actions/gitversion/execute@8a84c306953900f3c70294cc05f1fbe665d4ba0a # v3.0.3
+        uses: gittools/actions/gitversion/execute@26a89e5dd4fa9ba66a853e04706ba52755ca4057 # v3.1.1
         with:
           useConfigFile: true
     outputs:
@@ -87,7 +87,7 @@ jobs:
       - name: install frontend dependencies
         run: yarn install
 
-      - uses: tauri-apps/tauri-action@ecd2eff64572601ddde25cc4962c2704435736e9 # v0.5.16
+      - uses: tauri-apps/tauri-action@2a8db2c169af2fdc695133781e27ecba52daea75 # v0.5.17
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
