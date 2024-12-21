@@ -26,7 +26,7 @@ pub mod macros {
                 }
             }
 
-            impl ToSql for $id_name {
+            impl rusqlite::ToSql for $id_name {
                 fn to_sql(
                     &self,
                 ) -> std::result::Result<rusqlite::types::ToSqlOutput<'_>, rusqlite::Error> {
@@ -34,7 +34,7 @@ pub mod macros {
                 }
             }
 
-            impl FromSql for $id_name {
+            impl rusqlite::types::FromSql for $id_name {
                 fn column_result(
                     value: rusqlite::types::ValueRef<'_>,
                 ) -> rusqlite::types::FromSqlResult<Self> {
@@ -52,7 +52,7 @@ pub mod macros {
                 }
             }
 
-            impl Serialize for $id_name {
+            impl serde::Serialize for $id_name {
                 fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
                 where
                     S: serde::ser::Serializer,
@@ -64,10 +64,10 @@ pub mod macros {
                 }
             }
 
-            impl<'de> Deserialize<'de> for $id_name {
+            impl<'de> serde::Deserialize<'de> for $id_name {
                 fn deserialize<D>(deserializer: D) -> Result<$id_name, D::Error>
                 where
-                    D: Deserializer<'de>,
+                    D: serde::Deserializer<'de>,
                 {
                     let s = String::deserialize(deserializer)?;
                     let uuid = uuid::Uuid::parse_str(&s).unwrap();

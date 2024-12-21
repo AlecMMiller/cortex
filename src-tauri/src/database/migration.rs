@@ -1,6 +1,6 @@
-use rusqlite::{Connection, Result};
+use rusqlite::{Result, Transaction};
 
-fn initial(conn: &Connection) -> Result<()> {
+fn initial(conn: &Transaction) -> Result<()> {
     conn.execute(
         "CREATE TABLE IF NOT EXISTS entity_schema (
                 id BLOB PRIMARY KEY,
@@ -9,23 +9,37 @@ fn initial(conn: &Connection) -> Result<()> {
         (),
     )?;
 
+    conn.execute(
+        "CREATE TABLE IF NOT EXISTS attribute_schema (
+                id BLOB PRIMARY KEY,
+                entity BLOB NOT NULL,
+                name TEXT NOT NULL,
+                UNIQUE(entity, name),
+                FOREIGN KEY(entity) REFERENCES entity_schema(id)
+              )",
+        (),
+    )?;
+
     Ok(())
 }
 
-pub fn migrate(conn: &Connection) -> Result<()> {
-    initial(conn)?;
+pub fn migrate(conn: &Transaction) -> Result<()> {
+    initial(&conn)?;
 
     Ok(())
 }
 
 #[cfg(test)]
 mod tests {
+    use rusqlite::Connection;
+
     use super::*;
 
     #[test]
     fn test_migrate() {
-        let conn = Connection::open_in_memory().expect("Could not create db");
+        let mut conn = Connection::open_in_memory().expect("Could not create db");
+        let tx = conn.transaction().unwrap();
 
-        let _result = migrate(&conn).expect("Failed to perform migration");
+        let _result = migrate(&tx).expect("Failed to perform migration");
     }
 }

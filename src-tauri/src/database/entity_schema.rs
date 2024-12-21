@@ -1,19 +1,24 @@
 use crate::macros::macros::create_id;
-use rusqlite::{params, types::FromSql, Connection, Result, ToSql};
-use serde::{Deserialize, Deserializer, Serialize};
+use rusqlite::{params, Connection, Result, Transaction};
+
+use super::attribute_schema::{AttributeSchema, CreateAttributeSchema};
 
 create_id!(EntitySchemaId);
 
-struct EntitySchema {
-    id: EntitySchemaId,
-    name: String,
+pub struct EntitySchema {
+    pub id: EntitySchemaId,
+    pub name: String,
+}
+
+pub struct CreateEntitySchema {
+    pub name: String,
 }
 
 impl EntitySchema {
-    pub fn new(conn: &Connection, name: String) -> Result<Self> {
+    pub fn new(conn: &Transaction, data: CreateEntitySchema) -> Result<Self> {
         let new_entity_schema = Self {
             id: EntitySchemaId::new(),
-            name,
+            name: data.name,
         };
 
         conn.execute(
@@ -45,14 +50,21 @@ mod tests {
     use super::*;
 
     #[test]
-    fn test_new() {
-        let conn = setup();
+    fn new() {
+        let mut conn = setup();
+        let tx = conn.transaction().unwrap();
         let name = "Foo";
 
-        let new = EntitySchema::new(&conn, name.to_string()).expect("Unable to create entity");
+        let new = EntitySchema::new(
+            &tx,
+            CreateEntitySchema {
+                name: name.to_string(),
+            },
+        )
+        .expect("Unable to create entity");
         let id = new.id;
 
-        let stored = EntitySchema::get(&conn, &id).expect("Could not get stored");
+        let stored = EntitySchema::get(&tx, &id).expect("Could not get stored");
 
         assert_eq!(stored.id, id);
         assert_eq!(stored.name, name);

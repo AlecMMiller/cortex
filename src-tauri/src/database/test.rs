@@ -5,9 +5,11 @@ pub mod test_util {
     use crate::database::migration::migrate;
 
     pub fn setup() -> Connection {
-        let conn = Connection::open_in_memory().unwrap();
+        let mut conn = Connection::open_in_memory().unwrap();
 
-        migrate(&conn).unwrap();
+        let tx = conn.transaction().unwrap();
+        migrate(&tx).unwrap();
+        tx.commit().unwrap();
 
         conn
     }
