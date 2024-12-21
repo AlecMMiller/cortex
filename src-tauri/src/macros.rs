@@ -26,6 +26,24 @@ pub mod macros {
                 }
             }
 
+            impl ToSql for $id_name {
+                fn to_sql(
+                    &self,
+                ) -> std::result::Result<rusqlite::types::ToSqlOutput<'_>, rusqlite::Error> {
+                    Ok(rusqlite::types::ToSqlOutput::from(self.0.clone()))
+                }
+            }
+
+            impl FromSql for $id_name {
+                fn column_result(
+                    value: rusqlite::types::ValueRef<'_>,
+                ) -> rusqlite::types::FromSqlResult<Self> {
+                    Ok($id_name {
+                        0: value.as_blob().map(<[u8]>::to_vec)?,
+                    })
+                }
+            }
+
             impl $id_name {
                 pub fn new() -> Self {
                     $id_name {

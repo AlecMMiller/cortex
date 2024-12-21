@@ -1,6 +1,6 @@
 use rusqlite::{Connection, Result};
 
-fn initial(conn: Connection) -> Result<()> {
+fn initial(conn: &Connection) -> Result<()> {
     conn.execute(
         "CREATE TABLE IF NOT EXISTS entity_schema (
                 id BLOB PRIMARY KEY,
@@ -12,7 +12,7 @@ fn initial(conn: Connection) -> Result<()> {
     Ok(())
 }
 
-fn migrate(conn: Connection) -> Result<()> {
+pub fn migrate(conn: &Connection) -> Result<()> {
     initial(conn)?;
 
     Ok(())
@@ -26,6 +26,6 @@ mod tests {
     fn test_migrate() {
         let conn = Connection::open_in_memory().expect("Could not create db");
 
-        let _result = migrate(conn).expect("Failed to perform migration");
+        let _result = migrate(&conn).expect("Failed to perform migration");
     }
 }
