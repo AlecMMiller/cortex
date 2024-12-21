@@ -4,17 +4,8 @@ pub mod macros {
         (
             $id_name:ident
         ) => {
-            #[derive(Hash, AsExpression, FromSqlRow, Debug, PartialEq, Eq, specta::Type)]
-            #[diesel(sql_type = diesel::sql_types::Binary)]
+            #[derive(Hash, Debug, PartialEq, Eq, specta::Type)]
             pub struct $id_name(#[specta(type = String)] Vec<u8>);
-
-            impl FromSql<Binary, Sqlite> for $id_name {
-                fn from_sql(bytes: <Sqlite as Backend>::RawValue<'_>) -> deserialize::Result<Self> {
-                    Ok($id_name {
-                        0: Vec::from_sql(bytes)?,
-                    })
-                }
-            }
 
             impl std::fmt::Display for $id_name {
                 fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> Result<(), std::fmt::Error> {
@@ -32,12 +23,6 @@ pub mod macros {
                     Ok($id_name {
                         0: uuid.as_bytes().to_vec(),
                     })
-                }
-            }
-
-            impl ToSql<Binary, Sqlite> for $id_name {
-                fn to_sql<'a>(&'a self, out: &mut Output<'a, '_, Sqlite>) -> serialize::Result {
-                    ToSql::<Binary, Sqlite>::to_sql(&self.0, out)
                 }
             }
 

@@ -30,6 +30,7 @@ specta = { version = "=2.0.0-rc.20" }
 tauri-specta = { version = "=2.0.0-rc.20", features = ["derive", "typescript"] }
 specta-typescript = "0.0.7"
 futures = "0.3.31"
+rusqlite = "0.32.1"
 
 [features]
 # This feature is used for production builds or when a dev server is not specified, DO NOT REMOVE!!

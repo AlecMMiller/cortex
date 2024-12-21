@@ -1,0 +1,4 @@
+enum Field {
+    Value,
+    ValueList,
+}
