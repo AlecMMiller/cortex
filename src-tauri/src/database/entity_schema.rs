@@ -8,6 +8,7 @@ create_id!(EntitySchemaId);
 pub struct EntitySchema {
     pub id: EntitySchemaId,
     pub name: String,
+    pub attributes: Vec<AttributeSchema>,
 }
 
 pub struct CreateEntitySchema {
@@ -19,6 +20,7 @@ impl EntitySchema {
         let new_entity_schema = Self {
             id: EntitySchemaId::new(),
             name: data.name,
+            attributes: Vec::new(),
         };
 
         conn.execute(
@@ -29,14 +31,17 @@ impl EntitySchema {
         Ok(new_entity_schema)
     }
 
-    pub fn get(conn: &Connection, id: &EntitySchemaId) -> Result<Self> {
-        conn.query_row(
+    pub fn get(tx: &Transaction, id: &EntitySchemaId) -> Result<Self> {
+        let attributes = AttributeSchema::get_for_entity(tx, id)?;
+
+        tx.query_row(
             "SELECT id, name FROM entity_schema WHERE id=?1",
             params![id],
             |row| {
                 Ok(Self {
                     id: row.get(0)?,
                     name: row.get(1)?,
+                    attributes,
                 })
             },
         )
@@ -49,24 +54,63 @@ mod tests {
 
     use super::*;
 
+    const NAME: &str = "Foo";
+
+    fn create(tx: &Transaction) -> EntitySchemaId {
+        let new = EntitySchema::new(
+            &tx,
+            CreateEntitySchema {
+                name: NAME.to_string(),
+            },
+        )
+        .expect("Unable to create entity");
+
+        new.id
+    }
+
     #[test]
     fn new() {
         let mut conn = setup();
         let tx = conn.transaction().unwrap();
-        let name = "Foo";
-
-        let new = EntitySchema::new(
-            &tx,
-            CreateEntitySchema {
-                name: name.to_string(),
-            },
-        )
-        .expect("Unable to create entity");
-        let id = new.id;
+        let id = create(&tx);
 
         let stored = EntitySchema::get(&tx, &id).expect("Could not get stored");
 
         assert_eq!(stored.id, id);
-        assert_eq!(stored.name, name);
+        assert_eq!(stored.name, NAME);
+    }
+
+    #[test]
+    fn get_attributes() {
+        let mut conn = setup();
+        let tx = conn.transaction().unwrap();
+        let entity_id = create(&tx);
+
+        let name1 = "BAR";
+        let name2 = "BUZZ";
+
+        AttributeSchema::new(
+            &tx,
+            CreateAttributeSchema {
+                name: name1.to_string(),
+                entity: &entity_id,
+            },
+        )
+        .unwrap();
+
+        AttributeSchema::new(
+            &tx,
+            CreateAttributeSchema {
+                name: name2.to_string(),
+                entity: &entity_id,
+            },
+        )
+        .unwrap();
+
+        let stored = EntitySchema::get(&tx, &entity_id).unwrap();
+        let attributes = stored.attributes;
+
+        assert!(attributes.iter().any(|attr| attr.name == name1));
+        assert!(attributes.iter().any(|attr| attr.name == name2));
     }
 }

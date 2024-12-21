@@ -7,17 +7,17 @@ use super::entity_schema::EntitySchemaId;
 create_id!(AttributeSchemaId);
 
 pub struct AttributeSchema {
-    id: AttributeSchemaId,
-    name: String,
+    pub id: AttributeSchemaId,
+    pub name: String,
 }
 
 pub struct CreateAttributeSchema<'a> {
-    entity: &'a EntitySchemaId,
-    name: String,
+    pub entity: &'a EntitySchemaId,
+    pub name: String,
 }
 
 impl AttributeSchema {
-    fn new(tx: &Transaction, data: CreateAttributeSchema) -> Result<Self> {
+    pub fn new(tx: &Transaction, data: CreateAttributeSchema) -> Result<Self> {
         let new_attribute = Self {
             id: AttributeSchemaId::new(),
             name: data.name,
@@ -42,6 +42,21 @@ impl AttributeSchema {
                 })
             },
         )
+    }
+
+    pub fn get_for_entity(tx: &Transaction, id: &EntitySchemaId) -> Result<Vec<Self>> {
+        let mut statement = tx.prepare("SELECT id, name FROM attribute_schema WHERE entity=?1")?;
+        let mut rows = statement.query(params![id])?;
+
+        let mut results = Vec::new();
+        while let Some(row) = rows.next()? {
+            results.push(Self {
+                id: row.get(0)?,
+                name: row.get(1)?,
+            });
+        }
+
+        Ok(results)
     }
 }
 
