@@ -51,6 +51,7 @@ pub mod macros {
                     }
                 }
 
+                #[allow(dead_code)]
                 pub fn column_result_manual(
                     value: rusqlite::types::ValueRef<'_>,
                 ) -> rusqlite::types::FromSqlResult<Self> {

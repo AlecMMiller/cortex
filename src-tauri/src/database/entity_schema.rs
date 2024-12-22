@@ -54,7 +54,7 @@ impl EntitySchema {
 #[cfg(test)]
 mod tests {
     use crate::database::{
-        attribute_schema::CreateAttributeSchema,
+        attribute_schema::{CreateAttributeSchema, Quantity},
         attribute_type::{CreateAttributeType, SimpleAttributeType},
         test::test_util::setup,
     };
@@ -103,6 +103,7 @@ mod tests {
             &tx,
             CreateAttributeSchema {
                 name: name1.to_string(),
+                quantity: Quantity::Required,
                 entity: entity_id.clone(),
                 attr_type: attr_type_1,
             },
@@ -113,6 +114,7 @@ mod tests {
             &tx,
             CreateAttributeSchema {
                 name: name2.to_string(),
+                quantity: Quantity::Required,
                 entity: entity_id.clone(),
                 attr_type: attr_type_2,
             },
