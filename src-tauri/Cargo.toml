@@ -20,8 +20,6 @@ chrono = "0.4.38"
 tauri-plugin-fs = "2.0.3"
 tauri-plugin-os = "2.0.1"
 tauri-plugin-shell = "2.0.2"
-diesel = { version = "2.2.4", features = ["r2d2", "sqlite"] }
-diesel_migrations = { version = "2.2.0", features = ["sqlite"] }
 libsqlite3-sys = { version = "0.30.1", features = ["bundled"] }
 thiserror = "2.0.3"
 tantivy = "0.22.0"
@@ -31,6 +29,8 @@ tauri-specta = { version = "=2.0.0-rc.20", features = ["derive", "typescript"] }
 specta-typescript = "0.0.7"
 futures = "0.3.31"
 rusqlite = "0.32.1"
+r2d2_sqlite = "0.25.0"
+r2d2 = "0.8.10"
 
 [features]
 # This feature is used for production builds or when a dev server is not specified, DO NOT REMOVE!!

@@ -1,30 +1,20 @@
-pub mod notes;
-pub mod settings;
-pub mod tags;
-
 use specta::Type;
-use tantivy::TantivyError;
+pub mod schema;
 
 #[derive(Debug, Type, thiserror::Error)]
 #[serde(tag = "type", content = "data")]
 pub enum Error {
-    #[error("io error: {0}")]
-    Tantivy(
+    #[error("{0}")]
+    Rusqlite(
         #[serde(skip)]
         #[from]
-        TantivyError,
+        rusqlite::Error,
     ),
-    #[error("foo")]
-    Diesel(
+    #[error("{0}")]
+    R2D2(
         #[serde(skip)]
         #[from]
-        diesel::result::Error,
-    ),
-    #[error("bar")]
-    Serde(
-        #[serde(skip)]
-        #[from]
-        serde_json::Error,
+        r2d2::Error,
     ),
 }
 

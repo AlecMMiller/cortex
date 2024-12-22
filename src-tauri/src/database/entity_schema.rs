@@ -1,10 +1,13 @@
 use crate::macros::macros::create_id;
-use rusqlite::{params, Connection, Result, Transaction};
+use rusqlite::{params, Result, Transaction};
+use serde::Serialize;
+use specta::Type;
 
-use super::attribute_schema::{AttributeSchema, CreateAttributeSchema};
+use super::attribute_schema::AttributeSchema;
 
 create_id!(EntitySchemaId);
 
+#[derive(Type, Serialize)]
 pub struct EntitySchema {
     pub id: EntitySchemaId,
     pub name: String,
@@ -50,7 +53,7 @@ impl EntitySchema {
 
 #[cfg(test)]
 mod tests {
-    use crate::database::test::test_util::setup;
+    use crate::database::{attribute_schema::CreateAttributeSchema, test::test_util::setup};
 
     use super::*;
 

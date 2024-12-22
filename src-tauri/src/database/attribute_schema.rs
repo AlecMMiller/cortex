@@ -1,4 +1,6 @@
 use rusqlite::{params, Result, Transaction};
+use serde::Serialize;
+use specta::Type;
 
 use crate::macros::macros::create_id;
 
@@ -6,6 +8,7 @@ use super::entity_schema::EntitySchemaId;
 
 create_id!(AttributeSchemaId);
 
+#[derive(Type, Serialize)]
 pub struct AttributeSchema {
     pub id: AttributeSchemaId,
     pub name: String,
