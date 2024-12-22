@@ -1,3 +1,5 @@
+use std::fmt::Display;
+
 use rusqlite::{
     params,
     types::{FromSqlError, FromSqlResult, ValueRef},

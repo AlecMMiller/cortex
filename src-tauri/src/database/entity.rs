@@ -48,39 +48,17 @@ pub fn new_entity(tx: &Transaction, schema_id: &EntitySchemaId, data: Value) -> 
 #[cfg(test)]
 mod tests {
     use crate::database::{
-        attribute_schema::{AttributeSchema, CreateAttributeSchema, Quantity},
-        attribute_type::{CreateAttributeType, SimpleAttributeType},
-        entity_schema::{CreateEntitySchema, EntitySchema},
-        test::test_util::setup,
+        attribute_type::SimpleAttributeType,
+        test::test_util::{create_attribute_schema, create_entity_schema, setup},
     };
 
     #[test]
     fn new() {
         let mut conn = setup();
         let tx = conn.transaction().unwrap();
-        let entity_name = "Foo";
-        let attribute_name = "Bar";
-
-        let schema = EntitySchema::new(
-            &tx,
-            CreateEntitySchema {
-                name: entity_name.to_string(),
-            },
-        )
-        .expect("Unable to create entity");
-        let schema_id = schema.id;
-
-        let new_attribute = AttributeSchema::new(
-            &tx,
-            CreateAttributeSchema {
-                entity: schema_id.clone(),
-                name: attribute_name.to_string(),
-                quantity: Quantity::Required,
-                attr_type: CreateAttributeType::SimpleAttributeType(SimpleAttributeType::Text),
-            },
-        )
-        .expect("Failed to create attribute");
-        let attribute_id = new_attribute.id;
+        let schema_id = create_entity_schema(&tx);
+        let attribute_id =
+            create_attribute_schema(&tx, "Bar", schema_id.clone(), SimpleAttributeType::Text);
 
         let data = serde_json::from_str(&format!(
             r#"
