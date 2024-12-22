@@ -1,14 +1,17 @@
+use std::collections::HashMap;
+
 use crate::macros::macros::create_id;
 use rusqlite::{
     params,
     types::{FromSql, FromSqlError},
-    Result, ToSql, Transaction,
+    Error, Result, ToSql, Transaction,
 };
 use serde::{Deserialize, Serialize};
 use specta::Type;
 
 use super::{
     attribute_type::{AttributeType, CreateAttributeType},
+    entity::EntityId,
     entity_schema::EntitySchemaId,
 };
 
@@ -59,6 +62,54 @@ pub struct CreateAttributeSchema {
     pub quantity: Quantity,
 }
 
+pub struct RawAttributeSchema {
+    pub id: AttributeSchemaId,
+    pub attr_type: AttributeType,
+    pub quantity: Quantity,
+}
+
+impl RawAttributeSchema {
+    pub fn get_for_entity(
+        tx: &Transaction,
+        id: &EntitySchemaId,
+    ) -> Result<HashMap<AttributeSchemaId, Self>> {
+        let mut statement = tx.prepare(
+            "SELECT 
+                    a.id, a.quantity, a.type, e.id, e.name 
+                  FROM attribute_schema a LEFT JOIN entity_schema e ON a.reference = e.id 
+                  WHERE a.entity=?1",
+        )?;
+        let mut rows = statement.query(params![id])?;
+
+        let mut results = HashMap::new();
+        while let Some(row) = rows.next()? {
+            results.insert(
+                row.get(0)?,
+                RawAttributeSchema {
+                    id: row.get(0)?,
+                    quantity: row.get(1)?,
+                    attr_type: AttributeType::columns_result(
+                        row.get_ref(2)?,
+                        row.get_ref(3)?,
+                        row.get_ref(4)?,
+                    )?,
+                },
+            );
+        }
+
+        Ok(results)
+    }
+
+    pub fn insert_string(&self, tx: &Transaction, entity: &EntityId, val: &str) -> Result<()> {
+        match self.attr_type {
+            AttributeType::ReferenceAttribute(..) => Err(Error::InvalidQuery),
+            AttributeType::SimpleAttributeType(simple) => {
+                simple.insert_string(tx, entity, &self.id, val)
+            }
+        }
+    }
+}
+
 impl AttributeSchema {
     pub fn new(tx: &Transaction, data: CreateAttributeSchema) -> Result<Self> {
         let reference = data.attr_type.get_ref();
@@ -85,6 +136,7 @@ impl AttributeSchema {
         Ok(new_attribute)
     }
 
+    #[allow(dead_code)]
     fn get(tx: &Transaction, id: &AttributeSchemaId) -> Result<Self> {
         tx.query_row(
             "SELECT 

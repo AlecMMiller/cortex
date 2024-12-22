@@ -26,6 +26,17 @@ pub mod macros {
                 }
             }
 
+            impl TryFrom<String> for $id_name {
+                type Error = &'static str;
+
+                fn try_from(s: String) -> Result<$id_name, Self::Error> {
+                    let uuid = uuid::Uuid::parse_str(&s).unwrap();
+                    Ok($id_name {
+                        0: uuid.as_bytes().to_vec(),
+                    })
+                }
+            }
+
             impl rusqlite::ToSql for $id_name {
                 fn to_sql(
                     &self,

@@ -24,9 +24,31 @@ fn initial(conn: &Transaction) -> Result<()> {
         (),
     )?;
 
+    conn.execute(
+        "CREATE TABLE IF NOT EXISTS entity (
+                id BLOB PRIMARY KEY,
+                schema BLOB NOT NULL,
+                FOREIGN KEY(schema) REFERENCES entity_schema(id)
+              )",
+        (),
+    )?;
+
+    conn.execute(
+        "CREATE TABLE IF NOT EXISTS text_attribute (
+              id BLOB PRIMARY KEY,
+              entity BLOB NOT NULL,
+              schema BLOB NOT NULL,
+              value TEXT NOT NULL,
+              FOREIGN KEY(entity) REFERENCES entity(id),
+              FOREIGN KEY(schema) REFERENCES attribute_schema(id)
+            )",
+        (),
+    )?;
+
     Ok(())
 }
 
+#[allow(dead_code)]
 pub fn migrate(conn: &Transaction) -> Result<()> {
     initial(&conn)?;
 

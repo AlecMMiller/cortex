@@ -6,7 +6,9 @@ use rusqlite::{
 use serde::{Deserialize, Serialize};
 use specta::Type;
 
-use super::entity_schema::EntitySchemaId;
+use crate::macros::macros::create_id;
+
+use super::{attribute_schema::AttributeSchemaId, entity::EntityId, entity_schema::EntitySchemaId};
 
 #[derive(Serialize, Deserialize, Type, Debug, PartialEq)]
 pub struct CreateReferenceAttribute {
@@ -34,11 +36,13 @@ pub struct ReferenceAttribute {
     pub name: String,
 }
 
-#[derive(Serialize, Deserialize, Type, Debug, PartialEq, Clone)]
+#[derive(Serialize, Deserialize, Type, Debug, PartialEq, Clone, Copy)]
 pub enum SimpleAttributeType {
     Text,
     RichText,
 }
+
+create_id!(TextAttributeId);
 
 impl SimpleAttributeType {
     fn from_sql(value: &str) -> FromSqlResult<Self> {
@@ -46,6 +50,25 @@ impl SimpleAttributeType {
             "Text" => Ok(SimpleAttributeType::Text),
             "RichText" => Ok(SimpleAttributeType::RichText),
             _ => Err(FromSqlError::InvalidType),
+        }
+    }
+
+    pub fn insert_string(
+        &self,
+        tx: &Transaction,
+        entity: &EntityId,
+        schema: &AttributeSchemaId,
+        value: &str,
+    ) -> Result<()> {
+        match self {
+            SimpleAttributeType::Text | SimpleAttributeType::RichText => {
+                let id = TextAttributeId::new();
+                tx.execute(
+            "INSERT INTO text_attribute (id, entity, schema, value) VALUES (?1, ?2, ?3, ?4)",
+                  params![id, entity, schema, value]
+                )?;
+                Ok(())
+            }
         }
     }
 }

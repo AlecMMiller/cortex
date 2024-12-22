@@ -1,4 +1,5 @@
 use specta::Type;
+pub mod entity;
 pub mod schema;
 
 #[derive(Debug, Type, thiserror::Error)]
