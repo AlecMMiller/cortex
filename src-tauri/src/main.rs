@@ -8,8 +8,10 @@ use specta_typescript::Typescript;
 use tauri_specta::{collect_commands, Builder};
 
 fn main() {
-    let builder = Builder::<tauri::Wry>::new()
-        .commands(collect_commands![commands::schema::create_entity_schema,]);
+    let builder = Builder::<tauri::Wry>::new().commands(collect_commands![
+        commands::schema::create_entity_schema,
+        commands::schema::get_entity_schema
+    ]);
 
     #[cfg(debug_assertions)] // <- Only export on non-release builds
     builder
