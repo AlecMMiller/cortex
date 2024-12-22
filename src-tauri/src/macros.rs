@@ -50,6 +50,14 @@ pub mod macros {
                         0: uuid::Uuid::new_v4().as_bytes().to_vec(),
                     }
                 }
+
+                pub fn column_result_manual(
+                    value: rusqlite::types::ValueRef<'_>,
+                ) -> rusqlite::types::FromSqlResult<Self> {
+                    Ok($id_name {
+                        0: value.as_blob().map(<[u8]>::to_vec)?,
+                    })
+                }
             }
 
             impl serde::Serialize for $id_name {

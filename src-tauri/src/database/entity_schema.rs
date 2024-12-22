@@ -54,7 +54,8 @@ impl EntitySchema {
 #[cfg(test)]
 mod tests {
     use crate::database::{
-        attribute_schema::{AttributeType, CreateAttributeSchema},
+        attribute_schema::CreateAttributeSchema,
+        attribute_type::{CreateAttributeType, SimpleAttributeType},
         test::test_util::setup,
     };
 
@@ -92,10 +93,10 @@ mod tests {
         let tx = conn.transaction().unwrap();
         let entity_id = create(&tx);
 
-        let attr_type_1 = AttributeType::RichText;
+        let attr_type_1 = CreateAttributeType::SimpleAttributeType(SimpleAttributeType::Text);
         let name1 = "BAR";
 
-        let attr_type_2 = AttributeType::Text;
+        let attr_type_2 = CreateAttributeType::SimpleAttributeType(SimpleAttributeType::Text);
         let name2 = "BUZZ";
 
         AttributeSchema::new(
