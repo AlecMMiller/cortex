@@ -9,6 +9,7 @@ use tauri_specta::{collect_commands, Builder};
 
 fn main() {
     let builder = Builder::<tauri::Wry>::new().commands(collect_commands![
+        commands::schema::add_attribute,
         commands::schema::create_entity_schema,
         commands::schema::get_entity_schema
     ]);

@@ -31,6 +31,7 @@ futures = "0.3.31"
 rusqlite = "0.32.1"
 r2d2_sqlite = "0.25.0"
 r2d2 = "0.8.10"
+serde_rusqlite = "0.36.0"
 
 [features]
 # This feature is used for production builds or when a dev server is not specified, DO NOT REMOVE!!

@@ -53,7 +53,10 @@ impl EntitySchema {
 
 #[cfg(test)]
 mod tests {
-    use crate::database::{attribute_schema::CreateAttributeSchema, test::test_util::setup};
+    use crate::database::{
+        attribute_schema::{AttributeType, CreateAttributeSchema},
+        test::test_util::setup,
+    };
 
     use super::*;
 
@@ -89,14 +92,18 @@ mod tests {
         let tx = conn.transaction().unwrap();
         let entity_id = create(&tx);
 
+        let attr_type_1 = AttributeType::RichText;
         let name1 = "BAR";
+
+        let attr_type_2 = AttributeType::Text;
         let name2 = "BUZZ";
 
         AttributeSchema::new(
             &tx,
             CreateAttributeSchema {
                 name: name1.to_string(),
-                entity: &entity_id,
+                entity: entity_id.clone(),
+                attr_type: attr_type_1,
             },
         )
         .unwrap();
@@ -105,7 +112,8 @@ mod tests {
             &tx,
             CreateAttributeSchema {
                 name: name2.to_string(),
-                entity: &entity_id,
+                entity: entity_id.clone(),
+                attr_type: attr_type_2,
             },
         )
         .unwrap();

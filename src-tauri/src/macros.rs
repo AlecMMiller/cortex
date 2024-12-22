@@ -4,7 +4,7 @@ pub mod macros {
         (
             $id_name:ident
         ) => {
-            #[derive(Hash, Debug, PartialEq, Eq, specta::Type)]
+            #[derive(Clone, Hash, Debug, PartialEq, Eq, specta::Type)]
             pub struct $id_name(#[specta(type = String)] Vec<u8>);
 
             impl std::fmt::Display for $id_name {

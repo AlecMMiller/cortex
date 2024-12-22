@@ -14,6 +14,7 @@ fn initial(conn: &Transaction) -> Result<()> {
                 id BLOB PRIMARY KEY,
                 entity BLOB NOT NULL,
                 name TEXT NOT NULL,
+                type TEXT NOT NULL,
                 UNIQUE(entity, name),
                 FOREIGN KEY(entity) REFERENCES entity_schema(id)
               )",

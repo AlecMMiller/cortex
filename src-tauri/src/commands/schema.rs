@@ -1,6 +1,7 @@
 use tauri::State;
 
 use super::Error;
+use crate::database::attribute_schema::{AttributeSchema, CreateAttributeSchema};
 use crate::database::entity_schema::{CreateEntitySchema, EntitySchema, EntitySchemaId};
 use crate::setup::PoolWrapper;
 
@@ -26,6 +27,19 @@ pub fn get_entity_schema(
     let mut conn = pool_wrapper.pool.get()?;
     let tx = conn.transaction()?;
     let res = EntitySchema::get(&tx, &id)?;
+    tx.commit()?;
+    Ok(res)
+}
+
+#[tauri::command]
+#[specta::specta]
+pub fn add_attribute(
+    pool_wrapper: State<'_, PoolWrapper>,
+    data: CreateAttributeSchema,
+) -> Result<AttributeSchema, Error> {
+    let mut conn = pool_wrapper.pool.get()?;
+    let tx = conn.transaction()?;
+    let res = AttributeSchema::new(&tx, data)?;
     tx.commit()?;
     Ok(res)
 }
