@@ -36,13 +36,14 @@ pub mod test_util {
         name: &str,
         entity: EntitySchemaId,
         attr_type: SimpleAttributeType,
+        quantity: Quantity,
     ) -> AttributeSchemaId {
         let new_attribute = AttributeSchema::new(
             &tx,
             CreateAttributeSchema {
                 entity,
                 name: name.to_string(),
-                quantity: Quantity::Required,
+                quantity,
                 attr_type: CreateAttributeType::SimpleAttributeType(attr_type),
             },
         )

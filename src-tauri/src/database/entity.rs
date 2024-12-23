@@ -8,7 +8,7 @@ use specta::Type;
 use crate::macros::macros::create_id;
 
 use super::{
-    attribute_schema::{AttributeSchemaId, RawAttributeSchema, SchemaMap},
+    attribute_schema::{AttributeSchemaId, Quantity, RawAttributeSchema, SchemaMap},
     attribute_type::{AttributeType, SimpleAttributeType},
     entity_schema::EntitySchemaId,
 };
@@ -43,6 +43,7 @@ pub fn new_entity(tx: &Transaction, schema_id: &EntitySchemaId, data: Value) -> 
 
         match value {
             Value::String(val) => schema_entry.insert_string(tx, &id, &val),
+            Value::Array(vals) => schema_entry.insert_vec(tx, &id, &vals),
             _ => Err(Error::InvalidQuery),
         }?;
     }
@@ -244,13 +245,34 @@ pub fn get(
     for attr in request {
         match attr {
             EntityField::Attribute(attribute) => {
-                let attr_data = entity_data.remove(&attribute);
-                let mut attr_data = match attr_data {
-                    Some(data) => data,
-                    None => Vec::new(),
+                let schema = schema.get(&attribute);
+                let schema = match schema {
+                    Some(schema) => schema,
+                    None => continue,
                 };
-                let first = attr_data.remove(0);
-                entity_map.insert(attribute.to_string(), first);
+
+                let attr_data = entity_data.remove(&attribute);
+                let quantity = &schema.quantity;
+
+                let data = match quantity {
+                    Quantity::Required => match attr_data {
+                        Some(mut data) => {
+                            if data.len() > 1 {
+                                todo!()
+                            } else {
+                                Ok(data.remove(0))
+                            }
+                        }
+                        None => Err(Error::QueryReturnedNoRows),
+                    },
+                    Quantity::Optional => todo!(),
+                    Quantity::List => match attr_data {
+                        Some(data) => Ok(Value::Array(data)),
+                        None => Ok(Value::Array(Vec::new())),
+                    },
+                }?;
+
+                entity_map.insert(attribute.to_string(), data);
             }
             EntityField::Entity(..) => (),
         }
@@ -264,6 +286,7 @@ mod tests {
     use serde_json::Value;
 
     use crate::database::{
+        attribute_schema::Quantity,
         attribute_type::SimpleAttributeType,
         entity::EntityRequest,
         test::test_util::{create_attribute_schema, create_entity_schema, setup},
@@ -272,12 +295,17 @@ mod tests {
     use super::{get, EntityField};
 
     #[test]
-    fn new() {
+    fn text() {
         let mut conn = setup();
         let tx = conn.transaction().unwrap();
         let schema_id = create_entity_schema(&tx);
-        let attribute_id =
-            create_attribute_schema(&tx, "Bar", schema_id.clone(), SimpleAttributeType::Text);
+        let attribute_id = create_attribute_schema(
+            &tx,
+            "Bar",
+            schema_id.clone(),
+            SimpleAttributeType::Text,
+            Quantity::Required,
+        );
 
         let data = serde_json::from_str(&format!(
             r#"
@@ -299,5 +327,45 @@ mod tests {
         let val = result.get(&attribute_id.to_string()).unwrap();
 
         assert_eq!(val, &Value::String("Hello world".to_string()));
+    }
+
+    #[test]
+    fn list() {
+        let mut conn = setup();
+        let tx = conn.transaction().unwrap();
+        let schema_id = create_entity_schema(&tx);
+        let attribute_id = create_attribute_schema(
+            &tx,
+            "Bar",
+            schema_id.clone(),
+            SimpleAttributeType::Text,
+            Quantity::List,
+        );
+
+        let data = serde_json::from_str(&format!(
+            r#"
+            {{
+              "{attribute_id}": ["Hello world", "Hello moon"] 
+            }}
+            "#
+        ))
+        .unwrap();
+
+        let entity_id = super::new_entity(&tx, &schema_id, data).unwrap();
+
+        let request = EntityRequest {
+            0: vec![EntityField::Attribute(attribute_id.clone())],
+        };
+
+        let result = get(&tx, &entity_id, request).unwrap();
+        let val = result.get(&attribute_id.to_string()).unwrap();
+
+        let val_1 = Value::String("Hello world".to_string());
+        let val_2 = Value::String("Hello moon".to_string());
+
+        let vec = vec![val_1, val_2];
+        let expected = Value::Array(vec);
+
+        assert_eq!(val, &expected);
     }
 }

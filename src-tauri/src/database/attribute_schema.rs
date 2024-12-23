@@ -7,10 +7,11 @@ use rusqlite::{
     Error, Result, ToSql, Transaction,
 };
 use serde::{Deserialize, Serialize};
+use serde_json::Value;
 use specta::Type;
 
 use super::{
-    attribute_type::{AttributeType, CreateAttributeType},
+    attribute_type::{AttributeType, CreateAttributeType, SimpleAttributeType},
     entity::EntityId,
     entity_schema::EntitySchemaId,
 };
@@ -138,6 +139,17 @@ impl RawAttributeSchema {
             AttributeType::SimpleAttributeType(simple) => {
                 simple.insert_string(tx, entity, &self.id, val)
             }
+        }
+    }
+
+    pub fn insert_vec(&self, tx: &Transaction, entity: &EntityId, vals: &Vec<Value>) -> Result<()> {
+        match self.attr_type {
+            AttributeType::ReferenceAttribute(..) => todo!(),
+            AttributeType::SimpleAttributeType(simple) => match simple {
+                SimpleAttributeType::Text | SimpleAttributeType::RichText => {
+                    simple.insert_string_vec(tx, entity, &self.id, vals)
+                }
+            },
         }
     }
 }

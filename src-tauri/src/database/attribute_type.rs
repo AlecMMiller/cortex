@@ -1,9 +1,10 @@
 use rusqlite::{
     params,
     types::{FromSqlError, FromSqlResult, ValueRef},
-    Result, ToSql, Transaction,
+    Error, Result, ToSql, Transaction,
 };
 use serde::{Deserialize, Serialize};
+use serde_json::Value;
 use specta::Type;
 
 use crate::macros::macros::create_id;
@@ -64,12 +65,34 @@ impl SimpleAttributeType {
             SimpleAttributeType::Text | SimpleAttributeType::RichText => {
                 let id = TextAttributeId::new();
                 tx.execute(
-            "INSERT INTO text_attribute (id, entity, schema, value) VALUES (?1, ?2, ?3, ?4)",
-                  params![id, entity, schema, value]
+                    "INSERT INTO text_attribute (id, entity, schema, value) VALUES (?, ?, ?, ?)",
+                    params![id, entity, schema, value],
                 )?;
                 Ok(())
             }
         }
+    }
+
+    pub fn insert_string_vec(
+        &self,
+        tx: &Transaction,
+        entity: &EntityId,
+        schema: &AttributeSchemaId,
+        vals: &Vec<Value>,
+    ) -> Result<()> {
+        let mut stmt = tx.prepare(
+            "INSERT INTO text_attribute (id, entity, schema, value) VALUES (?, ?, ?, ?)",
+        )?;
+
+        for val in vals {
+            let val = match val {
+                Value::String(val) => Ok(val),
+                _ => Err(Error::InvalidQuery),
+            }?;
+            let id = TextAttributeId::new();
+            stmt.execute((id, entity, schema, val))?;
+        }
+        Ok(())
     }
 }
 
