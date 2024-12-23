@@ -13,6 +13,7 @@ fn main() {
         commands::schema::create_entity_schema,
         commands::schema::get_entity_schema,
         commands::entity::create_entity,
+        commands::entity::get_entity,
     ]);
 
     #[cfg(debug_assertions)] // <- Only export on non-release builds

@@ -1,7 +1,7 @@
 use super::Error;
 use crate::{
     database::{
-        entity::{new_entity, EntityId},
+        entity::{get, new_entity, EntityId, EntityRequest, EntityResponse},
         entity_schema::EntitySchemaId,
     },
     setup::PoolWrapper,
@@ -21,4 +21,18 @@ pub fn create_entity(
     let new = new_entity(&tx, &schema, data)?;
     tx.commit()?;
     Ok(new)
+}
+
+#[tauri::command]
+#[specta::specta]
+pub fn get_entity(
+    pool_wrapper: State<'_, PoolWrapper>,
+    entity: EntityId,
+    request: EntityRequest,
+) -> Result<EntityResponse, Error> {
+    let mut conn = pool_wrapper.pool.get()?;
+    let tx = conn.transaction()?;
+    let entity = get(&tx, &entity, request)?;
+    tx.commit()?;
+    Ok(entity)
 }

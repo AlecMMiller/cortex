@@ -37,6 +37,13 @@ pub mod macros {
                 }
             }
 
+            impl Into<String> for $id_name {
+                fn into(self) -> String {
+                    let uuid = uuid::Uuid::from_slice(&self.0).unwrap();
+                    uuid.to_string()
+                }
+            }
+
             impl rusqlite::ToSql for $id_name {
                 fn to_sql(
                     &self,

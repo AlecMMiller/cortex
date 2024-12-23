@@ -68,16 +68,48 @@ pub struct RawAttributeSchema {
     pub quantity: Quantity,
 }
 
+pub type SchemaMap = HashMap<AttributeSchemaId, RawAttributeSchema>;
+
 impl RawAttributeSchema {
-    pub fn get_for_entity(
-        tx: &Transaction,
-        id: &EntitySchemaId,
-    ) -> Result<HashMap<AttributeSchemaId, Self>> {
+    pub fn get_for_entity_schema(tx: &Transaction, id: &EntitySchemaId) -> Result<SchemaMap> {
         let mut statement = tx.prepare(
             "SELECT 
                     a.id, a.quantity, a.type, e.id, e.name 
                   FROM attribute_schema a LEFT JOIN entity_schema e ON a.reference = e.id 
                   WHERE a.entity=?1",
+        )?;
+        let mut rows = statement.query(params![id])?;
+
+        let mut results = HashMap::new();
+        while let Some(row) = rows.next()? {
+            results.insert(
+                row.get(0)?,
+                RawAttributeSchema {
+                    id: row.get(0)?,
+                    quantity: row.get(1)?,
+                    attr_type: AttributeType::columns_result(
+                        row.get_ref(2)?,
+                        row.get_ref(3)?,
+                        row.get_ref(4)?,
+                    )?,
+                },
+            );
+        }
+
+        Ok(results)
+    }
+
+    pub fn get_for_entity(
+        tx: &Transaction,
+        id: &EntityId,
+    ) -> Result<HashMap<AttributeSchemaId, Self>> {
+        let mut statement = tx.prepare(
+            "SELECT 
+                    a.id, a.quantity, a.type, e.id, e.name 
+                  FROM entity ent
+                  RIGHT JOIN entity_schema e on ent.schema = e.id
+                  RIGHT JOIN attribute_schema a ON a.entity = e.id 
+                  WHERE ent.id=?1",
         )?;
         let mut rows = statement.query(params![id])?;
 
@@ -191,7 +223,7 @@ mod tests {
     use crate::database::{
         attribute_type::{CreateReferenceAttribute, ReferenceAttribute, SimpleAttributeType},
         entity_schema::{CreateEntitySchema, EntitySchema},
-        test::test_util::setup,
+        test::test_util::{create_entity_schema, setup},
     };
 
     use super::*;
@@ -200,17 +232,9 @@ mod tests {
     fn new() {
         let mut conn = setup();
         let tx = conn.transaction().unwrap();
-        let entity_name = "Foo";
-        let attribute_name = "Bar";
+        let entity_id = create_entity_schema(&tx);
 
-        let entity = EntitySchema::new(
-            &tx,
-            CreateEntitySchema {
-                name: entity_name.to_string(),
-            },
-        )
-        .expect("Unable to create entity");
-        let entity_id = entity.id;
+        let attribute_name = "Bar";
 
         let new_attribute = AttributeSchema::new(
             &tx,
