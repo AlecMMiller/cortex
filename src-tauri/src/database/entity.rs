@@ -368,4 +368,52 @@ mod tests {
 
         assert_eq!(val, &expected);
     }
+
+    #[test]
+    fn multifield() {
+        let mut conn = setup();
+        let tx = conn.transaction().unwrap();
+        let schema_id = create_entity_schema(&tx);
+        let attribute_1_id = create_attribute_schema(
+            &tx,
+            "1",
+            schema_id.clone(),
+            SimpleAttributeType::Text,
+            Quantity::Required,
+        );
+
+        let attribute_2_id = create_attribute_schema(
+            &tx,
+            "2",
+            schema_id.clone(),
+            SimpleAttributeType::Text,
+            Quantity::Required,
+        );
+
+        let data = serde_json::from_str(&format!(
+            r#"
+            {{
+              "{attribute_1_id}": "Message 1",
+              "{attribute_2_id}": "Message 2"
+            }}
+            "#
+        ))
+        .unwrap();
+
+        let entity_id = super::new_entity(&tx, &schema_id, data).unwrap();
+
+        let request = EntityRequest {
+            0: vec![
+                EntityField::Attribute(attribute_1_id.clone()),
+                EntityField::Attribute(attribute_2_id.clone()),
+            ],
+        };
+
+        let result = get(&tx, &entity_id, request).unwrap();
+
+        let val_1 = result.get(&attribute_1_id.to_string()).unwrap();
+        let val_2 = result.get(&attribute_2_id.to_string()).unwrap();
+        assert_eq!(val_1, &Value::String("Message 1".to_string()));
+        assert_eq!(val_2, &Value::String("Message 2".to_string()));
+    }
 }
