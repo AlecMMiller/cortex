@@ -20,7 +20,8 @@ fn initial(conn: &Transaction) -> Result<()> {
                 UNIQUE(entity, name),
                 FOREIGN KEY(reference) REFERENCES entity_schema(id),
                 FOREIGN KEY(entity) REFERENCES entity_schema(id)
-              )",
+              );
+              CREATE INDEX idx_entity_attributes ON attribute_schema (entity);",
         (),
     )?;
 
@@ -41,7 +42,8 @@ fn initial(conn: &Transaction) -> Result<()> {
               value TEXT NOT NULL,
               FOREIGN KEY(entity) REFERENCES entity(id),
               FOREIGN KEY(schema) REFERENCES attribute_schema(id)
-            )",
+            );
+            CREATE INDEX idx_text_entity_schema ON text_attribute (entity, schema);",
         (),
     )?;
 
@@ -54,7 +56,8 @@ fn initial(conn: &Transaction) -> Result<()> {
               FOREIGN KEY(entity) REFERENCES entity(id),
               FOREIGN KEY(schema) REFERENCES attribute_schema(id),
               FOREIGN KEY(value) REFERENCES entity(id)
-            )",
+            );
+            CREATE INDEX idx_ref_entity_schema on reference_attribute (entity, schema);",
         (),
     )?;
 
@@ -79,6 +82,19 @@ mod tests {
         let mut conn = Connection::open_in_memory().expect("Could not create db");
         let tx = conn.transaction().unwrap();
 
-        let _result = migrate(&tx).expect("Failed to perform migration");
+        migrate(&tx).expect("Failed to perform migration");
+    }
+
+    // Test that running a migration again won't cause issues
+    #[test]
+    fn test_double_migrate() {
+        let mut conn = Connection::open_in_memory().expect("Could not create db");
+        let tx = conn.transaction().unwrap();
+
+        migrate(&tx).expect("Failed to perform migration");
+        tx.commit().unwrap();
+
+        let tx = conn.transaction().unwrap();
+        migrate(&tx).unwrap();
     }
 }
