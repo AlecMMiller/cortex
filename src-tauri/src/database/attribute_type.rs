@@ -37,6 +37,25 @@ pub struct ReferenceAttribute {
     pub name: String,
 }
 
+create_id!(ReferenceAttributeId);
+
+impl ReferenceAttribute {
+    pub fn insert_reference(
+        &self,
+        tx: &Transaction,
+        entity: &EntityId,
+        schema: &AttributeSchemaId,
+        value: &EntityId,
+    ) -> Result<()> {
+        let id = ReferenceAttributeId::new();
+        tx.execute(
+            "INSERT INTO reference_attribute (id, entity, schema, value) VALUES (?, ?, ?, ?)",
+            params![id, entity, schema, value],
+        )?;
+        Ok(())
+    }
+}
+
 #[derive(Serialize, Deserialize, Type, Debug, PartialEq, Clone, Copy)]
 pub enum SimpleAttributeType {
     Text,

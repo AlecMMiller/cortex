@@ -4,7 +4,7 @@ use crate::macros::macros::create_id;
 use rusqlite::{
     params,
     types::{FromSql, FromSqlError},
-    Error, Result, ToSql, Transaction,
+    Result, ToSql, Transaction,
 };
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
@@ -134,8 +134,11 @@ impl RawAttributeSchema {
     }
 
     pub fn insert_string(&self, tx: &Transaction, entity: &EntityId, val: &str) -> Result<()> {
-        match self.attr_type {
-            AttributeType::ReferenceAttribute(..) => Err(Error::InvalidQuery),
+        match &self.attr_type {
+            AttributeType::ReferenceAttribute(reference) => {
+                let target: EntityId = val.try_into().unwrap(); // TODO
+                reference.insert_reference(tx, entity, &self.id, &target)
+            }
             AttributeType::SimpleAttributeType(simple) => {
                 simple.insert_string(tx, entity, &self.id, val)
             }

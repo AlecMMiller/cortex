@@ -45,6 +45,19 @@ fn initial(conn: &Transaction) -> Result<()> {
         (),
     )?;
 
+    conn.execute(
+        "CREATE TABLE IF NOT EXISTS reference_attribute (
+              id BLOB PRIMARY KEY,
+              entity BLOB NOT NULL,
+              schema BLOB NOT NULL,
+              value BLOB NOT NULL,
+              FOREIGN KEY(entity) REFERENCES entity(id),
+              FOREIGN KEY(schema) REFERENCES attribute_schema(id),
+              FOREIGN KEY(value) REFERENCES entity(id)
+            )",
+        (),
+    )?;
+
     Ok(())
 }
 

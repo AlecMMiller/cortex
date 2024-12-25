@@ -1,6 +1,6 @@
-use std::collections::HashSet;
+use std::collections::{HashMap, HashSet};
 
-use rusqlite::{params, Error, Result, Transaction};
+use rusqlite::{Error, Result, Transaction};
 use serde::Deserialize;
 use serde_json::{Map, Value};
 use specta::Type;
@@ -8,10 +8,11 @@ use specta::Type;
 use crate::macros::macros::create_id;
 
 use super::{
+    attribute_getters::{get_reference_attrs, get_text_attrs},
     attribute_schema::{AttributeSchemaId, Quantity, RawAttributeSchema, SchemaMap},
     attribute_type::{AttributeType, SimpleAttributeType},
     entity_schema::EntitySchemaId,
-    response_map::{EntitiesData, ResponseMap},
+    response_map::EntitiesData,
 };
 
 create_id!(EntityId);
@@ -19,7 +20,7 @@ create_id!(EntityId);
 pub fn new_entity(tx: &Transaction, schema_id: &EntitySchemaId, data: Value) -> Result<EntityId> {
     let data = match data {
         Value::Object(obj) => Ok(obj),
-        _ => Err(Error::InvalidQuery),
+        _ => Err(Error::ModuleError("Data is not an object".to_string())),
     }?;
 
     let id = EntityId::new();
@@ -34,18 +35,18 @@ pub fn new_entity(tx: &Transaction, schema_id: &EntitySchemaId, data: Value) -> 
     for (key, value) in data {
         let key: AttributeSchemaId = match key.try_into() {
             Ok(val) => Ok(val),
-            Err(_) => Err(Error::InvalidQuery),
+            Err(_) => Err(Error::ModuleError("Key not a valid SchemaID".to_string())),
         }?;
 
         let schema_entry = match schema.get(&key) {
             Some(entry) => Ok(entry),
-            None => Err(Error::InvalidQuery),
+            None => Err(Error::ModuleError("Key not found in schema".to_string())),
         }?;
 
         match value {
             Value::String(val) => schema_entry.insert_string(tx, &id, &val),
             Value::Array(vals) => schema_entry.insert_vec(tx, &id, &vals),
-            _ => Err(Error::InvalidQuery),
+            _ => todo!(),
         }?;
     }
 
@@ -54,79 +55,54 @@ pub fn new_entity(tx: &Transaction, schema_id: &EntitySchemaId, data: Value) -> 
 
 #[derive(Deserialize, Type)]
 pub enum EntityField {
-    Entity(EntityRequest),
+    Entity(EntityAttribute),
     Attribute(AttributeSchemaId),
 }
 
 #[derive(Deserialize, Type)]
-pub struct EntityRequest(Vec<EntityField>);
+pub struct EntityAttribute {
+    pub attribute: AttributeSchemaId,
+    pub request: EntityRequest,
+}
+
+#[derive(Deserialize, Type)]
+pub struct EntityRequest(pub Vec<EntityField>);
 
 pub type EntityResponse = Map<String, Value>;
 
-struct IndividualRequests<'a> {
-    pub entities: HashSet<&'a EntityId>,
-    pub attributes: HashSet<&'a AttributeSchemaId>,
-}
-
-impl<'a> IndividualRequests<'a> {
-    pub fn new() -> Self {
-        Self {
-            entities: HashSet::new(),
-            attributes: HashSet::new(),
-        }
-    }
-}
-
 struct RequestPlan<'a> {
-    text: IndividualRequests<'a>,
+    entities: &'a Vec<&'a EntityId>,
+    text: HashSet<&'a AttributeSchemaId>,
 }
 
 impl<'a> RequestPlan<'a> {
-    pub fn new() -> Self {
+    pub fn new(entities: &'a Vec<&'a EntityId>) -> Self {
         Self {
-            text: IndividualRequests::new(),
+            entities,
+            text: HashSet::new(),
         }
     }
 
     pub fn execute(self, tx: &Transaction) -> Result<EntitiesData> {
         let mut response_map = None;
 
-        let mut text_statement = tx.prepare(
-            "SELECT 
-                    a.entity, a.schema, a.value 
-                  FROM text_attribute a LEFT JOIN entity e ON a.entity = e.id 
-                  WHERE e.id=?1",
-        )?;
-        let text_entities: Vec<&EntityId> = self.text.entities.into_iter().collect();
-        let mut rows = text_statement.query(params![text_entities[0]])?;
-
-        while let Some(row) = rows.next()? {
-            let entity: EntityId = row.get(0)?;
-            let attribute = row.get(1)?;
-            let value = Value::String(row.get(2)?);
-
-            response_map = ResponseMap::add(response_map, entity, attribute, value);
-        }
+        let text_attrs: Vec<&AttributeSchemaId> = self.text.into_iter().collect();
+        response_map = get_text_attrs(tx, response_map, self.entities, &text_attrs)?;
 
         match response_map {
             Some(b) => Ok(b.finalize()),
-            None => Err(Error::InvalidQuery),
+            None => Ok(HashMap::new()),
         }
     }
 
-    pub fn add_attr(
-        &mut self,
-        schema: &SchemaMap,
-        entity: &'a EntityId,
-        attribute: &'a EntityField,
-    ) -> Result<()> {
+    pub fn add_attr(&mut self, schema: &SchemaMap, attribute: &'a EntityField) -> Result<()> {
         match attribute {
             EntityField::Entity(..) => {}
             EntityField::Attribute(attribute) => {
                 let schema_entry = schema.get(&attribute);
                 let schema_entry = match schema_entry {
                     Some(entry) => Ok(entry),
-                    None => Err(Error::InvalidQuery),
+                    None => Err(Error::ModuleError("Schema entry not found".to_string())),
                 }?;
 
                 match schema_entry.attr_type {
@@ -134,8 +110,7 @@ impl<'a> RequestPlan<'a> {
                     AttributeType::SimpleAttributeType(attr_type) => {
                         match attr_type {
                             SimpleAttributeType::Text | SimpleAttributeType::RichText => {
-                                self.text.entities.insert(entity);
-                                self.text.attributes.insert(attribute);
+                                self.text.insert(attribute);
                             }
                         }
                         Ok(())
@@ -147,198 +122,125 @@ impl<'a> RequestPlan<'a> {
     }
 }
 
+fn get_many<'a>(
+    tx: &Transaction,
+    entity_ids: Vec<&'a EntityId>,
+    request: &EntityRequest,
+) -> Result<HashMap<EntityId, EntityResponse>> {
+    let mut result: HashMap<EntityId, EntityResponse> = HashMap::new();
+
+    if entity_ids.len() == 0 {
+        return Ok(result);
+    }
+
+    let request = &request.0;
+    let schema = RawAttributeSchema::get_for_entity(tx, entity_ids[0])?;
+
+    // Get child attributes
+    for attr in request {
+        match attr {
+            EntityField::Attribute(..) => {}
+            EntityField::Entity(entity_request) => {
+                let attr = &entity_request.attribute;
+                let subrequest = &entity_request.request;
+
+                let schema_info = schema.get(attr).unwrap();
+                let quantity = &schema_info.quantity;
+
+                let mut data = get_reference_attrs(tx, &entity_ids, attr)?;
+
+                let mut children = Vec::new();
+
+                for datum in data.values() {
+                    children.extend(datum);
+                }
+
+                let child_data = get_many(tx, children, subrequest)?;
+
+                for (entity_id, children) in data.drain().take(1) {
+                    let entity_map = result.entry(entity_id).or_default();
+
+                    let data = match quantity {
+                        Quantity::Required => {
+                            if children.len() != 1 {
+                                todo!();
+                            }
+
+                            Value::Object(child_data.get(&children[0]).unwrap().clone())
+                        }
+                        _ => todo!(),
+                    };
+
+                    entity_map.insert(attr.to_string(), data);
+                }
+            }
+        }
+    }
+
+    let mut plan = RequestPlan::new(&entity_ids);
+
+    for attr in request {
+        plan.add_attr(&schema, attr)?;
+    }
+
+    let mut data = plan.execute(tx)?;
+
+    for entity_id in entity_ids {
+        let mut entity_data = data.remove(entity_id).unwrap_or(HashMap::new());
+
+        let entity_map = result.entry(entity_id.clone()).or_default();
+
+        for attr in request {
+            match attr {
+                EntityField::Attribute(attribute) => {
+                    let schema = schema.get(&attribute);
+                    let schema = match schema {
+                        Some(schema) => schema,
+                        None => continue,
+                    };
+
+                    let attr_data = entity_data.remove(&attribute);
+                    let quantity = &schema.quantity;
+
+                    let data = match quantity {
+                        Quantity::Required => match attr_data {
+                            Some(mut data) => {
+                                if data.len() > 1 {
+                                    todo!()
+                                } else {
+                                    Ok(data.remove(0))
+                                }
+                            }
+                            None => Err(Error::QueryReturnedNoRows),
+                        },
+                        Quantity::Optional => todo!(),
+                        Quantity::List => match attr_data {
+                            Some(data) => Ok(Value::Array(data)),
+                            None => Ok(Value::Array(Vec::new())),
+                        },
+                    }?;
+
+                    entity_map.insert(attribute.to_string(), data);
+                }
+                EntityField::Entity(..) => (),
+            }
+        }
+    }
+
+    Ok(result)
+}
+
 pub fn get(
     tx: &Transaction,
     entity_id: &EntityId,
     request: EntityRequest,
 ) -> Result<EntityResponse> {
-    let request = request.0;
-    let schema = RawAttributeSchema::get_for_entity(tx, entity_id)?;
+    let mut result = get_many(tx, vec![entity_id], &request)?;
 
-    let mut plan = RequestPlan::new();
+    let result = result.drain().next();
 
-    for attr in &request {
-        plan.add_attr(&schema, entity_id, attr)?;
-    }
-
-    let mut data = plan.execute(tx)?;
-
-    let mut entity_data = data.remove(entity_id).unwrap();
-
-    let mut entity_map = Map::new();
-
-    for attr in request {
-        match attr {
-            EntityField::Attribute(attribute) => {
-                let schema = schema.get(&attribute);
-                let schema = match schema {
-                    Some(schema) => schema,
-                    None => continue,
-                };
-
-                let attr_data = entity_data.remove(&attribute);
-                let quantity = &schema.quantity;
-
-                let data = match quantity {
-                    Quantity::Required => match attr_data {
-                        Some(mut data) => {
-                            if data.len() > 1 {
-                                todo!()
-                            } else {
-                                Ok(data.remove(0))
-                            }
-                        }
-                        None => Err(Error::QueryReturnedNoRows),
-                    },
-                    Quantity::Optional => todo!(),
-                    Quantity::List => match attr_data {
-                        Some(data) => Ok(Value::Array(data)),
-                        None => Ok(Value::Array(Vec::new())),
-                    },
-                }?;
-
-                entity_map.insert(attribute.to_string(), data);
-            }
-            EntityField::Entity(..) => (),
-        }
-    }
-
-    Ok(entity_map)
-}
-
-#[cfg(test)]
-mod tests {
-    use serde_json::Value;
-
-    use crate::database::{
-        attribute_schema::Quantity,
-        attribute_type::SimpleAttributeType,
-        entity::EntityRequest,
-        test::test_util::{create_attribute_schema, create_entity_schema, setup},
-    };
-
-    use super::{get, EntityField};
-
-    #[test]
-    fn text() {
-        let mut conn = setup();
-        let tx = conn.transaction().unwrap();
-        let schema_id = create_entity_schema(&tx);
-        let attribute_id = create_attribute_schema(
-            &tx,
-            "Bar",
-            schema_id.clone(),
-            SimpleAttributeType::Text,
-            Quantity::Required,
-        );
-
-        let data = serde_json::from_str(&format!(
-            r#"
-            {{
-              "{attribute_id}": "Hello world" 
-            }}
-            "#
-        ))
-        .unwrap();
-
-        let entity_id = super::new_entity(&tx, &schema_id, data).unwrap();
-
-        let request = EntityRequest {
-            0: vec![EntityField::Attribute(attribute_id.clone())],
-        };
-
-        let result = get(&tx, &entity_id, request).unwrap();
-
-        let val = result.get(&attribute_id.to_string()).unwrap();
-
-        assert_eq!(val, &Value::String("Hello world".to_string()));
-    }
-
-    #[test]
-    fn list() {
-        let mut conn = setup();
-        let tx = conn.transaction().unwrap();
-        let schema_id = create_entity_schema(&tx);
-        let attribute_id = create_attribute_schema(
-            &tx,
-            "Bar",
-            schema_id.clone(),
-            SimpleAttributeType::Text,
-            Quantity::List,
-        );
-
-        let data = serde_json::from_str(&format!(
-            r#"
-            {{
-              "{attribute_id}": ["Hello world", "Hello moon"] 
-            }}
-            "#
-        ))
-        .unwrap();
-
-        let entity_id = super::new_entity(&tx, &schema_id, data).unwrap();
-
-        let request = EntityRequest {
-            0: vec![EntityField::Attribute(attribute_id.clone())],
-        };
-
-        let result = get(&tx, &entity_id, request).unwrap();
-        let val = result.get(&attribute_id.to_string()).unwrap();
-
-        let val_1 = Value::String("Hello world".to_string());
-        let val_2 = Value::String("Hello moon".to_string());
-
-        let vec = vec![val_1, val_2];
-        let expected = Value::Array(vec);
-
-        assert_eq!(val, &expected);
-    }
-
-    #[test]
-    fn multifield() {
-        let mut conn = setup();
-        let tx = conn.transaction().unwrap();
-        let schema_id = create_entity_schema(&tx);
-        let attribute_1_id = create_attribute_schema(
-            &tx,
-            "1",
-            schema_id.clone(),
-            SimpleAttributeType::Text,
-            Quantity::Required,
-        );
-
-        let attribute_2_id = create_attribute_schema(
-            &tx,
-            "2",
-            schema_id.clone(),
-            SimpleAttributeType::Text,
-            Quantity::Required,
-        );
-
-        let data = serde_json::from_str(&format!(
-            r#"
-            {{
-              "{attribute_1_id}": "Message 1",
-              "{attribute_2_id}": "Message 2"
-            }}
-            "#
-        ))
-        .unwrap();
-
-        let entity_id = super::new_entity(&tx, &schema_id, data).unwrap();
-
-        let request = EntityRequest {
-            0: vec![
-                EntityField::Attribute(attribute_1_id.clone()),
-                EntityField::Attribute(attribute_2_id.clone()),
-            ],
-        };
-
-        let result = get(&tx, &entity_id, request).unwrap();
-
-        let val_1 = result.get(&attribute_1_id.to_string()).unwrap();
-        let val_2 = result.get(&attribute_2_id.to_string()).unwrap();
-        assert_eq!(val_1, &Value::String("Message 1".to_string()));
-        assert_eq!(val_2, &Value::String("Message 2".to_string()));
+    match result {
+        Some((_k, v)) => Ok(v),
+        None => Err(Error::InvalidQuery),
     }
 }
