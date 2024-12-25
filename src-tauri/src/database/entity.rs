@@ -11,47 +11,10 @@ use super::{
     attribute_getters::{get_reference_attrs, get_text_attrs},
     attribute_schema::{AttributeSchemaId, Quantity, RawAttributeSchema, SchemaMap},
     attribute_type::{AttributeType, SimpleAttributeType},
-    entity_schema::EntitySchemaId,
     response_map::EntitiesData,
 };
 
 create_id!(EntityId);
-
-pub fn new_entity(tx: &Transaction, schema_id: &EntitySchemaId, data: Value) -> Result<EntityId> {
-    let data = match data {
-        Value::Object(obj) => Ok(obj),
-        _ => Err(Error::ModuleError("Data is not an object".to_string())),
-    }?;
-
-    let id = EntityId::new();
-
-    let schema = RawAttributeSchema::get_for_entity_schema(&tx, schema_id)?;
-
-    tx.execute(
-        "INSERT INTO entity (id, schema) VALUES (?1, ?2)",
-        (&id, schema_id),
-    )?;
-
-    for (key, value) in data {
-        let key: AttributeSchemaId = match key.try_into() {
-            Ok(val) => Ok(val),
-            Err(_) => Err(Error::ModuleError("Key not a valid SchemaID".to_string())),
-        }?;
-
-        let schema_entry = match schema.get(&key) {
-            Some(entry) => Ok(entry),
-            None => Err(Error::ModuleError("Key not found in schema".to_string())),
-        }?;
-
-        match value {
-            Value::String(val) => schema_entry.insert_string(tx, &id, &val),
-            Value::Array(vals) => schema_entry.insert_vec(tx, &id, &vals),
-            _ => todo!(),
-        }?;
-    }
-
-    Ok(id)
-}
 
 #[derive(Deserialize, Type)]
 pub enum EntityField {
@@ -186,17 +149,15 @@ fn get_many<'a>(
     let mut data = plan.execute(tx)?;
 
     for entity_id in entity_ids {
-        let mut entity_data = data.remove(entity_id).unwrap_or(HashMap::new());
+        let mut entity_data = data.remove(entity_id).unwrap_or_default();
 
         let entity_map = result.entry(entity_id.clone()).or_default();
 
         for attr in request {
             match attr {
                 EntityField::Attribute(attribute) => {
-                    let schema = schema.get(&attribute);
-                    let schema = match schema {
-                        Some(schema) => schema,
-                        None => continue,
+                    let Some(schema) = schema.get(attribute) else {
+                        continue;
                     };
 
                     let attr_data = entity_data.remove(&attribute);
@@ -214,10 +175,7 @@ fn get_many<'a>(
                             None => Err(Error::QueryReturnedNoRows),
                         },
                         Quantity::Optional => todo!(),
-                        Quantity::List => match attr_data {
-                            Some(data) => Ok(Value::Array(data)),
-                            None => Ok(Value::Array(Vec::new())),
-                        },
+                        Quantity::List => Ok(Value::Array(attr_data.unwrap_or_default())),
                     }?;
 
                     entity_map.insert(attribute.to_string(), data);

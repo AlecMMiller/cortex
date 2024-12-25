@@ -236,9 +236,11 @@ impl AttributeSchema {
 #[cfg(test)]
 mod tests {
     use crate::database::{
-        attribute_type::{CreateReferenceAttribute, ReferenceAttribute, SimpleAttributeType},
-        entity_schema::{CreateEntitySchema, EntitySchema},
-        test::test_util::{create_entity_schema, setup},
+        attribute_type::{ReferenceAttribute, SimpleAttributeType},
+        test::test_util::{
+            create_attribute_schema, create_entity_schema, create_reference_schema, setup, ASD,
+            ESD, RSD,
+        },
     };
 
     use super::*;
@@ -247,25 +249,16 @@ mod tests {
     fn new() {
         let mut conn = setup();
         let tx = conn.transaction().unwrap();
-        let entity_id = create_entity_schema(&tx);
+        let entity_id = create_entity_schema(&tx, ESD::default());
 
         let attribute_name = "Bar";
 
-        let new_attribute = AttributeSchema::new(
-            &tx,
-            CreateAttributeSchema {
-                entity: entity_id,
-                name: attribute_name.to_string(),
-                quantity: Quantity::Required,
-                attr_type: CreateAttributeType::SimpleAttributeType(SimpleAttributeType::Text),
-            },
-        )
-        .expect("Failed to create attribute");
-        let attribute_id = new_attribute.id;
+        let new_attribute =
+            create_attribute_schema(&tx, entity_id, ASD::default().name(attribute_name));
 
-        let stored = AttributeSchema::get(&tx, &attribute_id).expect("Failed to get stored");
+        let stored = AttributeSchema::get(&tx, &new_attribute).expect("Failed to get stored");
 
-        assert_eq!(stored.id, attribute_id);
+        assert_eq!(stored.id, new_attribute);
         assert_eq!(stored.name, attribute_name);
         assert_eq!(stored.quantity, Quantity::Required);
         assert_eq!(
@@ -279,32 +272,10 @@ mod tests {
         let mut conn = setup();
         let tx = conn.transaction().unwrap();
         let entity_name = "Foo";
-        let attribute_name = "Bar";
 
-        let entity = EntitySchema::new(
-            &tx,
-            CreateEntitySchema {
-                name: entity_name.to_string(),
-            },
-        )
-        .expect("Unable to create entity");
-        let entity_id = entity.id;
-
-        let new_attribute = AttributeSchema::new(
-            &tx,
-            CreateAttributeSchema {
-                entity: entity_id.clone(),
-                name: attribute_name.to_string(),
-                quantity: Quantity::Required,
-                attr_type: CreateAttributeType::CreateReferenceAttribute(
-                    CreateReferenceAttribute {
-                        id: entity_id.clone(),
-                    },
-                ),
-            },
-        )
-        .expect("Failed to create attribute");
-        let attribute_id = new_attribute.id;
+        let entity_id = create_entity_schema(&tx, ESD::default());
+        let attribute_id =
+            create_reference_schema(&tx, entity_id.clone(), entity_id.clone(), RSD::default());
 
         let stored = AttributeSchema::get(&tx, &attribute_id).expect("Failed to get stored");
 

@@ -1,3 +1,4 @@
+pub mod add_entity;
 pub mod attribute_getters;
 pub mod attribute_schema;
 pub mod attribute_type;

@@ -1,7 +1,8 @@
 use super::Error;
 use crate::{
     database::{
-        entity::{get, new_entity, EntityId, EntityRequest, EntityResponse},
+        add_entity::new_entity,
+        entity::{get, EntityId, EntityRequest, EntityResponse},
         entity_schema::EntitySchemaId,
     },
     setup::PoolWrapper,

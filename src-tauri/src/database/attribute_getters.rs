@@ -130,9 +130,9 @@ pub fn get_reference_attrs(
 #[cfg(test)]
 mod tests {
     use crate::database::{
+        add_entity::new_entity,
         attribute_schema::{AttributeSchema, CreateAttributeSchema, Quantity},
         attribute_type::{CreateAttributeType, CreateReferenceAttribute},
-        entity::new_entity,
         entity_schema::{CreateEntitySchema, EntitySchema},
         test::test_util::setup,
     };

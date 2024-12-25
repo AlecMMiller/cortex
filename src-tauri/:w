@@ -2,12 +2,11 @@ use serde_json::Value;
 
 use crate::database::{
     add_entity::new_entity,
-    attribute_schema::Quantity,
+    attribute_schema::{AttributeSchema, CreateAttributeSchema, Quantity},
+    attribute_type::{CreateAttributeType, CreateReferenceAttribute, SimpleAttributeType},
     entity::{get, EntityField, EntityRequest},
-    test::test_util::{
-        assert_string_key, create_attribute_schema, create_entity_schema, create_reference_schema,
-        setup, ASD, ESD, RSD,
-    },
+    entity_schema::{CreateEntitySchema, EntitySchema},
+    test::test_util::{create_attribute_schema, create_entity_schema, setup, ASD, ESD},
 };
 
 use super::entity::EntityAttribute;
@@ -36,7 +35,9 @@ fn text() {
 
     let result = get(&tx, &entity_id, request).unwrap();
 
-    assert_string_key(&result, attribute_id, "Hello world");
+    let val = result.get(&attribute_id.to_string()).unwrap();
+
+    assert_eq!(val, &Value::String("Hello world".to_string()));
 }
 
 #[test]
@@ -81,10 +82,9 @@ fn list() {
 fn multifield() {
     let mut conn = setup();
     let tx = conn.transaction().unwrap();
-
     let schema_id = create_entity_schema(&tx, ESD::default());
-
     let attribute_1_id = create_attribute_schema(&tx, schema_id.clone(), ASD::default());
+
     let attribute_2_id = create_attribute_schema(&tx, schema_id.clone(), ASD::default().name("2"));
 
     let data = serde_json::from_str(&format!(
@@ -108,8 +108,10 @@ fn multifield() {
 
     let result = get(&tx, &entity_id, request).unwrap();
 
-    assert_string_key(&result, attribute_1_id, "Message 1");
-    assert_string_key(&result, attribute_2_id, "Message 2");
+    let val_1 = result.get(&attribute_1_id.to_string()).unwrap();
+    let val_2 = result.get(&attribute_2_id.to_string()).unwrap();
+    assert_eq!(val_1, &Value::String("Message 1".to_string()));
+    assert_eq!(val_2, &Value::String("Message 2".to_string()));
 }
 
 #[test]
@@ -118,19 +120,29 @@ fn reference() {
     let tx = conn.transaction().unwrap();
 
     let parent_schema = create_entity_schema(&tx, ESD::default());
-    let child_schema = create_entity_schema(
+    let child_schema = create_entity_schema(&tx, ESD {name: "Child".to_string()})
+    let child_schema = EntitySchema::new(
         &tx,
-        ESD {
+        CreateEntitySchema {
             name: "Child".to_string(),
         },
-    );
+    )
+    .unwrap()
+    .id;
 
-    let reference_attr = create_reference_schema(
+    let reference_attr = AttributeSchema::new(
         &tx,
-        parent_schema.clone(),
-        child_schema.clone(),
-        RSD::default(),
-    );
+        CreateAttributeSchema {
+            entity: parent_schema.clone(),
+            name: "Child".to_string(),
+            quantity: Quantity::Required,
+            attr_type: CreateAttributeType::CreateReferenceAttribute(CreateReferenceAttribute {
+                id: child_schema.clone(),
+            }),
+        },
+    )
+    .unwrap()
+    .id;
 
     let child_attr = create_attribute_schema(&tx, child_schema.clone(), ASD::default());
 
