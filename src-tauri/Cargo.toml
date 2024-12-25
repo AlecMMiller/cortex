@@ -36,3 +36,15 @@ serde_rusqlite = "0.36.0"
 [features]
 # This feature is used for production builds or when a dev server is not specified, DO NOT REMOVE!!
 custom-protocol = ["tauri/custom-protocol"]
+
+[dev-dependencies]
+criterion = "0.5.1"
+
+[[bench]]
+name = "db_benchmark"
+harness = false
+
+[lib]
+name = "whatever"
+bench = true
+test = true

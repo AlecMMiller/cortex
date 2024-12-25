@@ -6,6 +6,6 @@ pub mod entity;
 pub mod entity_schema;
 #[cfg(test)]
 mod entity_test;
-mod migration;
+pub mod migration;
 mod response_map;
 mod test;

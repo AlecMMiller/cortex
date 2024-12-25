@@ -191,7 +191,7 @@ fn get_many<'a>(
 pub fn get(
     tx: &Transaction,
     entity_id: &EntityId,
-    request: EntityRequest,
+    request: &EntityRequest,
 ) -> Result<EntityResponse> {
     let mut result = get_many(tx, vec![entity_id], &request)?;
 

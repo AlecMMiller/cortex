@@ -33,7 +33,7 @@ pub fn get_entity(
 ) -> Result<EntityResponse, Error> {
     let mut conn = pool_wrapper.pool.get()?;
     let tx = conn.transaction()?;
-    let entity = get(&tx, &entity, request)?;
+    let entity = get(&tx, &entity, &request)?;
     tx.commit()?;
     Ok(entity)
 }

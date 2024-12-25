@@ -34,7 +34,7 @@ fn text() {
         0: vec![EntityField::Attribute(attribute_id.clone())],
     };
 
-    let result = get(&tx, &entity_id, request).unwrap();
+    let result = get(&tx, &entity_id, &request).unwrap();
 
     assert_string_key(&result, attribute_id, "Hello world");
 }
@@ -65,7 +65,7 @@ fn list() {
         0: vec![EntityField::Attribute(attribute_id.clone())],
     };
 
-    let result = get(&tx, &entity_id, request).unwrap();
+    let result = get(&tx, &entity_id, &request).unwrap();
     let val = result.get(&attribute_id.to_string()).unwrap();
 
     let val_1 = Value::String("Hello moon".to_string());
@@ -106,7 +106,7 @@ fn multifield() {
         ],
     };
 
-    let result = get(&tx, &entity_id, request).unwrap();
+    let result = get(&tx, &entity_id, &request).unwrap();
 
     assert_string_key(&result, attribute_1_id, "Message 1");
     assert_string_key(&result, attribute_2_id, "Message 2");
@@ -167,7 +167,7 @@ fn reference() {
         })],
     };
 
-    let result = get(&tx, &parent_id, request).unwrap();
+    let result = get(&tx, &parent_id, &request).unwrap();
 
     let expected_child = result.get(&reference_attr.to_string()).unwrap();
     assert!(matches!(expected_child, Value::Object(..)));
