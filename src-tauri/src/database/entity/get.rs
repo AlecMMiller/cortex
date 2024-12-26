@@ -1,89 +1,17 @@
 use std::collections::{HashMap, HashSet};
 
 use rusqlite::{Error, Result, Transaction};
-use serde::Deserialize;
-use serde_json::{Map, Value};
-use specta::Type;
+use serde_json::Value;
 
-use crate::macros::macros::create_id;
-
-use super::{
+use crate::database::{
     attribute_getters::{get_reference_attrs, get_text_attrs},
     attribute_schema::{AttributeSchemaId, Quantity, RawAttributeSchema, SchemaMap},
     attribute_type::{AttributeType, SimpleAttributeType},
     response_map::EntitiesData,
 };
+use crate::models::entity::EntityId;
 
-create_id!(EntityId);
-
-#[derive(Deserialize, Type)]
-pub enum EntityField {
-    Entity(EntityAttribute),
-    Attribute(AttributeSchemaId),
-}
-
-#[derive(Deserialize, Type)]
-pub struct EntityAttribute {
-    pub attribute: AttributeSchemaId,
-    pub request: EntityRequest,
-}
-
-#[derive(Deserialize, Type)]
-pub struct EntityRequest(pub Vec<EntityField>);
-
-pub type EntityResponse = Map<String, Value>;
-
-struct RequestPlan<'a> {
-    entities: &'a Vec<&'a EntityId>,
-    text: HashSet<&'a AttributeSchemaId>,
-}
-
-impl<'a> RequestPlan<'a> {
-    pub fn new(entities: &'a Vec<&'a EntityId>) -> Self {
-        Self {
-            entities,
-            text: HashSet::new(),
-        }
-    }
-
-    pub fn execute(self, tx: &Transaction) -> Result<EntitiesData> {
-        let mut response_map = None;
-
-        let text_attrs: Vec<&AttributeSchemaId> = self.text.into_iter().collect();
-        response_map = get_text_attrs(tx, response_map, self.entities, &text_attrs)?;
-
-        match response_map {
-            Some(b) => Ok(b.finalize()),
-            None => Ok(HashMap::new()),
-        }
-    }
-
-    pub fn add_attr(&mut self, schema: &SchemaMap, attribute: &'a EntityField) -> Result<()> {
-        match attribute {
-            EntityField::Entity(..) => {}
-            EntityField::Attribute(attribute) => {
-                let schema_entry = schema.get(&attribute);
-                let schema_entry = match schema_entry {
-                    Some(entry) => Ok(entry),
-                    None => Err(Error::ModuleError("Schema entry not found".to_string())),
-                }?;
-
-                match schema_entry.attr_type {
-                    AttributeType::ReferenceAttribute(..) => Err(Error::InvalidQuery),
-                    AttributeType::SimpleAttributeType(attr_type) => {
-                        match attr_type {
-                            SimpleAttributeType::Text | SimpleAttributeType::RichText => {
-                                self.text.insert(attribute);
-                            }
-                        }
-                        Ok(())
-                    }
-                }?;
-            }
-        }
-        Ok(())
-    }
-}
+use super::{EntityField, EntityRequest, EntityResponse};
 
 fn get_many<'a>(
     tx: &Transaction,
@@ -200,5 +128,57 @@ pub fn get(
     match result {
         Some((_k, v)) => Ok(v),
         None => Err(Error::InvalidQuery),
+    }
+}
+
+struct RequestPlan<'a> {
+    entities: &'a Vec<&'a EntityId>,
+    text: HashSet<&'a AttributeSchemaId>,
+}
+
+impl<'a> RequestPlan<'a> {
+    pub fn new(entities: &'a Vec<&'a EntityId>) -> Self {
+        Self {
+            entities,
+            text: HashSet::new(),
+        }
+    }
+
+    pub fn execute(self, tx: &Transaction) -> Result<EntitiesData> {
+        let mut response_map = None;
+
+        let text_attrs: Vec<&AttributeSchemaId> = self.text.into_iter().collect();
+        response_map = get_text_attrs(tx, response_map, self.entities, &text_attrs)?;
+
+        match response_map {
+            Some(b) => Ok(b.finalize()),
+            None => Ok(HashMap::new()),
+        }
+    }
+
+    pub fn add_attr(&mut self, schema: &SchemaMap, attribute: &'a EntityField) -> Result<()> {
+        match attribute {
+            EntityField::Entity(..) => {}
+            EntityField::Attribute(attribute) => {
+                let schema_entry = schema.get(&attribute);
+                let schema_entry = match schema_entry {
+                    Some(entry) => Ok(entry),
+                    None => Err(Error::ModuleError("Schema entry not found".to_string())),
+                }?;
+
+                match schema_entry.attr_type {
+                    AttributeType::ReferenceAttribute(..) => Err(Error::InvalidQuery),
+                    AttributeType::SimpleAttributeType(attr_type) => {
+                        match attr_type {
+                            SimpleAttributeType::Text | SimpleAttributeType::RichText => {
+                                self.text.insert(attribute);
+                            }
+                        }
+                        Ok(())
+                    }
+                }?;
+            }
+        }
+        Ok(())
     }
 }

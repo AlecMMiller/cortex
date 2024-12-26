@@ -1,3 +1,4 @@
+use crate::models::entity::EntityId;
 use rusqlite::{
     params,
     types::{FromSqlError, FromSqlResult, ValueRef},
@@ -9,7 +10,7 @@ use specta::Type;
 
 use crate::macros::macros::create_id;
 
-use super::{attribute_schema::AttributeSchemaId, entity::EntityId, entity_schema::EntitySchemaId};
+use super::{attribute_schema::AttributeSchemaId, entity_schema::EntitySchemaId};
 
 #[derive(Serialize, Deserialize, Type, Debug, PartialEq)]
 pub struct CreateReferenceAttribute {

@@ -1,6 +1,7 @@
 use std::collections::HashMap;
 
 use crate::macros::macros::create_id;
+use crate::models::entity::EntityId;
 use rusqlite::{
     params,
     types::{FromSql, FromSqlError},
@@ -12,7 +13,6 @@ use specta::Type;
 
 use super::{
     attribute_type::{AttributeType, CreateAttributeType, SimpleAttributeType},
-    entity::EntityId,
     entity_schema::EntitySchemaId,
 };
 

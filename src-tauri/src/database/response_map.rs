@@ -1,7 +1,7 @@
-use std::collections::HashMap;
-
-use super::{attribute_schema::AttributeSchemaId, entity::EntityId};
+use super::attribute_schema::AttributeSchemaId;
+use crate::models::entity::EntityId;
 use serde_json::Value;
+use std::collections::HashMap;
 
 pub struct ResponseMap {
     current_entity: EntityId,

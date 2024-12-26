@@ -1,9 +1,10 @@
 use rusqlite::{Error, Transaction};
 use serde_json::Value;
 
+use crate::models::entity::EntityId;
+
 use super::{
     attribute_schema::{AttributeSchemaId, Quantity, RawAttributeSchema},
-    entity::EntityId,
     entity_schema::EntitySchemaId,
 };
 

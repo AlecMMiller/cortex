@@ -1,9 +1,11 @@
 use std::collections::HashMap;
 
-use rusqlite::{params, params_from_iter, ParamsFromIter, Statement, ToSql, Transaction};
+use rusqlite::{params_from_iter, ParamsFromIter, Statement, ToSql, Transaction};
 use serde_json::Value;
 
-use super::{attribute_schema::AttributeSchemaId, entity::EntityId, response_map::ResponseMap};
+use crate::models::entity::EntityId;
+
+use super::{attribute_schema::AttributeSchemaId, response_map::ResponseMap};
 
 fn build_question_marks(count: usize) -> String {
     assert_ne!(count, 0);
