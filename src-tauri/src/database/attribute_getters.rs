@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use rusqlite::{params_from_iter, ParamsFromIter, Statement, ToSql, Transaction};
+use rusqlite::{params, params_from_iter, ParamsFromIter, Statement, ToSql, Transaction};
 use serde_json::Value;
 
 use super::{attribute_schema::AttributeSchemaId, entity::EntityId, response_map::ResponseMap};
@@ -64,6 +64,7 @@ pub fn get_text_attrs(
 
     let mut statement = prepare(tx, "text_attribute", entities.len(), attrs.len())?;
     let params = get_params(entities, attrs);
+
     let mut rows = statement.query(params)?;
 
     while let Some(row) = rows.next()? {
@@ -80,7 +81,7 @@ pub fn get_text_attrs(
 fn build_ref_request(num_entities: usize) -> String {
     let entity_part = build_question_marks(num_entities);
     format!(
-        "SELECT a.entity, a.value FROM reference_attribute a LEFT JOIN entity e on a.entity = e.id WHERE e.id IN ({entity_part}) AND a.schema=? ORDER BY a.entity"
+        "SELECT entity, value FROM reference_attribute WHERE entity IN ({entity_part}) AND schema=? ORDER BY entity"
     )
 }
 

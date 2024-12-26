@@ -20,8 +20,12 @@ fn initial(conn: &Transaction) -> Result<()> {
                 UNIQUE(entity, name),
                 FOREIGN KEY(reference) REFERENCES entity_schema(id),
                 FOREIGN KEY(entity) REFERENCES entity_schema(id)
-              );
-              CREATE INDEX idx_entity_attributes ON attribute_schema (entity);",
+              );",
+        (),
+    )?;
+
+    conn.execute(
+        "CREATE INDEX IF NOT EXISTS idx_entity_attributes ON attribute_schema (entity);",
         (),
     )?;
 
@@ -42,8 +46,12 @@ fn initial(conn: &Transaction) -> Result<()> {
               value TEXT NOT NULL,
               FOREIGN KEY(entity) REFERENCES entity(id),
               FOREIGN KEY(schema) REFERENCES attribute_schema(id)
-            );
-            CREATE INDEX idx_text_entity_schema ON text_attribute (entity, schema);",
+            );",
+        (),
+    )?;
+
+    conn.execute(
+        "CREATE INDEX IF NOT EXISTS idx_text_entity_schema ON text_attribute (entity, schema);",
         (),
     )?;
 
@@ -52,12 +60,16 @@ fn initial(conn: &Transaction) -> Result<()> {
               id BLOB PRIMARY KEY,
               entity BLOB NOT NULL,
               schema BLOB NOT NULL,
-              value BLOB NOT NULL,
+              value TEXT NOT NULL,
               FOREIGN KEY(entity) REFERENCES entity(id),
               FOREIGN KEY(schema) REFERENCES attribute_schema(id),
               FOREIGN KEY(value) REFERENCES entity(id)
-            );
-            CREATE INDEX idx_ref_entity_schema on reference_attribute (entity, schema);",
+            );",
+        (),
+    )?;
+
+    conn.execute(
+        "CREATE INDEX IF NOT EXISTS idx_ref_entity_schema ON reference_attribute (entity, schema);",
         (),
     )?;
 

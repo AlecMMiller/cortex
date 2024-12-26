@@ -141,7 +141,7 @@ fn sort_arr_benchmark(c: &mut Criterion) {
         .unwrap();
         let id = new_entity(&tx, &root_schema.id, root_data).unwrap();
 
-        if n % 3000 == 0 {
+        if n % 300 == 0 {
             to_get.push(id);
         }
 
@@ -165,6 +165,9 @@ fn sort_arr_benchmark(c: &mut Criterion) {
             request: child_request,
         })],
     };
+
+    conn.pragma_update(Some(DatabaseName::Main), "optimize", "")
+        .unwrap();
 
     let mut idx = 0;
 
