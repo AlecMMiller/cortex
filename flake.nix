@@ -46,6 +46,7 @@
 
               # Rust
               cargo
+              cargo-nextest
               rustc
               rustfmt
 

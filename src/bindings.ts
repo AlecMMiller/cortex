@@ -118,47 +118,6 @@ export const commands = {
       else return { status: 'error', error: e as any }
     }
   },
-  async getAllSchemas(): Promise<Result<Schema[], Error>> {
-    try {
-      return { status: 'ok', data: await TAURI_INVOKE('get_all_schemas') }
-    } catch (e) {
-      if (e instanceof Error) throw e
-      else return { status: 'error', error: e as any }
-    }
-  },
-  async getSchema(uuid: SchemaId): Promise<Result<Schema, Error>> {
-    try {
-      return { status: 'ok', data: await TAURI_INVOKE('get_schema', { uuid }) }
-    } catch (e) {
-      if (e instanceof Error) throw e
-      else return { status: 'error', error: e as any }
-    }
-  },
-  async createSchema(name: string): Promise<Result<Schema, Error>> {
-    try {
-      return {
-        status: 'ok',
-        data: await TAURI_INVOKE('create_schema', { name }),
-      }
-    } catch (e) {
-      if (e instanceof Error) throw e
-      else return { status: 'error', error: e as any }
-    }
-  },
-  async renameSchema(
-    uuid: SchemaId,
-    name: string,
-  ): Promise<Result<null, Error>> {
-    try {
-      return {
-        status: 'ok',
-        data: await TAURI_INVOKE('rename_schema', { uuid, name }),
-      }
-    } catch (e) {
-      if (e instanceof Error) throw e
-      else return { status: 'error', error: e as any }
-    }
-  },
   async getSetting(key: string): Promise<Result<Setting, Error>> {
     try {
       return { status: 'ok', data: await TAURI_INVOKE('get_setting', { key }) }
@@ -233,8 +192,6 @@ export type Note = {
 }
 export type NoteId = string
 export type NoteTitle = { uuid: NoteId; title: string }
-export type Schema = { uuid: SchemaId; name: string }
-export type SchemaId = string
 export type Setting = { key: string; value: string }
 export type Tag = { uuid: TagId; title: string }
 export type TagId = string
