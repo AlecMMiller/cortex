@@ -45,7 +45,9 @@ name = "db_benchmark"
 harness = false
 
 [lib]
-name = "whatever"
 bench = true
-test = false
+test = true
 
+[[bin]]
+name = "Cortex"
+path = "src/bin/main.rs"

@@ -1,10 +1,6 @@
 // Prevents additional console window on Windows in release, DO NOT REMOVE!!
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 mod commands;
-mod database;
-mod macros;
-pub mod models;
-mod setup;
 use specta_typescript::Typescript;
 use tauri_specta::{collect_commands, Builder};
 
@@ -21,7 +17,7 @@ fn main() {
     builder
         .export(
             Typescript::default().bigint(specta_typescript::BigIntExportBehavior::Number),
-            "../src/bindings.ts",
+            "../../src/bindings.ts",
         )
         .expect("Failed to export typescript bindings");
 

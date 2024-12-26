@@ -1,8 +1,7 @@
-mod commands;
 pub mod database;
 mod macros;
 pub mod models;
-mod setup;
+pub mod setup;
 
 use database::migration::migrate;
 use rusqlite::Transaction;

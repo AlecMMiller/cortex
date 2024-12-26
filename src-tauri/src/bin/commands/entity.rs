@@ -1,12 +1,10 @@
-use super::Error;
-use crate::{
-    database::{
-        entity::{add_entity, get, EntityRequest, EntityResponse},
-        entity_schema::EntitySchemaId,
-    },
-    models::entity::EntityId,
+use cortex::{
+    database::entity::{add_entity, get, EntityRequest, EntityResponse},
+    models::{entity::EntityId, entity_schema::EntitySchemaId},
     setup::PoolWrapper,
 };
+
+use super::Error;
 use serde_json::Value;
 use tauri::State;
 

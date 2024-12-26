@@ -4,16 +4,13 @@ pub mod test_util {
     use serde_json::{Map, Value};
 
     use crate::{
-        database::{
-            entity_schema::{CreateEntitySchema, EntitySchema, EntitySchemaId},
-            migration::migrate,
-            New,
-        },
+        database::{migration::migrate, New},
         models::{
             attribute_schema::{
                 AttributeSchema, AttributeSchemaId, CreateAttributeSchema, Quantity,
             },
             attribute_type::{CreateAttributeType, CreateReferenceAttribute, SimpleAttributeType},
+            entity_schema::{CreateEntitySchema, EntitySchema, EntitySchemaId},
         },
     };
 
