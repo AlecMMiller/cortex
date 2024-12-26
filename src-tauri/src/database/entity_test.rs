@@ -1,16 +1,17 @@
 use serde_json::Value;
 
-use crate::database::{
-    add_entity::new_entity,
-    attribute_schema::Quantity,
-    entity::{get, EntityField, EntityRequest},
-    test::test_util::{
-        assert_string_key, create_attribute_schema, create_entity_schema, create_reference_schema,
-        setup, ASD, ESD, RSD,
+use crate::{
+    database::{
+        entity::{get, EntityField, EntityRequest},
+        test::test_util::{
+            assert_string_key, create_attribute_schema, create_entity_schema,
+            create_reference_schema, setup, ASD, ESD, RSD,
+        },
     },
+    models::attribute_schema::Quantity,
 };
 
-use super::entity::EntityAttribute;
+use super::entity::{add_entity, EntityAttribute};
 
 #[test]
 fn text() {
@@ -28,7 +29,7 @@ fn text() {
     ))
     .unwrap();
 
-    let entity_id = new_entity(&tx, &schema_id, data).unwrap();
+    let entity_id = add_entity(&tx, &schema_id, data).unwrap();
 
     let request = EntityRequest {
         0: vec![EntityField::Attribute(attribute_id.clone())],
@@ -59,7 +60,7 @@ fn list() {
     ))
     .unwrap();
 
-    let entity_id = new_entity(&tx, &schema_id, data).unwrap();
+    let entity_id = add_entity(&tx, &schema_id, data).unwrap();
 
     let request = EntityRequest {
         0: vec![EntityField::Attribute(attribute_id.clone())],
@@ -97,7 +98,7 @@ fn multifield() {
     ))
     .unwrap();
 
-    let entity_id = new_entity(&tx, &schema_id, data).unwrap();
+    let entity_id = add_entity(&tx, &schema_id, data).unwrap();
 
     let request = EntityRequest {
         0: vec![
@@ -143,7 +144,7 @@ fn reference() {
     ))
     .unwrap();
 
-    let child_id = new_entity(&tx, &child_schema, child_data).unwrap();
+    let child_id = add_entity(&tx, &child_schema, child_data).unwrap();
 
     let parent_data = serde_json::from_str(&format!(
         r#"
@@ -154,7 +155,7 @@ fn reference() {
     ))
     .unwrap();
 
-    let parent_id = new_entity(&tx, &parent_schema, parent_data).unwrap();
+    let parent_id = add_entity(&tx, &parent_schema, parent_data).unwrap();
 
     let child_request = EntityRequest {
         0: vec![EntityField::Attribute(child_attr.clone())],

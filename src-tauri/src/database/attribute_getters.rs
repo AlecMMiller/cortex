@@ -3,14 +3,13 @@ use std::collections::HashMap;
 use rusqlite::{params_from_iter, ParamsFromIter, Statement, ToSql, Transaction};
 use serde_json::Value;
 
-use crate::models::entity::EntityId;
+use crate::models::{attribute_schema::AttributeSchemaId, entity::EntityId};
 
-use super::{attribute_schema::AttributeSchemaId, response_map::ResponseMap};
+use super::response_map::ResponseMap;
 
 fn build_question_marks(count: usize) -> String {
     assert_ne!(count, 0);
     let mut s = "?,".repeat(count);
-    // Remove trailing comma
     s.pop();
     s
 }
@@ -132,12 +131,17 @@ pub fn get_reference_attrs(
 
 #[cfg(test)]
 mod tests {
-    use crate::database::{
-        add_entity::new_entity,
-        attribute_schema::{AttributeSchema, CreateAttributeSchema, Quantity},
-        attribute_type::{CreateAttributeType, CreateReferenceAttribute},
-        entity_schema::{CreateEntitySchema, EntitySchema},
-        test::test_util::setup,
+    use crate::{
+        database::{
+            entity::add_entity,
+            entity_schema::{CreateEntitySchema, EntitySchema},
+            test::test_util::setup,
+            New,
+        },
+        models::{
+            attribute_schema::{AttributeSchema, CreateAttributeSchema, Quantity},
+            attribute_type::{CreateAttributeType, CreateReferenceAttribute},
+        },
     };
 
     use super::*;
@@ -203,7 +207,7 @@ mod tests {
         ))
         .unwrap();
 
-        let child_id = new_entity(&tx, &child_schema, child_data).unwrap();
+        let child_id = add_entity(&tx, &child_schema, child_data).unwrap();
 
         let parent_data = serde_json::from_str(&format!(
             r#"
@@ -214,7 +218,7 @@ mod tests {
         ))
         .unwrap();
 
-        let parent_id = new_entity(&tx, &parent_schema, parent_data).unwrap();
+        let parent_id = add_entity(&tx, &parent_schema, parent_data).unwrap();
 
         let result = get_reference_attrs(&tx, &vec![&parent_id], &reference_attr).unwrap();
 

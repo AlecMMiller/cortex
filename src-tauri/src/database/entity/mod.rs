@@ -1,11 +1,13 @@
-pub mod get;
-pub use get::get;
+pub mod add_entity;
+pub mod get_entity;
+pub use add_entity::add_entity;
+pub use get_entity::get;
 
 use serde::Deserialize;
 use serde_json::{Map, Value};
 use specta::Type;
 
-use super::attribute_schema::AttributeSchemaId;
+use crate::models::attribute_schema::AttributeSchemaId;
 
 #[derive(Deserialize, Type)]
 pub enum EntityField {

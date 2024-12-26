@@ -1,5 +1,4 @@
-use super::attribute_schema::AttributeSchemaId;
-use crate::models::entity::EntityId;
+use crate::models::{attribute_schema::AttributeSchemaId, entity::EntityId};
 use serde_json::Value;
 use std::collections::HashMap;
 

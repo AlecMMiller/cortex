@@ -1,4 +1,5 @@
-pub mod add_entity;
+use rusqlite::Transaction;
+
 pub mod attribute_getters;
 pub mod attribute_schema;
 pub mod attribute_type;
@@ -9,3 +10,25 @@ mod entity_test;
 pub mod migration;
 mod response_map;
 mod test;
+
+pub trait New<T> {
+    fn new(tx: &Transaction, data: T) -> rusqlite::Result<Self>
+    where
+        Self: Sized;
+}
+
+pub trait Get<T> {
+    fn get(tx: &Transaction, id: &T) -> rusqlite::Result<Self>
+    where
+        Self: Sized;
+}
+
+pub trait GetMany<T> {
+    fn get_many(tx: &Transaction, id: &T) -> rusqlite::Result<Vec<Self>>
+    where
+        Self: Sized;
+}
+
+pub trait Insert<T, V: ?Sized> {
+    fn insert(&self, tx: &Transaction, target: &T, val: &V) -> rusqlite::Result<()>;
+}

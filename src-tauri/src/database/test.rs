@@ -3,11 +3,18 @@ pub mod test_util {
     use rusqlite::{Connection, Transaction};
     use serde_json::{Map, Value};
 
-    use crate::database::{
-        attribute_schema::{AttributeSchema, AttributeSchemaId, CreateAttributeSchema, Quantity},
-        attribute_type::{CreateAttributeType, CreateReferenceAttribute, SimpleAttributeType},
-        entity_schema::{CreateEntitySchema, EntitySchema, EntitySchemaId},
-        migration::migrate,
+    use crate::{
+        database::{
+            entity_schema::{CreateEntitySchema, EntitySchema, EntitySchemaId},
+            migration::migrate,
+            New,
+        },
+        models::{
+            attribute_schema::{
+                AttributeSchema, AttributeSchemaId, CreateAttributeSchema, Quantity,
+            },
+            attribute_type::{CreateAttributeType, CreateReferenceAttribute, SimpleAttributeType},
+        },
     };
 
     pub fn setup() -> Connection {
@@ -131,18 +138,39 @@ pub mod test_util {
         child: EntitySchemaId,
         data: RSD,
     ) -> AttributeSchemaId {
-        AttributeSchema::new(
-            &tx,
-            CreateAttributeSchema {
-                entity: parent,
+        {
+            let tx: &Transaction = &tx;
+            let data = CreateAttributeSchema {
+                    entity: parent,
+                    name: data.name,
+                    quantity: data.quantity,
+                    attr_type: CreateAttributeType::CreateReferenceAttribute(
+                        CreateReferenceAttribute { id: child },
+                    ),
+                };
+            let reference = data.attr_type.get_ref();
+
+            let new_attribute = AttributeSchema {
+                id: AttributeSchemaId::new(),
                 name: data.name,
                 quantity: data.quantity,
-                attr_type: CreateAttributeType::CreateReferenceAttribute(
-                    CreateReferenceAttribute { id: child },
+                attr_type: data.attr_type.get_full(tx).unwrap(),
+            };
+
+            tx.execute(
+                "INSERT INTO attribute_schema (id, entity, name, type, reference, quantity) VALUES (?1, ?2, ?3, ?4, ?5, ?6)",
+                (
+                    &new_attribute.id,
+                    data.entity,
+                    &new_attribute.name,
+                    &data.attr_type,
+                    &reference,
+                    &new_attribute.quantity
                 ),
-            },
-        )
-        .unwrap()
+            ).unwrap();
+
+            new_attribute
+        }
         .id
     }
 

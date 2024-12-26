@@ -1,8 +1,7 @@
 use super::Error;
 use crate::{
     database::{
-        add_entity::new_entity,
-        entity::{get, EntityRequest, EntityResponse},
+        entity::{add_entity, get, EntityRequest, EntityResponse},
         entity_schema::EntitySchemaId,
     },
     models::entity::EntityId,
@@ -20,7 +19,7 @@ pub fn create_entity(
 ) -> Result<EntityId, Error> {
     let mut conn = pool_wrapper.pool.get()?;
     let tx = conn.transaction()?;
-    let new = new_entity(&tx, &schema, data)?;
+    let new = add_entity(&tx, &schema, data)?;
     tx.commit()?;
     Ok(new)
 }

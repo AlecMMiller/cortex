@@ -1,25 +1,13 @@
-use crate::macros::macros::create_id;
+use crate::models::{
+    attribute_schema::AttributeSchema,
+    entity_schema::{CreateEntitySchema, EntitySchema, EntitySchemaId},
+};
 use rusqlite::{params, Result, Transaction};
-use serde::Serialize;
-use specta::Type;
 
-use super::attribute_schema::AttributeSchema;
+use super::{Get, GetMany, New};
 
-create_id!(EntitySchemaId);
-
-#[derive(Type, Serialize)]
-pub struct EntitySchema {
-    pub id: EntitySchemaId,
-    pub name: String,
-    pub attributes: Vec<AttributeSchema>,
-}
-
-pub struct CreateEntitySchema {
-    pub name: String,
-}
-
-impl EntitySchema {
-    pub fn new(conn: &Transaction, data: CreateEntitySchema) -> Result<Self> {
+impl New<CreateEntitySchema> for EntitySchema {
+    fn new(conn: &Transaction, data: CreateEntitySchema) -> Result<Self> {
         let new_entity_schema = Self {
             id: EntitySchemaId::new(),
             name: data.name,
@@ -33,9 +21,11 @@ impl EntitySchema {
 
         Ok(new_entity_schema)
     }
+}
 
-    pub fn get(tx: &Transaction, id: &EntitySchemaId) -> Result<Self> {
-        let attributes = AttributeSchema::get_for_entity(tx, id)?;
+impl Get<EntitySchemaId> for EntitySchema {
+    fn get(tx: &Transaction, id: &EntitySchemaId) -> Result<Self> {
+        let attributes = AttributeSchema::get_many(tx, id)?;
 
         tx.query_row(
             "SELECT id, name FROM entity_schema WHERE id=?1",
@@ -53,10 +43,12 @@ impl EntitySchema {
 
 #[cfg(test)]
 mod tests {
-    use crate::database::{
-        attribute_schema::{CreateAttributeSchema, Quantity},
-        attribute_type::{CreateAttributeType, SimpleAttributeType},
-        test::test_util::setup,
+    use crate::{
+        database::{test::test_util::setup, New},
+        models::{
+            attribute_schema::{CreateAttributeSchema, Quantity},
+            attribute_type::{CreateAttributeType, SimpleAttributeType},
+        },
     };
 
     use super::*;

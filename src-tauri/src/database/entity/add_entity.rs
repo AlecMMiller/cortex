@@ -1,14 +1,19 @@
 use rusqlite::{Error, Transaction};
 use serde_json::Value;
 
-use crate::models::entity::EntityId;
-
-use super::{
-    attribute_schema::{AttributeSchemaId, Quantity, RawAttributeSchema},
-    entity_schema::EntitySchemaId,
+use crate::{
+    database::{
+        attribute_schema::{GetSchemaMap, RawAttributeSchema},
+        Insert,
+    },
+    models::{
+        attribute_schema::{AttributeSchemaId, Quantity},
+        entity::EntityId,
+        entity_schema::EntitySchemaId,
+    },
 };
 
-pub fn new_entity(
+pub fn add_entity(
     tx: &Transaction,
     schema_id: &EntitySchemaId,
     data: Value,
@@ -22,7 +27,7 @@ pub fn new_entity(
 
     let id = EntityId::new();
 
-    let schema = RawAttributeSchema::get_for_entity_schema(&tx, schema_id)?;
+    let schema = RawAttributeSchema::get_map(&tx, schema_id)?;
 
     for (schema_id, value) in &schema {
         match value.quantity {
@@ -69,8 +74,8 @@ pub fn new_entity(
         }?;
 
         match value {
-            Value::String(val) => schema_entry.insert_string(tx, &id, &val),
-            Value::Array(vals) => schema_entry.insert_vec(tx, &id, &vals),
+            Value::String(val) => schema_entry.insert(tx, &id, &val),
+            Value::Array(vals) => schema_entry.insert(tx, &id, &vals),
             _ => todo!(),
         }?;
     }
@@ -80,9 +85,8 @@ pub fn new_entity(
 
 #[cfg(test)]
 mod tests {
-    use crate::database::{
-        attribute_schema::Quantity,
-        test::test_util::{create_attribute_schema, create_entity_schema, setup, ASD, ESD},
+    use crate::database::test::test_util::{
+        create_attribute_schema, create_entity_schema, setup, ASD, ESD,
     };
 
     use super::*;
@@ -103,7 +107,7 @@ mod tests {
         ))
         .unwrap();
 
-        new_entity(&tx, &schema, data).unwrap();
+        add_entity(&tx, &schema, data).unwrap();
     }
 
     // If a field is optional, it should be able to be created without it
@@ -127,7 +131,7 @@ mod tests {
         ))
         .unwrap();
 
-        new_entity(&tx, &schema, data).unwrap();
+        add_entity(&tx, &schema, data).unwrap();
     }
 
     // If a required field is missing, it should throw an error
@@ -147,7 +151,7 @@ mod tests {
         ))
         .unwrap();
 
-        let result = new_entity(&tx, &schema, data);
+        let result = add_entity(&tx, &schema, data);
         assert_eq!(
             result,
             Err(Error::ModuleError(
@@ -172,7 +176,7 @@ mod tests {
         ))
         .unwrap();
 
-        let result = new_entity(&tx, &schema, data);
+        let result = add_entity(&tx, &schema, data);
         assert_eq!(
             result,
             Err(Error::ModuleError(
@@ -199,7 +203,7 @@ mod tests {
         ))
         .unwrap();
 
-        new_entity(&tx, &schema, data).unwrap();
+        add_entity(&tx, &schema, data).unwrap();
     }
 
     // If an entity is created with an attribute not in its schema, it should throw an error
@@ -226,7 +230,7 @@ mod tests {
         ))
         .unwrap();
 
-        let result = new_entity(&tx, &schema, data);
+        let result = add_entity(&tx, &schema, data);
         assert_eq!(
             result,
             Err(Error::ModuleError("Key not found in schema".to_string()))
@@ -254,7 +258,7 @@ mod tests {
         ))
         .unwrap();
 
-        new_entity(&tx, &schema_id, data).unwrap();
+        add_entity(&tx, &schema_id, data).unwrap();
     }
 
     // It should accept empty lists
@@ -278,7 +282,7 @@ mod tests {
         ))
         .unwrap();
 
-        new_entity(&tx, &schema_id, data).unwrap();
+        add_entity(&tx, &schema_id, data).unwrap();
     }
 
     // It should throw an error if a list is provided to a field marked required
@@ -298,7 +302,7 @@ mod tests {
         ))
         .unwrap();
 
-        let result = new_entity(&tx, &schema_id, data);
+        let result = add_entity(&tx, &schema_id, data);
         assert_eq!(
             result,
             Err(Error::ModuleError(
@@ -328,7 +332,7 @@ mod tests {
         ))
         .unwrap();
 
-        let result = new_entity(&tx, &schema_id, data);
+        let result = add_entity(&tx, &schema_id, data);
         assert_eq!(
             result,
             Err(Error::ModuleError(

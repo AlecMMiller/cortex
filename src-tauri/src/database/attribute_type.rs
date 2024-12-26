@@ -1,21 +1,20 @@
-use crate::models::entity::EntityId;
+use crate::models::{
+    attribute_schema::AttributeSchemaId,
+    attribute_type::{
+        AttributeType, CreateAttributeType, CreateReferenceAttribute, ReferenceAttribute,
+        SimpleAttributeType,
+    },
+    entity::EntityId,
+    entity_schema::EntitySchemaId,
+};
 use rusqlite::{
     params,
-    types::{FromSqlError, FromSqlResult, ValueRef},
+    types::{FromSqlError, FromSqlResult},
     Error, Result, ToSql, Transaction,
 };
-use serde::{Deserialize, Serialize};
 use serde_json::Value;
-use specta::Type;
 
 use crate::macros::macros::create_id;
-
-use super::{attribute_schema::AttributeSchemaId, entity_schema::EntitySchemaId};
-
-#[derive(Serialize, Deserialize, Type, Debug, PartialEq)]
-pub struct CreateReferenceAttribute {
-    pub id: EntitySchemaId,
-}
 
 impl CreateReferenceAttribute {
     fn get_full(&self, tx: &Transaction) -> Result<ReferenceAttribute> {
@@ -30,12 +29,6 @@ impl CreateReferenceAttribute {
             },
         )
     }
-}
-
-#[derive(Serialize, Deserialize, Type, Debug, PartialEq)]
-pub struct ReferenceAttribute {
-    pub id: EntitySchemaId,
-    pub name: String,
 }
 
 create_id!(ReferenceAttributeId);
@@ -57,16 +50,10 @@ impl ReferenceAttribute {
     }
 }
 
-#[derive(Serialize, Deserialize, Type, Debug, PartialEq, Clone, Copy)]
-pub enum SimpleAttributeType {
-    Text,
-    RichText,
-}
-
 create_id!(TextAttributeId);
 
 impl SimpleAttributeType {
-    fn from_sql(value: &str) -> FromSqlResult<Self> {
+    pub fn from_sql(value: &str) -> FromSqlResult<Self> {
         match value {
             "Text" => Ok(SimpleAttributeType::Text),
             "RichText" => Ok(SimpleAttributeType::RichText),
@@ -125,12 +112,6 @@ impl ToSql for SimpleAttributeType {
     }
 }
 
-#[derive(Serialize, Deserialize, Type, Debug, PartialEq)]
-pub enum CreateAttributeType {
-    SimpleAttributeType(SimpleAttributeType),
-    CreateReferenceAttribute(CreateReferenceAttribute),
-}
-
 impl CreateAttributeType {
     pub fn get_ref(&self) -> Option<&EntitySchemaId> {
         match self {
@@ -156,38 +137,6 @@ impl ToSql for CreateAttributeType {
         match self {
             CreateAttributeType::SimpleAttributeType(simple) => simple.to_sql(),
             CreateAttributeType::CreateReferenceAttribute(_val) => Ok("Reference".into()),
-        }
-    }
-}
-
-#[derive(Serialize, Deserialize, Type, Debug, PartialEq)]
-pub enum AttributeType {
-    SimpleAttributeType(SimpleAttributeType),
-    ReferenceAttribute(ReferenceAttribute),
-}
-
-impl AttributeType {
-    pub fn columns_result(
-        type_column: ValueRef<'_>,
-        id_column: ValueRef<'_>,
-        name_column: ValueRef<'_>,
-    ) -> FromSqlResult<Self> {
-        let value = type_column.as_str()?;
-        match value {
-            "Reference" => {
-                let name = name_column.as_str()?;
-                let id = EntitySchemaId::column_result_manual(id_column)?;
-
-                let reference = ReferenceAttribute {
-                    id,
-                    name: name.into(),
-                };
-
-                Ok(AttributeType::ReferenceAttribute(reference))
-            }
-            simple => Ok(AttributeType::SimpleAttributeType(
-                SimpleAttributeType::from_sql(simple)?,
-            )),
         }
     }
 }

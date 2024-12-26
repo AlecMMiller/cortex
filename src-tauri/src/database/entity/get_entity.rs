@@ -3,13 +3,16 @@ use std::collections::{HashMap, HashSet};
 use rusqlite::{Error, Result, Transaction};
 use serde_json::Value;
 
-use crate::database::{
-    attribute_getters::{get_reference_attrs, get_text_attrs},
-    attribute_schema::{AttributeSchemaId, Quantity, RawAttributeSchema, SchemaMap},
-    attribute_type::{AttributeType, SimpleAttributeType},
-    response_map::EntitiesData,
-};
+use crate::models::attribute_type::{AttributeType, SimpleAttributeType};
 use crate::models::entity::EntityId;
+use crate::{
+    database::{
+        attribute_getters::{get_reference_attrs, get_text_attrs},
+        attribute_schema::{GetSchemaMap, RawAttributeSchema, SchemaMap},
+        response_map::EntitiesData,
+    },
+    models::attribute_schema::{AttributeSchemaId, Quantity},
+};
 
 use super::{EntityField, EntityRequest, EntityResponse};
 
@@ -25,7 +28,7 @@ fn get_many<'a>(
     }
 
     let request = &request.0;
-    let schema = RawAttributeSchema::get_for_entity(tx, entity_ids[0])?;
+    let schema = RawAttributeSchema::get_map(tx, entity_ids[0])?;
 
     // Get child attributes
     for attr in request {

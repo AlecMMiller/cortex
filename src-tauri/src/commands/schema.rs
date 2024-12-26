@@ -1,8 +1,9 @@
 use tauri::State;
 
 use super::Error;
-use crate::database::attribute_schema::{AttributeSchema, CreateAttributeSchema};
-use crate::database::entity_schema::{CreateEntitySchema, EntitySchema, EntitySchemaId};
+use crate::database::{Get, New};
+use crate::models::attribute_schema::{AttributeSchema, CreateAttributeSchema};
+use crate::models::entity_schema::{CreateEntitySchema, EntitySchema, EntitySchemaId};
 use crate::setup::PoolWrapper;
 
 #[tauri::command]
