@@ -1,5 +1,41 @@
 use rusqlite::{Result, Transaction};
 
+fn create_table(tx: &Transaction, name: &str, content: &str) -> Result<()> {
+    let content = format!(
+        "
+        CREATE TABLE IF NOT EXISTS {name} (
+          id BLOB PRIMARY KEY,
+          {content}
+        );
+        "
+    );
+    tx.execute(&content, ())?;
+
+    Ok(())
+}
+
+fn build_attr(tx: &Transaction, name: &str, sql_type: &str) -> Result<()> {
+    create_table(
+        tx,
+        &format!("{name}_attribute"),
+        &format!(
+            "
+            entity BLOB NOT NULL,
+            schema BLOB NOT NULL,
+            value {sql_type} NOT NULL,
+            FOREIGN KEY(entity) REFERENCES entity(id),
+            FOREIGN KEY(schema) REFERENCES attribute_schema(id)
+            "
+        ),
+    )?;
+
+    tx.execute(
+        &format!("CREATE INDEX IF NOT EXISTS idx_{name}_entity_schema ON {name}_attribute (entity, schema);"),
+        (),
+    )?;
+    Ok(())
+}
+
 fn initial(conn: &Transaction) -> Result<()> {
     conn.execute(
         "CREATE TABLE IF NOT EXISTS entity_schema (
@@ -38,22 +74,9 @@ fn initial(conn: &Transaction) -> Result<()> {
         (),
     )?;
 
-    conn.execute(
-        "CREATE TABLE IF NOT EXISTS text_attribute (
-              id BLOB PRIMARY KEY,
-              entity BLOB NOT NULL,
-              schema BLOB NOT NULL,
-              value TEXT NOT NULL,
-              FOREIGN KEY(entity) REFERENCES entity(id),
-              FOREIGN KEY(schema) REFERENCES attribute_schema(id)
-            );",
-        (),
-    )?;
-
-    conn.execute(
-        "CREATE INDEX IF NOT EXISTS idx_text_entity_schema ON text_attribute (entity, schema);",
-        (),
-    )?;
+    build_attr(&conn, "text", "TEXT")?;
+    build_attr(&conn, "integer", "INTEGER")?;
+    build_attr(&conn, "number", "REAL")?;
 
     conn.execute(
         "CREATE TABLE IF NOT EXISTS reference_attribute (
