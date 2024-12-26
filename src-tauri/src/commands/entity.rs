@@ -2,9 +2,10 @@ use super::Error;
 use crate::{
     database::{
         add_entity::new_entity,
-        entity::{get, EntityId, EntityRequest, EntityResponse},
+        entity::{get, EntityRequest, EntityResponse},
         entity_schema::EntitySchemaId,
     },
+    models::entity::EntityId,
     setup::PoolWrapper,
 };
 use serde_json::Value;

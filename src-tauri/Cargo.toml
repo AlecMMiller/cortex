@@ -47,4 +47,5 @@ harness = false
 [lib]
 name = "whatever"
 bench = true
-test = true
+test = false
+

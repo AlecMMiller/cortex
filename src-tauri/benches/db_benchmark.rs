@@ -6,15 +6,16 @@ use whatever::{
         add_entity::new_entity,
         attribute_schema::{AttributeSchema, CreateAttributeSchema, Quantity},
         attribute_type::{CreateAttributeType, CreateReferenceAttribute, SimpleAttributeType},
-        entity::{get, EntityAttribute, EntityField, EntityId, EntityRequest},
+        entity::{get, EntityAttribute, EntityField, EntityRequest},
         entity_schema::{CreateEntitySchema, EntitySchema},
     },
     migrate_db,
+    models::entity::EntityId,
 };
 
 use criterion::{criterion_group, criterion_main, Criterion};
 
-fn sort_arr_benchmark(c: &mut Criterion) {
+fn db_benchmark(c: &mut Criterion) {
     let _ = remove_file("bench.db");
     let mut conn = Connection::open("bench.db").unwrap();
     conn.pragma_update(Some(DatabaseName::Main), "journal_mode", "WAL")
@@ -108,8 +109,9 @@ fn sort_arr_benchmark(c: &mut Criterion) {
 
     let mut to_get = Vec::new();
 
-    for n in 0..10000 {
-        let tx = conn.transaction().unwrap();
+    let tx = conn.transaction().unwrap();
+
+    for n in 0..100000 {
         let grandchild_data = serde_json::from_str(&format!(
             r#"
         {{
@@ -144,9 +146,9 @@ fn sort_arr_benchmark(c: &mut Criterion) {
         if n % 300 == 0 {
             to_get.push(id);
         }
-
-        tx.commit().unwrap();
     }
+
+    tx.commit().unwrap();
 
     let grandchild_request = EntityRequest {
         0: vec![EntityField::Attribute(attr4_id)],
@@ -189,5 +191,5 @@ fn getter(conn: &mut Connection, ids: &Vec<EntityId>, request: &EntityRequest, i
     *idx += 1;
 }
 
-criterion_group!(benches, sort_arr_benchmark);
+criterion_group!(benches, db_benchmark);
 criterion_main!(benches);

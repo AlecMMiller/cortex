@@ -3,6 +3,7 @@
 mod commands;
 mod database;
 mod macros;
+pub mod models;
 mod setup;
 use specta_typescript::Typescript;
 use tauri_specta::{collect_commands, Builder};
