@@ -3,15 +3,63 @@ use std::collections::HashMap;
 use rusqlite::{params_from_iter, ParamsFromIter, Statement, ToSql, Transaction};
 use serde_json::Value;
 
-use crate::models::{attribute_schema::AttributeSchemaId, entity::EntityId};
+use crate::{
+    database::response_map::ResponseMap,
+    models::{attribute_schema::AttributeSchemaId, entity::EntityId},
+};
 
-use super::response_map::ResponseMap;
+pub fn get_text_attrs(
+    tx: &Transaction,
+    mut map: Option<ResponseMap>,
+    entities: &Vec<&EntityId>,
+    attrs: &Vec<&AttributeSchemaId>,
+) -> rusqlite::Result<Option<ResponseMap>> {
+    assert_ne!(entities.len(), 0);
 
-fn build_question_marks(count: usize) -> String {
-    assert_ne!(count, 0);
-    let mut s = "?,".repeat(count);
-    s.pop();
-    s
+    if attrs.len() == 0 {
+        return Ok(map);
+    }
+
+    let mut statement = prepare(tx, "text_attribute", entities.len(), attrs.len())?;
+    let params = get_params(entities, attrs);
+
+    let mut rows = statement.query(params)?;
+
+    while let Some(row) = rows.next()? {
+        let entity: EntityId = row.get(0)?;
+        let attribute = row.get(1)?;
+        let value = Value::String(row.get(2)?);
+
+        map = ResponseMap::add(map, entity, attribute, value);
+    }
+
+    Ok(map)
+}
+
+pub fn get_reference_attrs(
+    tx: &Transaction,
+    entities: &Vec<&EntityId>,
+    attr: &AttributeSchemaId,
+) -> rusqlite::Result<HashMap<EntityId, Vec<EntityId>>> {
+    assert_ne!(entities.len(), 0);
+
+    let mut statement = tx.prepare(&build_ref_request(entities.len()))?;
+
+    let params = get_ref_params(entities, attr);
+    let mut rows = statement.query(params)?;
+
+    let mut map = HashMap::new();
+
+    while let Some(row) = rows.next()? {
+        let parent_entity: EntityId = row.get(0)?;
+        let value: EntityId = row.get(1)?;
+
+        let parent: &mut Vec<EntityId> = map.entry(parent_entity).or_default();
+
+        parent.push(value);
+    }
+
+    Ok(map)
 }
 
 fn build_request(attr_table: &str, num_entities: usize, num_attrs: usize) -> String {
@@ -51,34 +99,6 @@ fn get_params<'a>(
     params_from_iter(params)
 }
 
-pub fn get_text_attrs(
-    tx: &Transaction,
-    mut map: Option<ResponseMap>,
-    entities: &Vec<&EntityId>,
-    attrs: &Vec<&AttributeSchemaId>,
-) -> rusqlite::Result<Option<ResponseMap>> {
-    assert_ne!(entities.len(), 0);
-
-    if attrs.len() == 0 {
-        return Ok(map);
-    }
-
-    let mut statement = prepare(tx, "text_attribute", entities.len(), attrs.len())?;
-    let params = get_params(entities, attrs);
-
-    let mut rows = statement.query(params)?;
-
-    while let Some(row) = rows.next()? {
-        let entity: EntityId = row.get(0)?;
-        let attribute = row.get(1)?;
-        let value = Value::String(row.get(2)?);
-
-        map = ResponseMap::add(map, entity, attribute, value);
-    }
-
-    Ok(map)
-}
-
 fn build_ref_request(num_entities: usize) -> String {
     let entity_part = build_question_marks(num_entities);
     format!(
@@ -103,30 +123,11 @@ fn get_ref_params<'a>(
     params_from_iter(params)
 }
 
-pub fn get_reference_attrs(
-    tx: &Transaction,
-    entities: &Vec<&EntityId>,
-    attr: &AttributeSchemaId,
-) -> rusqlite::Result<HashMap<EntityId, Vec<EntityId>>> {
-    assert_ne!(entities.len(), 0);
-
-    let mut statement = tx.prepare(&build_ref_request(entities.len()))?;
-
-    let params = get_ref_params(entities, attr);
-    let mut rows = statement.query(params)?;
-
-    let mut map = HashMap::new();
-
-    while let Some(row) = rows.next()? {
-        let parent_entity: EntityId = row.get(0)?;
-        let value: EntityId = row.get(1)?;
-
-        let parent: &mut Vec<EntityId> = map.entry(parent_entity).or_default();
-
-        parent.push(value);
-    }
-
-    Ok(map)
+fn build_question_marks(count: usize) -> String {
+    assert_ne!(count, 0);
+    let mut s = "?,".repeat(count);
+    s.pop();
+    s
 }
 
 #[cfg(test)]

@@ -14,6 +14,29 @@ use crate::{
 
 use super::{RawAttributeSchema, SchemaMap};
 
+impl Get<AttributeSchemaId> for RawAttributeSchema {
+    fn get(tx: &Transaction, id: &AttributeSchemaId) -> rusqlite::Result<Self> {
+        tx.query_row(
+            "SELECT 
+                    a.id, a.quantity, a.type, e.id, e.name 
+                  FROM attribute_schema a LEFT JOIN entity_schema e ON a.reference = e.id 
+                  WHERE a.id=?1",
+            params![id],
+            |row| {
+                Ok(Self {
+                    id: row.get(0)?,
+                    quantity: row.get(1)?,
+                    attr_type: AttributeType::columns_result(
+                        row.get_ref(2)?,
+                        row.get_ref(3)?,
+                        row.get_ref(4)?,
+                    )?,
+                })
+            },
+        )
+    }
+}
+
 impl Get<AttributeSchemaId> for AttributeSchema {
     fn get(tx: &Transaction, id: &AttributeSchemaId) -> rusqlite::Result<Self> {
         tx.query_row(

@@ -85,9 +85,9 @@ pub fn add_entity(
 
 #[cfg(test)]
 mod tests {
-    use crate::database::test::test_util::{
-        create_attribute_schema, create_entity_schema, setup, ASD, ESD,
-    };
+    use futures::task::waker;
+
+    use crate::database::test::test_util::{setup, ASD, ESD};
 
     use super::*;
 
@@ -97,7 +97,7 @@ mod tests {
         let mut conn = setup();
         let tx = conn.transaction().unwrap();
 
-        let schema = create_entity_schema(&tx, ESD::default());
+        let schema = ESD::create_default(&tx);
 
         let data = serde_json::from_str(&format!(
             r#"
@@ -116,12 +116,10 @@ mod tests {
         let mut conn = setup();
         let tx = conn.transaction().unwrap();
 
-        let schema = create_entity_schema(&tx, ESD::default());
-        create_attribute_schema(
-            &tx,
-            schema.clone(),
-            ASD::default().quantity(Quantity::Optional),
-        );
+        let schema = ESD::create_default(&tx);
+        ASD::default()
+            .quantity(Quantity::Optional)
+            .create(&tx, &schema);
 
         let data = serde_json::from_str(&format!(
             r#"
@@ -140,8 +138,8 @@ mod tests {
         let mut conn = setup();
         let tx = conn.transaction().unwrap();
 
-        let schema = create_entity_schema(&tx, ESD::default());
-        create_attribute_schema(&tx, schema.clone(), ASD::default());
+        let schema = ESD::create_default(&tx);
+        ASD::create_default(&tx, &schema);
 
         let data = serde_json::from_str(&format!(
             r#"
@@ -166,8 +164,8 @@ mod tests {
         let mut conn = setup();
         let tx = conn.transaction().unwrap();
 
-        let schema = create_entity_schema(&tx, ESD::default());
-        create_attribute_schema(&tx, schema.clone(), ASD::default());
+        let schema = ESD::create_default(&tx);
+        ASD::create_default(&tx, &schema);
 
         let data = serde_json::from_str(&format!(
             r#"
@@ -191,8 +189,8 @@ mod tests {
         let mut conn = setup();
         let tx = conn.transaction().unwrap();
 
-        let schema = create_entity_schema(&tx, ESD::default());
-        let attr = create_attribute_schema(&tx, schema.clone(), ASD::default());
+        let schema = ESD::create_default(&tx);
+        let attr = ASD::create_default(&tx, &schema);
 
         let data = serde_json::from_str(&format!(
             r#"
@@ -212,14 +210,10 @@ mod tests {
         let mut conn = setup();
         let tx = conn.transaction().unwrap();
 
-        let schema = create_entity_schema(&tx, ESD::default());
-        let other_schema = create_entity_schema(
-            &tx,
-            ESD {
-                name: "Other".to_string(),
-            },
-        );
-        let attr = create_attribute_schema(&tx, other_schema.clone(), ASD::default());
+        let schema = ESD::create_default(&tx);
+        let other_schema = ESD::default().name("Other").create(&tx);
+
+        let attr = ASD::create_default(&tx, &other_schema);
 
         let data = serde_json::from_str(&format!(
             r#"
@@ -242,12 +236,11 @@ mod tests {
     fn list() {
         let mut conn = setup();
         let tx = conn.transaction().unwrap();
-        let schema_id = create_entity_schema(&tx, ESD::default());
-        let attribute_id = create_attribute_schema(
-            &tx,
-            schema_id.clone(),
-            ASD::default().quantity(Quantity::List),
-        );
+
+        let schema_id = ESD::create_default(&tx);
+        let attribute_id = ASD::default()
+            .quantity(Quantity::List)
+            .create(&tx, &schema_id);
 
         let data = serde_json::from_str(&format!(
             r#"
@@ -266,12 +259,11 @@ mod tests {
     fn empty_list() {
         let mut conn = setup();
         let tx = conn.transaction().unwrap();
-        let schema_id = create_entity_schema(&tx, ESD::default());
-        let attribute_id = create_attribute_schema(
-            &tx,
-            schema_id.clone(),
-            ASD::default().quantity(Quantity::List),
-        );
+
+        let schema_id = ESD::create_default(&tx);
+        let attribute_id = ASD::default()
+            .quantity(Quantity::List)
+            .create(&tx, &schema_id);
 
         let data = serde_json::from_str(&format!(
             r#"
@@ -290,8 +282,9 @@ mod tests {
     fn too_many_args_required() {
         let mut conn = setup();
         let tx = conn.transaction().unwrap();
-        let schema_id = create_entity_schema(&tx, ESD::default());
-        let attribute_id = create_attribute_schema(&tx, schema_id.clone(), ASD::default());
+
+        let schema_id = ESD::create_default(&tx);
+        let attribute_id = ASD::create_default(&tx, &schema_id);
 
         let data = serde_json::from_str(&format!(
             r#"
@@ -316,12 +309,11 @@ mod tests {
     fn too_many_args_optional() {
         let mut conn = setup();
         let tx = conn.transaction().unwrap();
-        let schema_id = create_entity_schema(&tx, ESD::default());
-        let attribute_id = create_attribute_schema(
-            &tx,
-            schema_id.clone(),
-            ASD::default().quantity(Quantity::Optional),
-        );
+
+        let schema_id = ESD::create_default(&tx);
+        let attribute_id = ASD::default()
+            .quantity(Quantity::Optional)
+            .create(&tx, &schema_id);
 
         let data = serde_json::from_str(&format!(
             r#"

@@ -33,6 +33,22 @@ fn build_attr(tx: &Transaction, name: &str, sql_type: &str) -> Result<()> {
         &format!("CREATE INDEX IF NOT EXISTS idx_{name}_entity_schema ON {name}_attribute (entity, schema);"),
         (),
     )?;
+
+    tx.execute(
+        &format!(
+            "
+CREATE TRIGGER IF NOT EXISTS {name}_single_check
+BEFORE INSERT ON {name}_attribute
+WHEN NOT EXISTS ( SELECT 1 FROM attribute_schema WHERE ID = NEW.schema AND quantity = 'List' )
+AND EXISTS ( SELECT 1 FROM {name}_attribute WHERE entity = NEW.entity AND schema = NEW.schema ) 
+BEGIN
+  SELECT RAISE(FAIL, \"Attempted to add second entry to non-list field\");
+END;
+"
+        ),
+        (),
+    )?;
+
     Ok(())
 }
 

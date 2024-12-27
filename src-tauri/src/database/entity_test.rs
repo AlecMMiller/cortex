@@ -3,10 +3,7 @@ use serde_json::Value;
 use crate::{
     database::{
         entity::{get, EntityField, EntityRequest},
-        test::test_util::{
-            assert_string_key, create_attribute_schema, create_entity_schema,
-            create_reference_schema, setup, ASD, ESD, RSD,
-        },
+        test::test_util::{assert_string_key, setup, ASD, ESD, RSD},
     },
     models::attribute_schema::Quantity,
 };
@@ -17,8 +14,8 @@ use super::entity::{add_entity, EntityAttribute};
 fn text() {
     let mut conn = setup();
     let tx = conn.transaction().unwrap();
-    let schema_id = create_entity_schema(&tx, ESD::default());
-    let attribute_id = create_attribute_schema(&tx, schema_id.clone(), ASD::default());
+    let schema_id = &ESD::default().create(&tx);
+    let attribute_id = ASD::default().create(&tx, schema_id);
 
     let data = serde_json::from_str(&format!(
         r#"
@@ -44,12 +41,11 @@ fn text() {
 fn list() {
     let mut conn = setup();
     let tx = conn.transaction().unwrap();
-    let schema_id = create_entity_schema(&tx, ESD::default());
-    let attribute_id = create_attribute_schema(
-        &tx,
-        schema_id.clone(),
-        ASD::default().quantity(Quantity::List),
-    );
+
+    let schema_id = &ESD::default().create(&tx);
+    let attribute_id = ASD::default()
+        .quantity(Quantity::List)
+        .create(&tx, schema_id);
 
     let data = serde_json::from_str(&format!(
         r#"
@@ -83,10 +79,10 @@ fn multifield() {
     let mut conn = setup();
     let tx = conn.transaction().unwrap();
 
-    let schema_id = create_entity_schema(&tx, ESD::default());
+    let schema_id = &ESD::create_default(&tx);
 
-    let attribute_1_id = create_attribute_schema(&tx, schema_id.clone(), ASD::default());
-    let attribute_2_id = create_attribute_schema(&tx, schema_id.clone(), ASD::default().name("2"));
+    let attribute_1_id = ASD::create_default(&tx, schema_id);
+    let attribute_2_id = ASD::default().name("2").create(&tx, schema_id);
 
     let data = serde_json::from_str(&format!(
         r#"
@@ -118,22 +114,15 @@ fn reference() {
     let mut conn = setup();
     let tx = conn.transaction().unwrap();
 
-    let parent_schema = create_entity_schema(&tx, ESD::default());
-    let child_schema = create_entity_schema(
-        &tx,
-        ESD {
-            name: "Child".to_string(),
-        },
-    );
+    let parent_schema = &ESD::create_default(&tx);
+    let child_schema = &ESD {
+        name: "Child".to_string(),
+    }
+    .create(&tx);
 
-    let reference_attr = create_reference_schema(
-        &tx,
-        parent_schema.clone(),
-        child_schema.clone(),
-        RSD::default(),
-    );
+    let reference_attr = RSD::create_default(&tx, parent_schema, child_schema);
 
-    let child_attr = create_attribute_schema(&tx, child_schema.clone(), ASD::default());
+    let child_attr = ASD::create_default(&tx, child_schema);
 
     let child_data = serde_json::from_str(&format!(
         r#"

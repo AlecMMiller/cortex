@@ -36,16 +36,23 @@ pub mod test_util {
         }
     }
 
-    pub fn create_entity_schema(tx: &Transaction, definition: ESD) -> EntitySchemaId {
-        let schema = EntitySchema::new(
-            &tx,
-            CreateEntitySchema {
-                name: definition.name,
-            },
-        )
-        .expect("Unable to create entity");
+    impl ESD {
+        pub fn create(self, tx: &Transaction) -> EntitySchemaId {
+            let schema = EntitySchema::new(&tx, CreateEntitySchema { name: self.name })
+                .expect("Unable to create entity");
 
-        schema.id
+            schema.id
+        }
+
+        pub fn name(mut self, name: &str) -> Self {
+            self.name = name.to_string();
+            self
+        }
+
+        pub fn create_default(tx: &Transaction) -> EntitySchemaId {
+            let def = Self::default();
+            def.create(&tx)
+        }
     }
 
     pub struct ASD {
@@ -55,6 +62,26 @@ pub mod test_util {
     }
 
     impl ASD {
+        pub fn create(self, tx: &Transaction, entity: &EntitySchemaId) -> AttributeSchemaId {
+            let new_attribute = AttributeSchema::new(
+                &tx,
+                CreateAttributeSchema {
+                    entity: entity.clone(),
+                    name: self.name,
+                    quantity: self.quantity,
+                    attr_type: CreateAttributeType::SimpleAttributeType(self.attr_type),
+                },
+            )
+            .expect("Failed to create attribute");
+
+            new_attribute.id
+        }
+
+        pub fn create_default(tx: &Transaction, entity: &EntitySchemaId) -> AttributeSchemaId {
+            let def = Self::default();
+            def.create(&tx, &entity)
+        }
+
         pub fn name(mut self, name: &str) -> Self {
             self.name = name.to_string();
             self
@@ -80,25 +107,6 @@ pub mod test_util {
                 quantity: Quantity::Required,
             }
         }
-    }
-
-    pub fn create_attribute_schema(
-        tx: &Transaction,
-        entity: EntitySchemaId,
-        definition: ASD,
-    ) -> AttributeSchemaId {
-        let new_attribute = AttributeSchema::new(
-            &tx,
-            CreateAttributeSchema {
-                entity,
-                name: definition.name,
-                quantity: definition.quantity,
-                attr_type: CreateAttributeType::SimpleAttributeType(definition.attr_type),
-            },
-        )
-        .expect("Failed to create attribute");
-
-        new_attribute.id
     }
 
     pub struct RSD {
@@ -127,22 +135,30 @@ pub mod test_util {
             self.quantity = quantity;
             self
         }
-    }
 
-    pub fn create_reference_schema(
-        tx: &Transaction,
-        parent: EntitySchemaId,
-        child: EntitySchemaId,
-        data: RSD,
-    ) -> AttributeSchemaId {
-        {
+        pub fn create_default(
+            tx: &Transaction,
+            parent: &EntitySchemaId,
+            child: &EntitySchemaId,
+        ) -> AttributeSchemaId {
+            let attr = Self::default();
+            attr.create(tx, parent, child)
+        }
+
+        pub fn create(
+            self,
+            tx: &Transaction,
+            parent: &EntitySchemaId,
+            child: &EntitySchemaId,
+        ) -> AttributeSchemaId {
+            {
             let tx: &Transaction = &tx;
             let data = CreateAttributeSchema {
-                    entity: parent,
-                    name: data.name,
-                    quantity: data.quantity,
+                    entity: parent.clone(),
+                    name: self.name,
+                    quantity: self.quantity,
                     attr_type: CreateAttributeType::CreateReferenceAttribute(
-                        CreateReferenceAttribute { id: child },
+                        CreateReferenceAttribute { id: child.clone() },
                     ),
                 };
             let reference = data.attr_type.get_ref();
@@ -169,6 +185,7 @@ pub mod test_util {
             new_attribute
         }
         .id
+        }
     }
 
     pub fn assert_string_key(result: &Map<String, Value>, attr: AttributeSchemaId, expected: &str) {

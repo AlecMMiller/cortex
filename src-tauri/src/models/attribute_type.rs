@@ -2,7 +2,12 @@ use rusqlite::types::{FromSqlResult, ValueRef};
 use serde::{Deserialize, Serialize};
 use specta::Type;
 
+use crate::macros::macros::create_id;
+
 use super::entity_schema::EntitySchemaId;
+
+create_id!(ReferenceAttributeId);
+create_id!(TextAttributeId);
 
 #[derive(Serialize, Deserialize, Type, Debug, PartialEq)]
 pub enum AttributeType {

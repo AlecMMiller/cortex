@@ -2,7 +2,7 @@ use crate::models::{
     attribute_schema::AttributeSchemaId,
     attribute_type::{
         AttributeType, CreateAttributeType, CreateReferenceAttribute, ReferenceAttribute,
-        SimpleAttributeType,
+        ReferenceAttributeId, SimpleAttributeType, TextAttributeId,
     },
     entity::EntityId,
     entity_schema::EntitySchemaId,
@@ -13,8 +13,6 @@ use rusqlite::{
     Error, Result, ToSql, Transaction,
 };
 use serde_json::Value;
-
-use crate::macros::macros::create_id;
 
 impl CreateReferenceAttribute {
     fn get_full(&self, tx: &Transaction) -> Result<ReferenceAttribute> {
@@ -30,8 +28,6 @@ impl CreateReferenceAttribute {
         )
     }
 }
-
-create_id!(ReferenceAttributeId);
 
 impl ReferenceAttribute {
     pub fn insert_reference(
@@ -49,8 +45,6 @@ impl ReferenceAttribute {
         Ok(())
     }
 }
-
-create_id!(TextAttributeId);
 
 impl SimpleAttributeType {
     pub fn from_sql(value: &str) -> FromSqlResult<Self> {

@@ -3,11 +3,11 @@ use std::collections::{HashMap, HashSet};
 use rusqlite::{Error, Result, Transaction};
 use serde_json::Value;
 
+use crate::database::attribute::{get_reference_attrs, get_text_attrs};
 use crate::models::attribute_type::{AttributeType, SimpleAttributeType};
 use crate::models::entity::EntityId;
 use crate::{
     database::{
-        attribute_getters::{get_reference_attrs, get_text_attrs},
         attribute_schema::{GetSchemaMap, RawAttributeSchema, SchemaMap},
         response_map::EntitiesData,
     },
