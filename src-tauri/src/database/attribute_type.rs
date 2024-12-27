@@ -1,11 +1,14 @@
-use crate::models::{
-    attribute_schema::AttributeSchemaId,
-    attribute_type::{
-        AttributeType, CreateAttributeType, CreateReferenceAttribute, ReferenceAttribute,
-        ReferenceAttributeId, SimpleAttributeType, TextAttributeId,
+use crate::{
+    models::{
+        attribute_schema::AttributeSchemaId,
+        attribute_type::{
+            AttributeType, CreateAttributeType, CreateReferenceAttribute, ReferenceAttribute,
+            ReferenceAttributeId, SimpleAttributeType, TextAttributeId,
+        },
+        entity::EntityId,
+        entity_schema::EntitySchemaId,
     },
-    entity::EntityId,
-    entity_schema::EntitySchemaId,
+    utils::get_timestamp,
 };
 use rusqlite::{
     params,
@@ -38,9 +41,10 @@ impl ReferenceAttribute {
         value: &EntityId,
     ) -> Result<()> {
         let id = ReferenceAttributeId::new();
+        let created_at = get_timestamp();
         tx.execute(
-            "INSERT INTO reference_attribute (id, entity, schema, value) VALUES (?, ?, ?, ?)",
-            params![id, entity, schema, value],
+            "INSERT INTO reference_attribute (id, entity, schema, value, created, updated) VALUES (?1, ?2, ?3, ?4, ?5, ?5)",
+            params![id, entity, schema, value, created_at],
         )?;
         Ok(())
     }
@@ -65,9 +69,10 @@ impl SimpleAttributeType {
         match self {
             SimpleAttributeType::Text | SimpleAttributeType::RichText => {
                 let id = TextAttributeId::new();
+                let created_at = get_timestamp();
                 tx.execute(
-                    "INSERT INTO text_attribute (id, entity, schema, value) VALUES (?, ?, ?, ?)",
-                    params![id, entity, schema, value],
+                    "INSERT INTO text_attribute (id, entity, schema, value, created, updated) VALUES (?1, ?2, ?3, ?4, ?5, ?5)",
+                    params![id, entity, schema, value, created_at],
                 )?;
                 Ok(())
             }
@@ -81,8 +86,10 @@ impl SimpleAttributeType {
         schema: &AttributeSchemaId,
         vals: &Vec<Value>,
     ) -> Result<()> {
+        let created_at = get_timestamp();
+
         let mut stmt = tx.prepare(
-            "INSERT INTO text_attribute (id, entity, schema, value) VALUES (?, ?, ?, ?)",
+            "INSERT INTO text_attribute (id, entity, schema, value, created, updated) VALUES (?1, ?2, ?3, ?4, ?5, ?5)",
         )?;
 
         for val in vals {
@@ -91,7 +98,7 @@ impl SimpleAttributeType {
                 _ => Err(Error::InvalidQuery),
             }?;
             let id = TextAttributeId::new();
-            stmt.execute((id, entity, schema, val))?;
+            stmt.execute((id, entity, schema, val, created_at))?;
         }
         Ok(())
     }

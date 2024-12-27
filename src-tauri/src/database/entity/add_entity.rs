@@ -1,3 +1,5 @@
+use std::time::SystemTime;
+
 use rusqlite::{Error, Transaction};
 use serde_json::Value;
 
@@ -11,6 +13,7 @@ use crate::{
         entity::EntityId,
         entity_schema::EntitySchemaId,
     },
+    utils::get_timestamp,
 };
 
 pub fn add_entity(
@@ -44,9 +47,11 @@ pub fn add_entity(
         }
     }
 
+    let created_at = get_timestamp();
+
     tx.execute(
-        "INSERT INTO entity (id, schema) VALUES (?1, ?2)",
-        (&id, schema_id),
+        "INSERT INTO entity (id, schema, created, updated) VALUES (?1, ?2, ?3, ?4)",
+        (&id, schema_id, created_at, created_at),
     )?;
 
     for (key, value) in data {
@@ -85,8 +90,6 @@ pub fn add_entity(
 
 #[cfg(test)]
 mod tests {
-    use futures::task::waker;
-
     use crate::database::test::test_util::{setup, ASD, ESD};
 
     use super::*;

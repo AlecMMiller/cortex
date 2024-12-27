@@ -5,6 +5,8 @@ fn create_table(tx: &Transaction, name: &str, content: &str) -> Result<()> {
         "
         CREATE TABLE IF NOT EXISTS {name} (
           id BLOB PRIMARY KEY,
+          created INTEGER NOT NULL,
+          updated INTEGER NOT NULL,
           {content}
         );
         "
@@ -14,7 +16,7 @@ fn create_table(tx: &Transaction, name: &str, content: &str) -> Result<()> {
     Ok(())
 }
 
-fn build_attr(tx: &Transaction, name: &str, sql_type: &str) -> Result<()> {
+fn build_attr(tx: &Transaction, name: &str, sql_type: &str, extra: &str) -> Result<()> {
     create_table(
         tx,
         &format!("{name}_attribute"),
@@ -23,7 +25,8 @@ fn build_attr(tx: &Transaction, name: &str, sql_type: &str) -> Result<()> {
             entity BLOB NOT NULL,
             schema BLOB NOT NULL,
             value {sql_type} NOT NULL,
-            FOREIGN KEY(entity) REFERENCES entity(id),
+            {extra}
+            FOREIGN KEY(entity) REFERENCES entity(id) ON DELETE CASCADE,
             FOREIGN KEY(schema) REFERENCES attribute_schema(id)
             "
         ),
@@ -37,14 +40,14 @@ fn build_attr(tx: &Transaction, name: &str, sql_type: &str) -> Result<()> {
     tx.execute(
         &format!(
             "
-CREATE TRIGGER IF NOT EXISTS {name}_single_check
-BEFORE INSERT ON {name}_attribute
-WHEN NOT EXISTS ( SELECT 1 FROM attribute_schema WHERE ID = NEW.schema AND quantity = 'List' )
-AND EXISTS ( SELECT 1 FROM {name}_attribute WHERE entity = NEW.entity AND schema = NEW.schema ) 
-BEGIN
-  SELECT RAISE(FAIL, \"Attempted to add second entry to non-list field\");
-END;
-"
+            CREATE TRIGGER IF NOT EXISTS {name}_single_check
+            BEFORE INSERT ON {name}_attribute
+              WHEN NOT EXISTS ( SELECT 1 FROM attribute_schema WHERE ID = NEW.schema AND quantity = 'List' )
+              AND EXISTS ( SELECT 1 FROM {name}_attribute WHERE entity = NEW.entity AND schema = NEW.schema ) 
+            BEGIN
+              SELECT RAISE(FAIL, \"Attempted to add second entry to non-list field\");
+            END;
+            "
         ),
         (),
     )?;
@@ -52,64 +55,53 @@ END;
     Ok(())
 }
 
-fn initial(conn: &Transaction) -> Result<()> {
-    conn.execute(
-        "CREATE TABLE IF NOT EXISTS entity_schema (
-                id BLOB PRIMARY KEY,
-                name TEXT NOT NULL UNIQUE
-              )",
-        (),
+fn initial(tx: &Transaction) -> Result<()> {
+    create_table(
+        &tx,
+        "entity_schema",
+        "
+        name TEXT NOT NULL UNIQUE        
+        ",
     )?;
 
-    conn.execute(
-        "CREATE TABLE IF NOT EXISTS attribute_schema (
-                id BLOB PRIMARY KEY,
-                entity BLOB NOT NULL,
-                name TEXT NOT NULL,
-                type TEXT NOT NULL,
-                reference BLOB,
-                quantity TEXT NOT NULL,
-                UNIQUE(entity, name),
-                FOREIGN KEY(reference) REFERENCES entity_schema(id),
-                FOREIGN KEY(entity) REFERENCES entity_schema(id)
-              );",
-        (),
+    create_table(
+        tx,
+        "attribute_schema",
+        "
+      entity BLOB NOT NULL,
+      name TEXT NOT NULL,
+      type TEXT NOT NULL,
+      reference BLOB,
+      quantity TEXT NOT NULL,
+      UNIQUE(entity, name),
+      FOREIGN KEY(reference) REFERENCES entity_schema(id) ON DELETE CASCADE,
+      FOREIGN KEY(entity) REFERENCES entity_schema(id) ON DELETE CASCADE
+      ",
     )?;
 
-    conn.execute(
+    tx.execute(
         "CREATE INDEX IF NOT EXISTS idx_entity_attributes ON attribute_schema (entity);",
         (),
     )?;
 
-    conn.execute(
-        "CREATE TABLE IF NOT EXISTS entity (
-                id BLOB PRIMARY KEY,
-                schema BLOB NOT NULL,
-                FOREIGN KEY(schema) REFERENCES entity_schema(id)
-              )",
-        (),
+    create_table(
+        tx,
+        "entity",
+        "
+        schema BLOB NOT NULL,
+        FOREIGN KEY(schema) REFERENCES entity_schema(id)
+      ",
     )?;
 
-    build_attr(&conn, "text", "TEXT")?;
-    build_attr(&conn, "integer", "INTEGER")?;
-    build_attr(&conn, "number", "REAL")?;
+    build_attr(&tx, "text", "TEXT", "")?;
+    build_attr(&tx, "integer", "INTEGER", "")?;
+    build_attr(&tx, "number", "REAL", "")?;
 
-    conn.execute(
-        "CREATE TABLE IF NOT EXISTS reference_attribute (
-              id BLOB PRIMARY KEY,
-              entity BLOB NOT NULL,
-              schema BLOB NOT NULL,
-              value TEXT NOT NULL,
-              FOREIGN KEY(entity) REFERENCES entity(id),
-              FOREIGN KEY(schema) REFERENCES attribute_schema(id),
-              FOREIGN KEY(value) REFERENCES entity(id)
-            );",
-        (),
-    )?;
-
-    conn.execute(
-        "CREATE INDEX IF NOT EXISTS idx_ref_entity_schema ON reference_attribute (entity, schema);",
-        (),
+    build_attr(
+        &tx,
+        "reference",
+        "BLOB",
+        "FOREIGN KEY(value) REFERENCES entity(id),\n",
     )?;
 
     Ok(())

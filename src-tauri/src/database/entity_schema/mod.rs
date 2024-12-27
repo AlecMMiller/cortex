@@ -1,6 +1,9 @@
-use crate::models::{
-    attribute_schema::AttributeSchema,
-    entity_schema::{CreateEntitySchema, EntitySchema, EntitySchemaId},
+use crate::{
+    models::{
+        attribute_schema::AttributeSchema,
+        entity_schema::{CreateEntitySchema, EntitySchema, EntitySchemaId},
+    },
+    utils::get_timestamp,
 };
 use rusqlite::{params, Result, Transaction};
 
@@ -14,9 +17,11 @@ impl New<CreateEntitySchema> for EntitySchema {
             attributes: Vec::new(),
         };
 
+        let created_at = get_timestamp();
+
         conn.execute(
-            "INSERT INTO entity_schema (id, name) VALUES (?1, ?2)",
-            (&new_entity_schema.id, &new_entity_schema.name),
+            "INSERT INTO entity_schema (id, name, created, updated) VALUES (?1, ?2, ?3, ?3)",
+            (&new_entity_schema.id, &new_entity_schema.name, created_at),
         )?;
 
         Ok(new_entity_schema)

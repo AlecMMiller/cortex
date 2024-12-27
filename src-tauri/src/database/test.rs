@@ -12,6 +12,7 @@ pub mod test_util {
             attribute_type::{CreateAttributeType, CreateReferenceAttribute, SimpleAttributeType},
             entity_schema::{CreateEntitySchema, EntitySchema, EntitySchemaId},
         },
+        utils::get_timestamp,
     };
 
     pub fn setup() -> Connection {
@@ -170,15 +171,18 @@ pub mod test_util {
                 attr_type: data.attr_type.get_full(tx).unwrap(),
             };
 
+            let created_at = get_timestamp();
+
             tx.execute(
-                "INSERT INTO attribute_schema (id, entity, name, type, reference, quantity) VALUES (?1, ?2, ?3, ?4, ?5, ?6)",
+                "INSERT INTO attribute_schema (id, entity, name, type, reference, quantity, created, updated) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?7)",
                 (
                     &new_attribute.id,
                     data.entity,
                     &new_attribute.name,
                     &data.attr_type,
                     &reference,
-                    &new_attribute.quantity
+                    &new_attribute.quantity,
+                    created_at
                 ),
             ).unwrap();
 
