@@ -32,3 +32,7 @@ pub trait GetMany<T> {
 pub trait Insert<T, V: ?Sized> {
     fn insert(&self, tx: &Transaction, target: &T, val: &V) -> rusqlite::Result<()>;
 }
+
+pub trait Delete {
+    fn delete(self, tx: &Transaction) -> rusqlite::Result<()>;
+}

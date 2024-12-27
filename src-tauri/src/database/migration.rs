@@ -52,6 +52,20 @@ fn build_attr(tx: &Transaction, name: &str, sql_type: &str, extra: &str) -> Resu
         (),
     )?;
 
+    tx.execute(
+        &format!(
+            "
+            CREATE TRIGGER IF NOT EXISTS {name}_required_check
+            BEFORE DELETE ON {name}_attribute
+              WHEN EXISTS ( SELECT 1 FROM attribute_schema WHERE ID = OLD.schema AND quantity = 'Required' )
+            BEGIN
+              SELECT RAISE(FAIL, \"Cannot delete required field\");
+            END;
+            "
+        ),
+        (),
+    )?;
+
     Ok(())
 }
 
