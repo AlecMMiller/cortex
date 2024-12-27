@@ -1,5 +1,3 @@
-use std::time::SystemTime;
-
 use rusqlite::{Error, Transaction};
 use serde_json::Value;
 
