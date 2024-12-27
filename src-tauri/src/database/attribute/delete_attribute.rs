@@ -1,4 +1,4 @@
-use rusqlite::{params, Transaction};
+use rusqlite::{params, Error, Transaction};
 
 use crate::{database::Delete, models::attribute::GenericAttributeId};
 
@@ -18,11 +18,16 @@ impl Delete for GenericAttributeId {
         let is_text = check_exists(tx, "text_attribute", &self)?;
 
         if is_text {
-            delete(tx, "text_attribute", &self)?;
-            return Ok(());
+            return delete(tx, "text_attribute", &self);
         }
 
-        Ok(())
+        let is_ref = check_exists(tx, "reference_attribute", &self)?;
+
+        if is_ref {
+            return delete(tx, "reference_attribute", &self);
+        }
+
+        Err(Error::QueryReturnedNoRows)
     }
 }
 
@@ -32,8 +37,8 @@ mod tests {
 
     use crate::{
         database::{
-            entity::add_entity,
-            test::test_util::{setup, ASD, ESD},
+            entity::{self, add_entity},
+            test::test_util::{setup, ASD, ESD, RSD},
             Delete,
         },
         models::{attribute::GenericAttributeId, attribute_schema::Quantity},
@@ -58,12 +63,12 @@ mod tests {
         ))
         .unwrap();
 
-        let parent_id = add_entity(&tx, &es, data).unwrap();
+        let entity_id = add_entity(&tx, &es, data).unwrap();
 
         let id: GenericAttributeId = tx
             .query_row(
                 "SELECT id FROM text_attribute WHERE entity = ?",
-                params![parent_id],
+                params![entity_id],
                 |r| r.get(0),
             )
             .unwrap();
@@ -72,6 +77,63 @@ mod tests {
 
         let exists = check_exists(&tx, "text_attribute", &id).unwrap();
         assert_eq!(exists, false);
+    }
+
+    #[test]
+    fn delete_ref() {
+        let mut conn = setup();
+        let tx = conn.transaction().unwrap();
+
+        let es = ESD::create_default(&tx);
+        let attr = RSD::default()
+            .quantity(Quantity::Optional)
+            .create(&tx, &es, &es);
+
+        let data = serde_json::from_str(&format!(
+            r#"
+            {{
+            }}
+            "#
+        ))
+        .unwrap();
+
+        let child = add_entity(&tx, &es, data).unwrap();
+
+        let data = serde_json::from_str(&format!(
+            r#"
+            {{
+            "{attr}": "{child}"
+            }}
+            "#
+        ))
+        .unwrap();
+
+        let entity = add_entity(&tx, &es, data).unwrap();
+
+        let id: GenericAttributeId = tx
+            .query_row(
+                "SELECT id FROM reference_attribute WHERE entity = ?",
+                params![entity],
+                |r| r.get(0),
+            )
+            .unwrap();
+
+        id.clone().delete(&tx).unwrap();
+
+        let exists = check_exists(&tx, "reference_attribute", &id).unwrap();
+        assert_eq!(exists, false);
+    }
+
+    #[test]
+    fn delete_not_found_error() {
+        let mut conn = setup();
+        let tx = conn.transaction().unwrap();
+
+        let fake_id = GenericAttributeId::new();
+
+        let result = fake_id.delete(&tx);
+
+        assert_eq!(result, Err(Error::QueryReturnedNoRows));
     }
 
     #[test]
