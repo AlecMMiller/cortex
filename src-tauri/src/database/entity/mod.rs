@@ -1,4 +1,5 @@
 pub mod add_entity;
+mod delete_entity;
 pub mod get_entity;
 pub use add_entity::add_entity;
 pub use get_entity::get;

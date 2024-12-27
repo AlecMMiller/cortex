@@ -1,17 +1,19 @@
 use std::fs::remove_file;
 
-use rusqlite::{Connection, DatabaseName};
-use whatever::{
+use cortex::{
     database::{
-        add_entity::new_entity,
+        entity::{add_entity, get, EntityAttribute, EntityField, EntityRequest},
+        migration::migrate,
+        New,
+    },
+    models::{
         attribute_schema::{AttributeSchema, CreateAttributeSchema, Quantity},
         attribute_type::{CreateAttributeType, CreateReferenceAttribute, SimpleAttributeType},
-        entity::{get, EntityAttribute, EntityField, EntityRequest},
+        entity::EntityId,
         entity_schema::{CreateEntitySchema, EntitySchema},
     },
-    migrate_db,
-    models::entity::EntityId,
 };
+use rusqlite::{Connection, DatabaseName};
 
 use criterion::{criterion_group, criterion_main, Criterion};
 
@@ -24,7 +26,8 @@ fn db_benchmark(c: &mut Criterion) {
         .unwrap();
 
     let tx = conn.transaction().unwrap();
-    migrate_db(&tx);
+
+    migrate(&tx);
     tx.commit().unwrap();
 
     let tx = conn.transaction().unwrap();
@@ -120,7 +123,7 @@ fn db_benchmark(c: &mut Criterion) {
         "#
         ))
         .unwrap();
-        let grandchild = new_entity(&tx, &grandchild_schema.id, grandchild_data).unwrap();
+        let grandchild = add_entity(&tx, &grandchild_schema.id, grandchild_data).unwrap();
 
         let child_data = serde_json::from_str(&format!(
             r#"
@@ -130,7 +133,7 @@ fn db_benchmark(c: &mut Criterion) {
         "#
         ))
         .unwrap();
-        let child = new_entity(&tx, &child_schema.id, child_data).unwrap();
+        let child = add_entity(&tx, &child_schema.id, child_data).unwrap();
 
         let root_data = serde_json::from_str(&format!(
             r#"
@@ -141,7 +144,7 @@ fn db_benchmark(c: &mut Criterion) {
         "#
         ))
         .unwrap();
-        let id = new_entity(&tx, &root_schema.id, root_data).unwrap();
+        let id = add_entity(&tx, &root_schema.id, root_data).unwrap();
 
         if n % 300 == 0 {
             to_get.push(id);
@@ -177,7 +180,7 @@ fn db_benchmark(c: &mut Criterion) {
         b.iter(|| getter(&mut conn, &to_get, &request, &mut idx))
     });
 
-    remove_file("bench.db").unwrap();
+    //remove_file("bench.db").unwrap();
 }
 
 fn getter(conn: &mut Connection, ids: &Vec<EntityId>, request: &EntityRequest, idx: &mut usize) {
@@ -185,6 +188,7 @@ fn getter(conn: &mut Connection, ids: &Vec<EntityId>, request: &EntityRequest, i
     let id = &ids[to_use];
 
     let tx = conn.transaction().unwrap();
+
     get(&tx, id, request).unwrap();
     tx.commit().unwrap();
 

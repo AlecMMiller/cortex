@@ -22,11 +22,10 @@ fn build_attr(tx: &Transaction, name: &str, sql_type: &str, extra: &str) -> Resu
         &format!("{name}_attribute"),
         &format!(
             "
-            entity BLOB NOT NULL,
             schema BLOB NOT NULL,
             value {sql_type} NOT NULL,
+            entity BLOB NOT NULL REFERENCES entity (id) ON DELETE CASCADE,
             {extra}
-            FOREIGN KEY(entity) REFERENCES entity(id) ON DELETE CASCADE,
             FOREIGN KEY(schema) REFERENCES attribute_schema(id)
             "
         ),
@@ -37,6 +36,8 @@ fn build_attr(tx: &Transaction, name: &str, sql_type: &str, extra: &str) -> Resu
         (),
     )?;
 
+    // When a new entry is added, check if this is a List attribute or not
+    // If not, prevent more than one entry being added
     tx.execute(
         &format!(
             "
@@ -52,12 +53,17 @@ fn build_attr(tx: &Transaction, name: &str, sql_type: &str, extra: &str) -> Resu
         (),
     )?;
 
+    // Checks if the field is required, and if so prevent it being deleted
+    // However, we need to check if the parent exists, if it doesn't that
+    // indicates it's in the process of being deleted and this is a CASCADE
+    // delete, so we allow the deletion regardless
     tx.execute(
         &format!(
             "
             CREATE TRIGGER IF NOT EXISTS {name}_required_check
             BEFORE DELETE ON {name}_attribute
-              WHEN EXISTS ( SELECT 1 FROM attribute_schema WHERE ID = OLD.schema AND quantity = 'Required' )
+              WHEN EXISTS ( SELECT 1 FROM attribute_schema WHERE id = OLD.schema AND quantity = 'Required' )
+              AND EXISTS (SELECT 1 FROM entity WHERE id = OLD.entity ) -- handle case where parent entity is being deleted
             BEGIN
               SELECT RAISE(FAIL, \"Cannot delete required field\");
             END;
