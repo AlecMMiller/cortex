@@ -27,7 +27,7 @@ fn db_benchmark(c: &mut Criterion) {
 
     let tx = conn.transaction().unwrap();
 
-    migrate(&tx);
+    migrate(&tx).unwrap();
     tx.commit().unwrap();
 
     let tx = conn.transaction().unwrap();
@@ -44,7 +44,7 @@ fn db_benchmark(c: &mut Criterion) {
         CreateAttributeSchema {
             entity: root_schema.id.clone(),
             name: "Attr1".to_string(),
-            attr_type: CreateAttributeType::SimpleAttributeType(SimpleAttributeType::Text),
+            attr_type: CreateAttributeType::Simple(SimpleAttributeType::Text),
             quantity: Quantity::Required,
         },
     )
@@ -64,7 +64,7 @@ fn db_benchmark(c: &mut Criterion) {
             entity: root_schema.id.clone(),
             name: "Attr2".to_string(),
             quantity: Quantity::Required,
-            attr_type: CreateAttributeType::CreateReferenceAttribute(CreateReferenceAttribute {
+            attr_type: CreateAttributeType::Reference(CreateReferenceAttribute {
                 id: child_schema.id.clone(),
             }),
         },
@@ -85,7 +85,7 @@ fn db_benchmark(c: &mut Criterion) {
             entity: child_schema.id.clone(),
             name: "Attr3".to_string(),
             quantity: Quantity::Required,
-            attr_type: CreateAttributeType::CreateReferenceAttribute(CreateReferenceAttribute {
+            attr_type: CreateAttributeType::Reference(CreateReferenceAttribute {
                 id: grandchild_schema.id.clone(),
             }),
         },
@@ -97,7 +97,7 @@ fn db_benchmark(c: &mut Criterion) {
         CreateAttributeSchema {
             entity: grandchild_schema.id.clone(),
             name: "Attr4".to_string(),
-            attr_type: CreateAttributeType::SimpleAttributeType(SimpleAttributeType::Text),
+            attr_type: CreateAttributeType::Simple(SimpleAttributeType::Text),
             quantity: Quantity::Required,
         },
     )

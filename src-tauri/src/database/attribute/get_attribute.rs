@@ -186,11 +186,9 @@ mod tests {
                 entity: parent_schema.clone(),
                 name: "Child".to_string(),
                 quantity: Quantity::Required,
-                attr_type: CreateAttributeType::CreateReferenceAttribute(
-                    CreateReferenceAttribute {
-                        id: child_schema.clone(),
-                    },
-                ),
+                attr_type: CreateAttributeType::Reference(CreateReferenceAttribute {
+                    id: child_schema.clone(),
+                }),
             },
         )
         .unwrap()

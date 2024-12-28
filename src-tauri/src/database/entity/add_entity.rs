@@ -88,7 +88,10 @@ pub fn add_entity(
 
 #[cfg(test)]
 mod tests {
-    use crate::database::test::test_util::{setup, ASD, ESD};
+    use crate::{
+        database::test::test_util::{setup, ASD, ESD},
+        models::attribute_type::SimpleAttributeType,
+    };
 
     use super::*;
 
@@ -332,5 +335,28 @@ mod tests {
                 "Provided a list to a non-list field".to_string()
             ))
         );
+    }
+
+    // Create an entity with longform text
+    #[test]
+    fn with_longform_text() {
+        let mut conn = setup();
+        let tx = conn.transaction().unwrap();
+
+        let schema = ESD::create_default(&tx);
+        let attr = ASD::default()
+            .attr_type(SimpleAttributeType::Longform)
+            .create(&tx, &schema);
+
+        let data = serde_json::from_str(&format!(
+            r#"
+            {{
+              "{attr}": "Hello world"
+            }}
+            "#
+        ))
+        .unwrap();
+
+        add_entity(&tx, &schema, data).unwrap();
     }
 }

@@ -70,7 +70,7 @@ pub mod test_util {
                     entity: entity.clone(),
                     name: self.name,
                     quantity: self.quantity,
-                    attr_type: CreateAttributeType::SimpleAttributeType(self.attr_type),
+                    attr_type: CreateAttributeType::Simple(self.attr_type),
                 },
             )
             .expect("Failed to create attribute");
@@ -158,7 +158,7 @@ pub mod test_util {
                     entity: parent.clone(),
                     name: self.name,
                     quantity: self.quantity,
-                    attr_type: CreateAttributeType::CreateReferenceAttribute(
+                    attr_type: CreateAttributeType::Reference(
                         CreateReferenceAttribute { id: child.clone() },
                     ),
                 };

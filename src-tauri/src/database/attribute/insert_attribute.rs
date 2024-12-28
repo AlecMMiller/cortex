@@ -12,13 +12,11 @@ use crate::{
 impl Insert<EntityId, String> for RawAttributeSchema {
     fn insert(&self, tx: &Transaction, entity: &EntityId, val: &String) -> rusqlite::Result<()> {
         match &self.attr_type {
-            AttributeType::ReferenceAttribute(reference) => {
+            AttributeType::Reference(reference) => {
                 let target: EntityId = val.try_into().unwrap(); // TODO
                 reference.insert_reference(tx, entity, &self.id, &target)
             }
-            AttributeType::SimpleAttributeType(simple) => {
-                simple.insert_string(tx, entity, &self.id, val)
-            }
+            AttributeType::Simple(simple) => simple.insert_string(tx, entity, &self.id, val),
         }
     }
 }
@@ -31,8 +29,9 @@ impl Insert<EntityId, Vec<Value>> for RawAttributeSchema {
         vals: &Vec<Value>,
     ) -> rusqlite::Result<()> {
         match self.attr_type {
-            AttributeType::ReferenceAttribute(..) => todo!(),
-            AttributeType::SimpleAttributeType(simple) => match simple {
+            AttributeType::Reference(..) => todo!(),
+            AttributeType::Simple(simple) => match simple {
+                SimpleAttributeType::Longform => todo!(),
                 SimpleAttributeType::Text | SimpleAttributeType::RichText => {
                     simple.insert_string_vec(tx, entity, &self.id, vals)
                 }

@@ -11,14 +11,15 @@ create_id!(TextAttributeId);
 
 #[derive(Serialize, Deserialize, Type, Debug, PartialEq)]
 pub enum AttributeType {
-    SimpleAttributeType(SimpleAttributeType),
-    ReferenceAttribute(ReferenceAttribute),
+    Simple(SimpleAttributeType),
+    Reference(ReferenceAttribute),
 }
 
 #[derive(Serialize, Deserialize, Type, Debug, PartialEq, Clone, Copy)]
 pub enum SimpleAttributeType {
     Text,
     RichText,
+    Longform,
 }
 
 #[derive(Serialize, Deserialize, Type, Debug, PartialEq)]
@@ -29,8 +30,8 @@ pub struct ReferenceAttribute {
 
 #[derive(Serialize, Deserialize, Type, Debug, PartialEq)]
 pub enum CreateAttributeType {
-    SimpleAttributeType(SimpleAttributeType),
-    CreateReferenceAttribute(CreateReferenceAttribute),
+    Simple(SimpleAttributeType),
+    Reference(CreateReferenceAttribute),
 }
 
 #[derive(Serialize, Deserialize, Type, Debug, PartialEq)]
@@ -55,11 +56,11 @@ impl AttributeType {
                     name: name.into(),
                 };
 
-                Ok(AttributeType::ReferenceAttribute(reference))
+                Ok(AttributeType::Reference(reference))
             }
-            simple => Ok(AttributeType::SimpleAttributeType(
-                SimpleAttributeType::from_sql(simple)?,
-            )),
+            simple => Ok(AttributeType::Simple(SimpleAttributeType::from_sql(
+                simple,
+            )?)),
         }
     }
 }

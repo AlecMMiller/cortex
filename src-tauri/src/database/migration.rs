@@ -113,6 +113,16 @@ fn initial(tx: &Transaction) -> Result<()> {
       ",
     )?;
 
+    create_table(
+        tx,
+        "textblock",
+        "
+        next BLOB,
+        content TEXT NOT NULL,
+        FOREIGN KEY(next) REFERENCES textblock(id)
+      ",
+    )?;
+
     build_attr(&tx, "text", "TEXT", "")?;
     build_attr(&tx, "integer", "INTEGER", "")?;
     build_attr(&tx, "number", "REAL", "")?;
@@ -121,7 +131,14 @@ fn initial(tx: &Transaction) -> Result<()> {
         &tx,
         "reference",
         "BLOB",
-        "FOREIGN KEY(value) REFERENCES entity(id),\n",
+        "FOREIGN KEY(value) REFERENCES entity(id),",
+    )?;
+
+    build_attr(
+        &tx,
+        "longform",
+        "BLOB",
+        "FOREIGN KEY(value) REFERENCES textblock(id),",
     )?;
 
     Ok(())

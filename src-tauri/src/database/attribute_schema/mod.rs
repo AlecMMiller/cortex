@@ -52,7 +52,7 @@ mod tests {
         assert_eq!(stored.quantity, Quantity::Required);
         assert_eq!(
             stored.attr_type,
-            AttributeType::SimpleAttributeType(SimpleAttributeType::Text)
+            AttributeType::Simple(SimpleAttributeType::Text)
         );
     }
 
@@ -69,7 +69,7 @@ mod tests {
 
         assert_eq!(
             stored.attr_type,
-            AttributeType::ReferenceAttribute(ReferenceAttribute {
+            AttributeType::Reference(ReferenceAttribute {
                 id: entity_id,
                 name: entity_name.to_string()
             })

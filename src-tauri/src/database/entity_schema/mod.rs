@@ -90,10 +90,10 @@ mod tests {
         let tx = conn.transaction().unwrap();
         let entity_id = create(&tx);
 
-        let attr_type_1 = CreateAttributeType::SimpleAttributeType(SimpleAttributeType::Text);
+        let attr_type_1 = CreateAttributeType::Simple(SimpleAttributeType::Text);
         let name1 = "BAR";
 
-        let attr_type_2 = CreateAttributeType::SimpleAttributeType(SimpleAttributeType::Text);
+        let attr_type_2 = CreateAttributeType::Simple(SimpleAttributeType::Text);
         let name2 = "BUZZ";
 
         AttributeSchema::new(

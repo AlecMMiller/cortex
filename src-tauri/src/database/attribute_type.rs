@@ -7,6 +7,7 @@ use crate::{
         },
         entity::EntityId,
         entity_schema::EntitySchemaId,
+        longform::{LongformTextId, TextBlockId},
     },
     utils::get_timestamp,
 };
@@ -55,6 +56,7 @@ impl SimpleAttributeType {
         match value {
             "Text" => Ok(SimpleAttributeType::Text),
             "RichText" => Ok(SimpleAttributeType::RichText),
+            "Longform" => Ok(SimpleAttributeType::Longform),
             _ => Err(FromSqlError::InvalidType),
         }
     }
@@ -66,10 +68,24 @@ impl SimpleAttributeType {
         schema: &AttributeSchemaId,
         value: &str,
     ) -> Result<()> {
+        let created_at = get_timestamp();
+
         match self {
+            SimpleAttributeType::Longform => {
+                let id = LongformTextId::new();
+                let block_id = TextBlockId::new();
+                tx.execute(
+                    "INSERT INTO textblock (id, content, created, updated) VALUES (?1, ?2, ?3, ?3)",
+                    params![block_id, value, created_at],
+                )?;
+
+                tx.execute(
+                     "INSERT INTO longform_attribute (id, entity, schema, value, created, updated) VALUES (?1, ?2, ?3, ?4, ?5, ?5)",
+                    params![id, entity, schema, value, created_at]);
+                Ok(())
+            }
             SimpleAttributeType::Text | SimpleAttributeType::RichText => {
                 let id = TextAttributeId::new();
-                let created_at = get_timestamp();
                 tx.execute(
                     "INSERT INTO text_attribute (id, entity, schema, value, created, updated) VALUES (?1, ?2, ?3, ?4, ?5, ?5)",
                     params![id, entity, schema, value, created_at],
@@ -109,6 +125,7 @@ impl ToSql for SimpleAttributeType {
         match self {
             SimpleAttributeType::Text => Ok("Text".into()),
             SimpleAttributeType::RichText => Ok("RichText".into()),
+            SimpleAttributeType::Longform => Ok("Longform".into()),
         }
     }
 }
@@ -116,18 +133,16 @@ impl ToSql for SimpleAttributeType {
 impl CreateAttributeType {
     pub fn get_ref(&self) -> Option<&EntitySchemaId> {
         match self {
-            CreateAttributeType::SimpleAttributeType(_type) => None,
-            CreateAttributeType::CreateReferenceAttribute(reference) => Some(&reference.id),
+            CreateAttributeType::Simple(_type) => None,
+            CreateAttributeType::Reference(reference) => Some(&reference.id),
         }
     }
 
     pub fn get_full(&self, tx: &Transaction) -> Result<AttributeType> {
         match self {
-            CreateAttributeType::SimpleAttributeType(simple) => {
-                Ok(AttributeType::SimpleAttributeType(simple.clone()))
-            }
-            CreateAttributeType::CreateReferenceAttribute(reference) => {
-                Ok(AttributeType::ReferenceAttribute(reference.get_full(tx)?))
+            CreateAttributeType::Simple(simple) => Ok(AttributeType::Simple(simple.clone())),
+            CreateAttributeType::Reference(reference) => {
+                Ok(AttributeType::Reference(reference.get_full(tx)?))
             }
         }
     }
@@ -136,8 +151,8 @@ impl CreateAttributeType {
 impl ToSql for CreateAttributeType {
     fn to_sql(&self) -> Result<rusqlite::types::ToSqlOutput<'_>> {
         match self {
-            CreateAttributeType::SimpleAttributeType(simple) => simple.to_sql(),
-            CreateAttributeType::CreateReferenceAttribute(_val) => Ok("Reference".into()),
+            CreateAttributeType::Simple(simple) => simple.to_sql(),
+            CreateAttributeType::Reference(_val) => Ok("Reference".into()),
         }
     }
 }

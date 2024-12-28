@@ -170,9 +170,10 @@ impl<'a> RequestPlan<'a> {
                 }?;
 
                 match schema_entry.attr_type {
-                    AttributeType::ReferenceAttribute(..) => Err(Error::InvalidQuery),
-                    AttributeType::SimpleAttributeType(attr_type) => {
+                    AttributeType::Reference(..) => Err(Error::InvalidQuery),
+                    AttributeType::Simple(attr_type) => {
                         match attr_type {
+                            SimpleAttributeType::Longform => todo!(),
                             SimpleAttributeType::Text | SimpleAttributeType::RichText => {
                                 self.text.insert(attribute);
                             }
