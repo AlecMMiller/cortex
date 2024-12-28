@@ -36,3 +36,7 @@ pub trait Insert<T, V: ?Sized> {
 pub trait Delete {
     fn delete(self, tx: &Transaction) -> rusqlite::Result<()>;
 }
+
+pub trait SetValue<T> {
+    fn set(&self, tx: &Transaction, value: T) -> rusqlite::Result<()>;
+}

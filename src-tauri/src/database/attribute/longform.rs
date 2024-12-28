@@ -1,31 +1,80 @@
 use rusqlite::{params, OptionalExtension, Transaction};
 
-use crate::{models::longform::TextBlockId, utils::get_timestamp};
+use crate::{database::SetValue, models::longform::TextBlockId, utils::get_timestamp};
 
-fn get_next(tx: &Transaction, id: &TextBlockId) -> rusqlite::Result<Option<TextBlockId>> {
-    tx.query_row(
-        "SELECT next FROM textblock WHERE id = ?",
-        params![id],
-        |r| r.get(0),
-    )
+impl TextBlockId {
+    pub fn create_block_before(&self, tx: &Transaction) -> rusqlite::Result<TextBlockId> {
+        let (middle_block, _created_at) = create_block(tx)?;
+
+        let maybe_first_block = self.get_previous(&tx)?;
+
+        match maybe_first_block {
+            Some(first_block) => first_block.set_next(tx, &middle_block),
+            None => {
+                tx.execute(
+                    "UPDATE longform_attribute SET value = ?1 WHERE value = ?2",
+                    params![&middle_block, self],
+                )?;
+                Ok(())
+            }
+        }?;
+
+        middle_block.set_next(tx, self)?;
+
+        Ok(middle_block)
+    }
+
+    pub fn create_block_after(&self, tx: &Transaction) -> rusqlite::Result<Self> {
+        let (middle_id, _created_at) = create_block(tx)?;
+
+        let last_id = self.get_next(&tx)?;
+        self.set_next(tx, &middle_id)?;
+
+        match last_id {
+            Some(id) => middle_id.set_next(tx, &id),
+            None => Ok(()),
+        }?;
+
+        Ok(middle_id)
+    }
+
+    fn get_next(&self, tx: &Transaction) -> rusqlite::Result<Option<Self>> {
+        tx.query_row(
+            "SELECT next FROM textblock WHERE id = ?",
+            params![self],
+            |r| r.get(0),
+        )
+    }
+
+    fn set_next(&self, tx: &Transaction, next: &TextBlockId) -> rusqlite::Result<()> {
+        tx.execute(
+            "UPDATE textblock SET next = ?1 WHERE id = ?2",
+            params![next, self],
+        )?;
+
+        Ok(())
+    }
+
+    fn get_previous(&self, tx: &Transaction) -> rusqlite::Result<Option<Self>> {
+        tx.query_row(
+            "SELECT id FROM textblock WHERE next = ?",
+            params![self],
+            |r| r.get(0),
+        )
+        .optional()
+    }
 }
 
-fn get_previous(tx: &Transaction, id: &TextBlockId) -> rusqlite::Result<Option<TextBlockId>> {
-    tx.query_row(
-        "SELECT id FROM textblock WHERE next = ?",
-        params![id],
-        |r| r.get(0),
-    )
-    .optional()
-}
+impl SetValue<&str> for TextBlockId {
+    fn set(&self, tx: &Transaction, value: &str) -> rusqlite::Result<()> {
+        let updated = get_timestamp();
 
-fn set_next(tx: &Transaction, block: &TextBlockId, next: &TextBlockId) -> rusqlite::Result<()> {
-    tx.execute(
-        "UPDATE textblock SET next = ?1 WHERE id = ?2",
-        params![next, block],
-    )?;
-
-    Ok(())
+        tx.execute(
+            "UPDATE textblock SET value = ?1, updated = ?2 WHERE id = ?3",
+            params![value, updated, self],
+        )?;
+        Ok(())
+    }
 }
 
 fn create_block(tx: &Transaction) -> rusqlite::Result<(TextBlockId, u64)> {
@@ -33,49 +82,11 @@ fn create_block(tx: &Transaction) -> rusqlite::Result<(TextBlockId, u64)> {
     let created_at = get_timestamp();
 
     tx.execute(
-        "INSERT INTO textblock (id, content, created, updated) VALUES (?1, ?2, ?3, ?3)",
+        "INSERT INTO textblock (id, value, created, updated) VALUES (?1, ?2, ?3, ?3)",
         params![new_id, "", created_at],
     )?;
 
     Ok((new_id, created_at))
-}
-
-pub fn create_block_after(tx: &Transaction, block: &TextBlockId) -> rusqlite::Result<TextBlockId> {
-    let (middle_id, _created_at) = create_block(tx)?;
-
-    let last_id = get_next(&tx, block)?;
-    set_next(tx, block, &middle_id)?;
-
-    match last_id {
-        Some(id) => set_next(tx, &middle_id, &id),
-        None => Ok(()),
-    }?;
-
-    Ok(middle_id)
-}
-
-pub fn create_block_before(
-    tx: &Transaction,
-    after_block: &TextBlockId,
-) -> rusqlite::Result<TextBlockId> {
-    let (middle_block, _created_at) = create_block(tx)?;
-
-    let maybe_first_block = get_previous(&tx, after_block)?;
-
-    match maybe_first_block {
-        Some(first_block) => set_next(tx, &first_block, &middle_block),
-        None => {
-            tx.execute(
-                "UPDATE longform_attribute SET value = ?1 WHERE value = ?2",
-                params![&middle_block, after_block],
-            )?;
-            Ok(())
-        }
-    }?;
-
-    set_next(tx, &middle_block, after_block)?;
-
-    Ok(middle_block)
 }
 
 #[cfg(test)]
@@ -84,17 +95,98 @@ mod tests {
 
     use crate::{
         database::{
-            attribute::longform::get_next,
             entity::add_entity,
             test::test_util::{setup, ASD, ESD},
+            SetValue,
         },
         models::{attribute_type::SimpleAttributeType, longform::TextBlockId},
     };
 
-    use super::{create_block_after, create_block_before};
+    #[test]
+    fn set_content() {
+        let mut conn = setup();
+        let tx = conn.transaction().unwrap();
+
+        let block = create_first(&tx);
+
+        block.set(&tx, "test").unwrap();
+
+        let val: String = tx
+            .query_row(
+                "SELECT value FROM textblock WHERE id = ?",
+                params![block],
+                |r| r.get(0),
+            )
+            .unwrap();
+
+        assert_eq!(val, "test");
+    }
+
+    #[test]
+    fn append_block_at_end() {
+        let mut conn = setup();
+        let tx = conn.transaction().unwrap();
+
+        let first = create_first(&tx);
+
+        let new_id = first.create_block_after(&tx).unwrap();
+
+        assert_next(&tx, &first, &new_id);
+    }
+
+    #[test]
+    fn append_block_in_middle() {
+        let mut conn = setup();
+        let tx = conn.transaction().unwrap();
+
+        let first = create_first(&tx);
+
+        let last = first.create_block_after(&tx).unwrap();
+
+        let middle = first.create_block_after(&tx).unwrap();
+
+        assert_next(&tx, &first, &middle);
+        assert_next(&tx, &middle, &last);
+    }
+
+    #[test]
+    fn prepend_block_in_middle() {
+        let mut conn = setup();
+        let tx = conn.transaction().unwrap();
+
+        let first = create_first(&tx);
+
+        let last = first.create_block_after(&tx).unwrap();
+
+        let middle = last.create_block_before(&tx).unwrap();
+
+        assert_next(&tx, &first, &middle);
+        assert_next(&tx, &middle, &last);
+    }
+
+    #[test]
+    fn prepend_block_at_start() {
+        let mut conn = setup();
+        let tx = conn.transaction().unwrap();
+
+        let existing = create_first(&tx);
+
+        let new_id = existing.create_block_before(&tx).unwrap();
+
+        assert_next(&tx, &new_id, &existing);
+
+        let mut stmt = tx
+            .prepare(&format!(
+                "SELECT id FROM longform_attribute WHERE value = ?"
+            ))
+            .unwrap();
+        let exists = stmt.exists(params![new_id]).unwrap();
+
+        assert!(exists);
+    }
 
     fn assert_next(tx: &Transaction, id: &TextBlockId, next: &TextBlockId) {
-        assert_eq!(get_next(&tx, &id).unwrap(), Some(next.clone()));
+        assert_eq!(id.get_next(&tx).unwrap(), Some(next.clone()));
     }
 
     fn create_first(tx: &Transaction) -> TextBlockId {
@@ -114,73 +206,10 @@ mod tests {
 
         add_entity(&tx, &schema, data).unwrap();
         tx.query_row(
-            "SELECT id FROM textblock WHERE content = 'Hello world'",
+            "SELECT id FROM textblock WHERE value = 'Hello world'",
             (),
             |r| r.get(0),
         )
         .unwrap()
-    }
-
-    #[test]
-    fn append_block_at_end() {
-        let mut conn = setup();
-        let tx = conn.transaction().unwrap();
-
-        let first = create_first(&tx);
-
-        let new_id = create_block_after(&tx, &first).unwrap();
-
-        assert_next(&tx, &first, &new_id);
-    }
-
-    #[test]
-    fn append_block_in_middle() {
-        let mut conn = setup();
-        let tx = conn.transaction().unwrap();
-
-        let first = create_first(&tx);
-
-        let last = create_block_after(&tx, &first).unwrap();
-
-        let middle = create_block_after(&tx, &first).unwrap();
-
-        assert_next(&tx, &first, &middle);
-        assert_next(&tx, &middle, &last);
-    }
-
-    #[test]
-    fn prepend_block_in_middle() {
-        let mut conn = setup();
-        let tx = conn.transaction().unwrap();
-
-        let first = create_first(&tx);
-
-        let last = create_block_after(&tx, &first).unwrap();
-
-        let middle = create_block_before(&tx, &last).unwrap();
-
-        assert_next(&tx, &first, &middle);
-        assert_next(&tx, &middle, &last);
-    }
-
-    #[test]
-    fn prepend_block_at_start() {
-        let mut conn = setup();
-        let tx = conn.transaction().unwrap();
-
-        let existing = create_first(&tx);
-
-        let new_id = create_block_before(&tx, &existing).unwrap();
-
-        assert_next(&tx, &new_id, &existing);
-
-        let mut stmt = tx
-            .prepare(&format!(
-                "SELECT id FROM longform_attribute WHERE value = ?"
-            ))
-            .unwrap();
-        let exists = stmt.exists(params![new_id]).unwrap();
-
-        assert!(exists);
     }
 }

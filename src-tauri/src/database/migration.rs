@@ -118,7 +118,7 @@ fn initial(tx: &Transaction) -> Result<()> {
         "textblock",
         "
         next BLOB UNIQUE,
-        content TEXT NOT NULL,
+        value TEXT NOT NULL,
         FOREIGN KEY(next) REFERENCES textblock(id)
       ",
     )?;

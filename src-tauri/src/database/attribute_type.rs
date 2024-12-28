@@ -75,7 +75,7 @@ impl SimpleAttributeType {
                 let id = LongformTextId::new();
                 let block_id = TextBlockId::new();
                 tx.execute(
-                    "INSERT INTO textblock (id, content, created, updated) VALUES (?1, ?2, ?3, ?3)",
+                    "INSERT INTO textblock (id, value, created, updated) VALUES (?1, ?2, ?3, ?3)",
                     params![block_id, value, created_at],
                 )?;
 
