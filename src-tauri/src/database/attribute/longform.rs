@@ -1,6 +1,10 @@
 use rusqlite::{params, OptionalExtension, Transaction};
 
-use crate::{database::SetValue, models::longform::TextBlockId, utils::get_timestamp};
+use crate::{
+    database::{Get, SetValue},
+    models::longform::{LongformContent, LongformTextId, TextBlock, TextBlockId},
+    utils::get_timestamp,
+};
 
 impl TextBlockId {
     pub fn create_block_before(&self, tx: &Transaction) -> rusqlite::Result<TextBlockId> {
@@ -77,6 +81,39 @@ impl SetValue<&str> for TextBlockId {
     }
 }
 
+impl Get<LongformTextId> for LongformContent {
+    fn get(tx: &Transaction, id: &LongformTextId) -> rusqlite::Result<LongformContent> {
+        let mut stmt = tx.prepare(
+            "WITH RECURSIVE Content AS (
+              SELECT id, value, next
+              FROM textblock 
+              WHERE id = (SELECT value FROM longform_attribute WHERE id = ? )
+              UNION ALL 
+              SELECT tb.id, tb.value, tb.next
+              FROM textblock tb 
+              INNER JOIN Content c ON tb.id = c.next
+              ) SELECT id, value FROM Content",
+        )?;
+
+        let iter = stmt.query_map([id], |row| {
+            Ok(TextBlock {
+                id: row.get(0)?,
+                content: row.get(1)?,
+            })
+        })?;
+
+        let mut blocks = Vec::new();
+        for block in iter {
+            blocks.push(block?)
+        }
+
+        Ok(LongformContent {
+            id: id.clone(),
+            blocks,
+        })
+    }
+}
+
 fn create_block(tx: &Transaction) -> rusqlite::Result<(TextBlockId, u64)> {
     let new_id = TextBlockId::new();
     let created_at = get_timestamp();
@@ -97,10 +134,42 @@ mod tests {
         database::{
             entity::add_entity,
             test::test_util::{setup, ASD, ESD},
-            SetValue,
+            Get, SetValue,
         },
-        models::{attribute_type::SimpleAttributeType, longform::TextBlockId},
+        models::{
+            attribute_type::SimpleAttributeType,
+            longform::{LongformContent, LongformTextId, TextBlockId},
+        },
     };
+
+    #[test]
+    fn get_content() {
+        let mut conn = setup();
+        let tx = conn.transaction().unwrap();
+
+        let block = create_first(&tx);
+        let second = block.create_block_after(&tx).unwrap();
+        second.set(&tx, "Second line").unwrap();
+
+        let attr: LongformTextId = tx
+            .query_row(
+                "SELECT id FROM longform_attribute WHERE value = ?",
+                params![block],
+                |r| r.get(0),
+            )
+            .unwrap();
+
+        let data = LongformContent::get(&tx, &attr).unwrap();
+
+        let blocks = data.blocks;
+
+        assert_eq!(blocks.len(), 2);
+
+        let first_text = &blocks[0].content;
+        let second_text = &blocks[1].content;
+        assert_eq!(first_text, "Hello world");
+        assert_eq!(second_text, "Second line");
+    }
 
     #[test]
     fn set_content() {
