@@ -37,7 +37,7 @@ mod tests {
 
     use crate::{
         database::{
-            entity::{self, add_entity},
+            entity::add_entity,
             test::test_util::{setup, ASD, ESD, RSD},
             Delete,
         },

@@ -81,7 +81,7 @@ impl SimpleAttributeType {
 
                 tx.execute(
                      "INSERT INTO longform_attribute (id, entity, schema, value, created, updated) VALUES (?1, ?2, ?3, ?4, ?5, ?5)",
-                    params![id, entity, schema, value, created_at]);
+                    params![id, entity, schema, block_id, created_at])?;
                 Ok(())
             }
             SimpleAttributeType::Text | SimpleAttributeType::RichText => {
