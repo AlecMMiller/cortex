@@ -18,9 +18,10 @@
         }:
         let
           libraries = with pkgs; [
-            webkitgtk_4_1
-            gtk3
             openssl
+            libGL
+            libxkbcommon
+            wayland
           ];
         in
         {
@@ -31,7 +32,6 @@
               gobject-introspection
               cargo
               cargo-tauri
-              nodejs
             ];
 
             buildInputs = with pkgs; [
@@ -49,17 +49,8 @@
               cargo-nextest
               rustc
               rustfmt
-
-              # Node.js
-              nodejs # feel free to change the version
-              yarn
-
-              openssl
-
               gtk3
               libsoup_3
-              webkitgtk_4_1
-
               pkg-config
             ];
 
