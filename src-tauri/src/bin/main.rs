@@ -3,6 +3,7 @@ mod widgets;
 
 use crate::components::markdown;
 
+use iced::widget::{Container, Text};
 use iced::{Element, Theme};
 use tracing::info;
 
@@ -46,12 +47,15 @@ Let's go to [Denmachi](https://denmachi.dev)",
 
     #[tracing::instrument]
     fn view(&self) -> Element<'_, Message> {
-        markdown::view(
-            &self.markdown,
-            markdown::Settings::default(),
-            markdown::Style::from_palette(Theme::TokyoNightStorm.palette()),
+        Container::new(
+            markdown::view(
+                &self.markdown,
+                markdown::Settings::default(),
+                markdown::Style::from_palette(Theme::TokyoNightStorm.palette()),
+            )
+            .map(Message::LinkClicked),
         )
-        .map(Message::LinkClicked)
+        .padding(25)
         .into()
     }
 

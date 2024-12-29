@@ -1,12 +1,14 @@
-use iced::{
-    alignment, event, mouse, Color, Element, Event, Length, Pixels, Point, Rectangle, Size, Vector,
-};
+use iced::alignment::{Horizontal, Vertical};
+use iced::{event, mouse, Color, Element, Event, Length, Pixels, Point, Rectangle, Size, Vector};
 use iced_core::text::{Paragraph, Span};
 use iced_core::widget::{
     text::{self, Catalog, LineHeight, Shaping, Style, StyleFn, Wrapping},
     tree, Tree,
 };
 use iced_core::{self as core, layout, renderer, Clipboard, Layout, Shell, Widget};
+use tracing::info;
+
+use super::common::{set_background, strikethrough, underline};
 
 /// A bunch of [`Rich`] text.
 #[allow(missing_debug_implementations)]
@@ -22,8 +24,6 @@ where
     width: Length,
     height: Length,
     font: Option<Renderer::Font>,
-    align_x: alignment::Horizontal,
-    align_y: alignment::Vertical,
     wrapping: Wrapping,
     class: Theme::Class<'a>,
 }
@@ -44,8 +44,6 @@ where
             width: Length::Shrink,
             height: Length::Shrink,
             font: None,
-            align_x: alignment::Horizontal::Left,
-            align_y: alignment::Vertical::Top,
             wrapping: Wrapping::default(),
             class: Theme::default(),
         }
@@ -89,24 +87,6 @@ where
         self
     }
 
-    /// Centers the [`Rich`] text, both horizontally and vertically.
-    pub fn center(self) -> Self {
-        self.align_x(alignment::Horizontal::Center)
-            .align_y(alignment::Vertical::Center)
-    }
-
-    /// Sets the [`alignment::Horizontal`] of the [`Rich`] text.
-    pub fn align_x(mut self, alignment: impl Into<alignment::Horizontal>) -> Self {
-        self.align_x = alignment.into();
-        self
-    }
-
-    /// Sets the [`alignment::Vertical`] of the [`Rich`] text.
-    pub fn align_y(mut self, alignment: impl Into<alignment::Vertical>) -> Self {
-        self.align_y = alignment.into();
-        self
-    }
-
     /// Sets the [`Wrapping`] strategy of the [`Rich`] text.
     pub fn wrapping(mut self, wrapping: Wrapping) -> Self {
         self.wrapping = wrapping;
@@ -140,14 +120,6 @@ where
 
         self.style(move |_theme| Style { color })
     }
-
-    /// Sets the default style class of the [`Rich`] text.
-    #[cfg(feature = "advanced")]
-    #[must_use]
-    pub fn class(mut self, class: impl Into<Theme::Class<'a>>) -> Self {
-        self.class = class.into();
-        self
-    }
 }
 
 impl<'a, Link, Theme, Renderer> Default for Rich<'a, Link, Theme, Renderer>
@@ -166,6 +138,7 @@ struct State<Link, P: Paragraph> {
     spans: Vec<Span<'static, Link, P::Font>>,
     span_pressed: Option<usize>,
     paragraph: P,
+    //last_click: Option<Click>,
 }
 
 impl<'a, Link, Theme, Renderer> Widget<Link, Theme, Renderer> for Rich<'a, Link, Theme, Renderer>
@@ -210,8 +183,6 @@ where
             self.line_height,
             self.size,
             self.font,
-            self.align_x,
-            self.align_y,
             self.wrapping,
         )
     }
@@ -244,22 +215,14 @@ where
                 let regions = state.paragraph.span_bounds(index);
 
                 if let Some(highlight) = span.highlight {
-                    for bounds in &regions {
-                        let bounds = Rectangle::new(
-                            bounds.position() - Vector::new(span.padding.left, span.padding.top),
-                            bounds.size()
-                                + Size::new(span.padding.horizontal(), span.padding.vertical()),
-                        );
-
-                        renderer.fill_quad(
-                            renderer::Quad {
-                                bounds: bounds + translation,
-                                border: highlight.border,
-                                ..Default::default()
-                            },
-                            highlight.background,
-                        );
-                    }
+                    set_background(
+                        &regions,
+                        renderer,
+                        span.padding,
+                        translation,
+                        highlight.border,
+                        highlight.background,
+                    );
                 }
 
                 if span.underline || span.strikethrough || is_hovered_link {
@@ -276,35 +239,11 @@ where
                         translation + Vector::new(0.0, size.0 + (line_height.0 - size.0) / 2.0);
 
                     if span.underline || is_hovered_link {
-                        for bounds in &regions {
-                            renderer.fill_quad(
-                                renderer::Quad {
-                                    bounds: Rectangle::new(
-                                        bounds.position() + baseline
-                                            - Vector::new(0.0, size.0 * 0.08),
-                                        Size::new(bounds.width, 1.0),
-                                    ),
-                                    ..Default::default()
-                                },
-                                color,
-                            );
-                        }
+                        underline(&regions, renderer, baseline, size, color);
                     }
 
                     if span.strikethrough {
-                        for bounds in &regions {
-                            renderer.fill_quad(
-                                renderer::Quad {
-                                    bounds: Rectangle::new(
-                                        bounds.position() + baseline
-                                            - Vector::new(0.0, size.0 / 2.0),
-                                        Size::new(bounds.width, 1.0),
-                                    ),
-                                    ..Default::default()
-                                },
-                                color,
-                            );
-                        }
+                        strikethrough(&regions, renderer, baseline, size, color);
                     }
                 }
             }
@@ -333,6 +272,7 @@ where
     ) -> event::Status {
         match event {
             Event::Mouse(mouse::Event::ButtonPressed(mouse::Button::Left)) => {
+                info!("Mouse clicked");
                 if let Some(position) = cursor.position_in(layout.bounds()) {
                     let state = tree
                         .state
@@ -354,20 +294,9 @@ where
                     state.span_pressed = None;
 
                     if let Some(position) = cursor.position_in(layout.bounds()) {
-                        match state.paragraph.hit_span(position) {
-                            Some(span) if span == span_pressed => {
-                                if let Some(link) = self
-                                    .spans
-                                    .as_ref()
-                                    .as_ref()
-                                    .get(span)
-                                    .and_then(|span| span.link.clone())
-                                {
-                                    shell.publish(link);
-                                }
-                            }
-                            _ => {}
-                        }
+                        //let click = Click::new(position, mouse::Button::Left);
+
+                        //Some(Update::Click(click));
                     }
                 }
             }
@@ -415,8 +344,6 @@ fn layout<Link, Renderer>(
     line_height: LineHeight,
     size: Option<Pixels>,
     font: Option<Renderer::Font>,
-    horizontal_alignment: alignment::Horizontal,
-    vertical_alignment: alignment::Vertical,
     wrapping: Wrapping,
 ) -> layout::Node
 where
@@ -435,8 +362,8 @@ where
             size,
             line_height,
             font,
-            horizontal_alignment,
-            vertical_alignment,
+            horizontal_alignment: Horizontal::Left,
+            vertical_alignment: Vertical::Bottom,
             shaping: Shaping::Advanced,
             wrapping,
         };
@@ -451,8 +378,8 @@ where
                 size,
                 line_height,
                 font,
-                horizontal_alignment,
-                vertical_alignment,
+                horizontal_alignment: Horizontal::Left,
+                vertical_alignment: Vertical::Bottom,
                 shaping: Shaping::Advanced,
                 wrapping,
             }) {
