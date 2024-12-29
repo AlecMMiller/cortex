@@ -6,23 +6,22 @@ pub use get_entity::get;
 
 use serde::Deserialize;
 use serde_json::{Map, Value};
-use specta::Type;
 
 use crate::models::attribute_schema::AttributeSchemaId;
 
-#[derive(Deserialize, Type)]
+#[derive(Deserialize)]
 pub enum EntityField {
     Entity(EntityAttribute),
     Attribute(AttributeSchemaId),
 }
 
-#[derive(Deserialize, Type)]
+#[derive(Deserialize)]
 pub struct EntityAttribute {
     pub attribute: AttributeSchemaId,
     pub request: EntityRequest,
 }
 
-#[derive(Deserialize, Type)]
+#[derive(Deserialize)]
 pub struct EntityRequest(pub Vec<EntityField>);
 
 pub type EntityResponse = Map<String, Value>;

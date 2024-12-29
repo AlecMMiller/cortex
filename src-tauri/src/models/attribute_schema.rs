@@ -1,5 +1,4 @@
 use serde::{Deserialize, Serialize};
-use specta::Type;
 
 use crate::macros::macros::create_id;
 
@@ -10,7 +9,7 @@ use super::{
 
 create_id!(AttributeSchemaId);
 
-#[derive(Type, Serialize)]
+#[derive(Serialize)]
 pub struct AttributeSchema {
     pub id: AttributeSchemaId,
     pub name: String,
@@ -18,7 +17,7 @@ pub struct AttributeSchema {
     pub quantity: Quantity,
 }
 
-#[derive(Type, Deserialize)]
+#[derive(Deserialize)]
 pub struct CreateAttributeSchema {
     pub entity: EntitySchemaId,
     pub name: String,
@@ -26,7 +25,7 @@ pub struct CreateAttributeSchema {
     pub quantity: Quantity,
 }
 
-#[derive(Serialize, Deserialize, Type, Debug, PartialEq, Clone)]
+#[derive(Serialize, Deserialize, Debug, PartialEq, Clone)]
 pub enum Quantity {
     Optional,
     Required,

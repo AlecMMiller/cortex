@@ -1,6 +1,5 @@
 use rusqlite::types::{FromSqlResult, ValueRef};
 use serde::{Deserialize, Serialize};
-use specta::Type;
 
 use crate::macros::macros::create_id;
 
@@ -9,32 +8,32 @@ use super::entity_schema::EntitySchemaId;
 create_id!(ReferenceAttributeId);
 create_id!(TextAttributeId);
 
-#[derive(Serialize, Deserialize, Type, Debug, PartialEq)]
+#[derive(Serialize, Deserialize, Debug, PartialEq)]
 pub enum AttributeType {
     Simple(SimpleAttributeType),
     Reference(ReferenceAttribute),
 }
 
-#[derive(Serialize, Deserialize, Type, Debug, PartialEq, Clone, Copy)]
+#[derive(Serialize, Deserialize, Debug, PartialEq, Clone, Copy)]
 pub enum SimpleAttributeType {
     Text,
     RichText,
     Longform,
 }
 
-#[derive(Serialize, Deserialize, Type, Debug, PartialEq)]
+#[derive(Serialize, Deserialize, Debug, PartialEq)]
 pub struct ReferenceAttribute {
     pub id: EntitySchemaId,
     pub name: String,
 }
 
-#[derive(Serialize, Deserialize, Type, Debug, PartialEq)]
+#[derive(Serialize, Deserialize, Debug, PartialEq)]
 pub enum CreateAttributeType {
     Simple(SimpleAttributeType),
     Reference(CreateReferenceAttribute),
 }
 
-#[derive(Serialize, Deserialize, Type, Debug, PartialEq)]
+#[derive(Serialize, Deserialize, Debug, PartialEq)]
 pub struct CreateReferenceAttribute {
     pub id: EntitySchemaId,
 }

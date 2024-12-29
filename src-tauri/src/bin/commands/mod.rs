@@ -1,4 +1,3 @@
-use specta::Type;
 pub mod entity;
 pub mod schema;
 

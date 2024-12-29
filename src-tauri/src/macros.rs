@@ -4,8 +4,8 @@ pub mod macros {
         (
             $id_name:ident
         ) => {
-            #[derive(Clone, Hash, Debug, PartialEq, Eq, specta::Type)]
-            pub struct $id_name(#[specta(type = String)] Vec<u8>);
+            #[derive(Clone, Hash, Debug, PartialEq, Eq)]
+            pub struct $id_name(Vec<u8>);
 
             impl std::fmt::Display for $id_name {
                 fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> Result<(), std::fmt::Error> {
