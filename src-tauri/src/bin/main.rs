@@ -3,7 +3,7 @@ mod widgets;
 
 use crate::components::markdown;
 
-use iced::widget::{Container, Text};
+use iced::widget::Container;
 use iced::{Element, Theme};
 use tracing::info;
 
