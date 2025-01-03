@@ -32,6 +32,14 @@
               gobject-introspection
               cargo
               cargo-tauri
+              libxkbcommon
+              libGL
+              # WINIT_UNIX_BACKEND=wayland
+              wayland
+              vulkan-tools
+              vulkan-headers
+              vulkan-loader
+              vulkan-validation-layers
             ];
 
             buildInputs = with pkgs; [
@@ -53,6 +61,9 @@
               libsoup_3
               pkg-config
             ];
+
+            LD_LIBRARY_PATH = "${pkgs.libxkbcommon}/lib:${pkgs.libGL}/lib:${pkgs.wayland}/lib";
+            RUST_BACKTRACE = 1;
 
             shellHook = ''
               export PATH=~/.cargo/bin/:$PATH
