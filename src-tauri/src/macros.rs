@@ -4,17 +4,8 @@ pub mod macros {
         (
             $id_name:ident
         ) => {
-            #[derive(Hash, AsExpression, FromSqlRow, Debug, PartialEq, Eq, specta::Type)]
-            #[diesel(sql_type = diesel::sql_types::Binary)]
-            pub struct $id_name(#[specta(type = String)] Vec<u8>);
-
-            impl FromSql<Binary, Sqlite> for $id_name {
-                fn from_sql(bytes: <Sqlite as Backend>::RawValue<'_>) -> deserialize::Result<Self> {
-                    Ok($id_name {
-                        0: Vec::from_sql(bytes)?,
-                    })
-                }
-            }
+            #[derive(Clone, Hash, Debug, PartialEq, Eq)]
+            pub struct $id_name(Vec<u8>);
 
             impl std::fmt::Display for $id_name {
                 fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> Result<(), std::fmt::Error> {
@@ -35,9 +26,50 @@ pub mod macros {
                 }
             }
 
-            impl ToSql<Binary, Sqlite> for $id_name {
-                fn to_sql<'a>(&'a self, out: &mut Output<'a, '_, Sqlite>) -> serialize::Result {
-                    ToSql::<Binary, Sqlite>::to_sql(&self.0, out)
+            impl TryFrom<&String> for $id_name {
+                type Error = &'static str;
+
+                fn try_from(s: &String) -> Result<$id_name, Self::Error> {
+                    let uuid = uuid::Uuid::parse_str(&s).unwrap();
+                    Ok($id_name {
+                        0: uuid.as_bytes().to_vec(),
+                    })
+                }
+            }
+
+            impl TryFrom<String> for $id_name {
+                type Error = &'static str;
+
+                fn try_from(s: String) -> Result<$id_name, Self::Error> {
+                    let uuid = uuid::Uuid::parse_str(&s).unwrap();
+                    Ok($id_name {
+                        0: uuid.as_bytes().to_vec(),
+                    })
+                }
+            }
+
+            impl Into<String> for $id_name {
+                fn into(self) -> String {
+                    let uuid = uuid::Uuid::from_slice(&self.0).unwrap();
+                    uuid.to_string()
+                }
+            }
+
+            impl rusqlite::ToSql for $id_name {
+                fn to_sql(
+                    &self,
+                ) -> std::result::Result<rusqlite::types::ToSqlOutput<'_>, rusqlite::Error> {
+                    Ok(rusqlite::types::ToSqlOutput::from(self.0.clone()))
+                }
+            }
+
+            impl rusqlite::types::FromSql for $id_name {
+                fn column_result(
+                    value: rusqlite::types::ValueRef<'_>,
+                ) -> rusqlite::types::FromSqlResult<Self> {
+                    Ok($id_name {
+                        0: value.as_blob().map(<[u8]>::to_vec)?,
+                    })
                 }
             }
 
@@ -47,9 +79,18 @@ pub mod macros {
                         0: uuid::Uuid::new_v4().as_bytes().to_vec(),
                     }
                 }
+
+                #[allow(dead_code)]
+                pub fn column_result_manual(
+                    value: rusqlite::types::ValueRef<'_>,
+                ) -> rusqlite::types::FromSqlResult<Self> {
+                    Ok($id_name {
+                        0: value.as_blob().map(<[u8]>::to_vec)?,
+                    })
+                }
             }
 
-            impl Serialize for $id_name {
+            impl serde::Serialize for $id_name {
                 fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
                 where
                     S: serde::ser::Serializer,
@@ -61,10 +102,10 @@ pub mod macros {
                 }
             }
 
-            impl<'de> Deserialize<'de> for $id_name {
+            impl<'de> serde::Deserialize<'de> for $id_name {
                 fn deserialize<D>(deserializer: D) -> Result<$id_name, D::Error>
                 where
-                    D: Deserializer<'de>,
+                    D: serde::Deserializer<'de>,
                 {
                     let s = String::deserialize(deserializer)?;
                     let uuid = uuid::Uuid::parse_str(&s).unwrap();
