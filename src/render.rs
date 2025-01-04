@@ -6,7 +6,6 @@ use crate::{
     color::{make_color, PaletteBuffer},
     setup::{PipelineContext, RenderContext},
     state::AppState,
-    text::TextContext,
 };
 
 #[tracing::instrument(skip(
@@ -17,7 +16,6 @@ use crate::{
     rect_buffer,
     palette,
     display_info,
-    text
 ))]
 pub fn render(
     window: &Window,
@@ -28,7 +26,6 @@ pub fn render(
     vertexes: &VertexBundle,
     palette: &PaletteBuffer,
     display_info: &DisplayInfoBuffer,
-    text: &mut TextContext,
 ) {
     let frame = context.surface.get_current_texture().unwrap();
 
@@ -36,7 +33,7 @@ pub fn render(
         .texture
         .create_view(&wgpu::TextureViewDescriptor::default());
 
-    state.prepare(window, context, palette, display_info, text);
+    state.prepare(window, context, palette, display_info);
 
     let mut encoder = context
         .device
@@ -73,7 +70,7 @@ pub fn render(
         debug!(count = num_instances, "Drawing rectangles");
         render_pass.draw_indexed(0..vertexes.num_indices, 0, 0..num_instances);
 
-        text.render(&mut render_pass);
+        state.render(&mut render_pass);
     }
     debug!("Submitting encoder queue");
     context.queue.submit(Some(encoder.finish()));

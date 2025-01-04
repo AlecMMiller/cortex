@@ -1,38 +1,48 @@
+use std::sync::{Arc, Mutex};
+
 use tracing::info;
-use winit::{
-    dpi::{PhysicalPosition, PhysicalSize},
-    window::Window,
-};
+use wgpu::RenderPass;
+use winit::{dpi::PhysicalSize, window::Window};
 
 use crate::{
     buffer::DisplayInfoBuffer,
     color::{PaletteBuffer, MOCHA},
+    editor::Editor,
     rectangle::Rectangle,
     setup::RenderContext,
     sidebar::Sidebar,
     text::TextContext,
 };
 
+enum Content {
+    Editor(Editor),
+}
+
 pub struct AppState {
     scale_factor: f64,
     resize_event: bool,
     palette_change: bool,
-    //active: ActiveElement,
-    cursor: Option<PhysicalPosition<f64>>,
+    text: Arc<Mutex<TextContext>>,
+    content: Content,
     sidebar: Sidebar,
-    //content: Content<'a>,
 }
 
-impl AppState {
-    pub fn new(window: &Window) -> Self {
+impl<'a> AppState {
+    pub fn new(window: &Window, text: TextContext) -> Self {
         let sidebar = Sidebar::new(window);
+
+        let text = Mutex::new(text);
+        let text = Arc::new(text);
+
+        let editor = Editor::new(&text);
 
         Self {
             scale_factor: window.scale_factor(),
             resize_event: false,
             palette_change: true,
-            cursor: None,
             sidebar,
+            content: Content::Editor(editor),
+            text,
         }
     }
 
@@ -59,6 +69,11 @@ impl AppState {
         res
     }
 
+    pub fn render(&self, pass: &mut RenderPass) {
+        let text = self.text.lock().unwrap();
+        text.render(pass);
+    }
+
     pub fn set_scale_factor(&mut self, scale_factor: f64) {
         self.scale_factor = scale_factor;
         self.sidebar.rescale(scale_factor);
@@ -70,26 +85,34 @@ impl AppState {
     }
 
     pub fn prepare(
-        &self,
+        &mut self,
         window: &Window,
         context: &RenderContext,
         palette_buffer: &PaletteBuffer,
         display_info_buffer: &DisplayInfoBuffer,
-        text_context: &mut TextContext,
     ) {
         if self.palette_change {
             info!("Writing to palette_buffer");
             palette_buffer.write_to_queue(&context.queue, MOCHA);
         }
 
-        if self.resize_event {
-            info!("Writing new size info");
-            display_info_buffer.write_to_queue(&context.queue);
-            text_context.resize(&context.queue, window);
-        }
+        {
+            let mut text_context = self.text.lock().unwrap();
 
-        let text_areas = Vec::new();
-        text_context.prepare(&context.device, &context.queue, text_areas);
+            if self.resize_event {
+                info!("Writing new size info for text");
+                display_info_buffer.write_to_queue(&context.queue);
+                text_context.resize(&context.queue, window);
+            }
+
+            let mut text_areas = Vec::new();
+
+            match &self.content {
+                Content::Editor(editor) => text_areas.extend(editor.get_text_areas()),
+            }
+
+            text_context.prepare(&context.device, &context.queue, text_areas);
+        }
 
         //match &mut self.content {
         //    Content::Editor(editor) => {

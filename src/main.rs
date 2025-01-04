@@ -1,6 +1,7 @@
 mod buffer;
 mod color;
 mod cursor;
+mod editor;
 mod rectangle;
 mod render;
 mod setup;
@@ -40,9 +41,9 @@ async fn run(event_loop: EventLoop<()>, window: Arc<Window>) {
         &rectangle_buffer,
     );
     let mut surface_config = get_surface_config(&window, &render_context);
-    let mut text_context = TextContext::new(&render_context.device, &render_context.queue);
+    let text_context = TextContext::new(&render_context.device, &render_context.queue);
 
-    let mut state = AppState::new(&window);
+    let mut state = AppState::new(&window, text_context);
     let mut cursor_state = CursorState::new();
 
     let main_window_id = window.id();
@@ -79,7 +80,6 @@ async fn run(event_loop: EventLoop<()>, window: Arc<Window>) {
                                 &vertex_bundle,
                                 &palette_buffer,
                                 &display_info_buffer,
-                                &mut text_context,
                             );
                             false
                         }

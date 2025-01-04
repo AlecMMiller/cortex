@@ -1,11 +1,90 @@
+use std::sync::{Arc, Mutex};
+
 use glyphon::{
-    Cache, FontSystem, Resolution, SwashCache, TextArea, TextAtlas, TextRenderer, Viewport,
+    Attrs, Buffer, Cache, FontSystem, Metrics, Resolution, Shaping, SwashCache, TextArea,
+    TextAtlas, TextBounds, TextRenderer, Viewport,
 };
 use tracing::debug;
 use wgpu::{Device, MultisampleState, Queue, RenderPass};
-use winit::window::Window;
+use winit::{
+    dpi::{PhysicalPosition, PhysicalSize},
+    window::Window,
+};
 
-use crate::setup::SWAPHCHAIN_FORMAT;
+use crate::{setup::SWAPHCHAIN_FORMAT, size::Bounds};
+
+pub struct TextBlock {
+    buffer: Buffer,
+    context: Arc<Mutex<TextContext>>,
+    scale_factor: f32,
+    origin: PhysicalPosition<f32>,
+}
+
+impl TextBlock {
+    #[tracing::instrument(skip(context, origin))]
+    pub fn new(
+        context: Arc<Mutex<TextContext>>,
+        scale_factor: f32,
+        origin: PhysicalPosition<f32>,
+    ) -> Self {
+        let font_system = &mut context.lock().unwrap().font_system;
+        let buffer = glyphon::Buffer::new(font_system, Metrics::new(32.0, 32.0));
+
+        Self {
+            buffer,
+            context: context.clone(),
+            scale_factor,
+            origin,
+        }
+    }
+
+    #[tracing::instrument(skip(self, text), fields(length = text.len()))]
+    pub fn set_text(&mut self, text: &str) {
+        debug!("Setting text");
+
+        let font_system = &mut self.context.lock().unwrap().font_system;
+
+        self.buffer.set_text(
+            font_system,
+            text,
+            Attrs::new().metrics(Metrics::new(32.0, 32.0)),
+            Shaping::Advanced,
+        );
+
+        debug!("Shaping");
+        self.buffer.shape_until_scroll(font_system, true);
+    }
+
+    pub fn set_bounds(&mut self, bounds: &Bounds, scale_factor: f32) {
+        debug!("Size being set");
+        self.scale_factor = scale_factor;
+        let inner_bounds = bounds.inset(PhysicalSize {
+            width: 40.0 * scale_factor,
+            height: 0.0,
+        });
+        self.origin = inner_bounds.origin;
+
+        let font_system = &mut self.context.lock().unwrap().font_system;
+
+        self.buffer.set_size(
+            font_system,
+            Some(inner_bounds.size.width / self.scale_factor),
+            Some(inner_bounds.size.height / self.scale_factor),
+        );
+    }
+
+    pub fn get_text_area(&self) -> TextArea {
+        TextArea {
+            buffer: &self.buffer,
+            left: self.origin.x,
+            top: self.origin.y,
+            scale: self.scale_factor,
+            bounds: TextBounds::default(),
+            default_color: glyphon::Color::rgb(255, 255, 255),
+            custom_glyphs: &[],
+        }
+    }
+}
 
 pub struct TextContext {
     font_system: FontSystem,
@@ -55,6 +134,7 @@ impl TextContext {
     pub fn prepare(&mut self, device: &Device, queue: &Queue, text_areas: Vec<TextArea>) {
         let count = text_areas.len();
         debug!(count, "Preparing text areas");
+
         self.text_renderer
             .prepare(
                 device,
