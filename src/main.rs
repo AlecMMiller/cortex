@@ -7,14 +7,16 @@ mod setup;
 mod sidebar;
 mod size;
 mod state;
+mod text;
 
 use std::sync::Arc;
 
 use buffer::{DisplayInfoBuffer, RectBuffer, VertexBundle};
 use color::PaletteBuffer;
 use cursor::CursorState;
-use setup::{get_surface_config, PipelineContext, RenderContext, TextContext};
+use setup::{get_surface_config, PipelineContext, RenderContext};
 use state::AppState;
+use text::TextContext;
 use tracing::{debug, info, span, Level};
 use winit::{
     event::{Event, WindowEvent},

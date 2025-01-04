@@ -4,8 +4,9 @@ use winit::window::Window;
 use crate::{
     buffer::{DisplayInfoBuffer, RectBuffer, VertexBundle},
     color::{make_color, PaletteBuffer},
-    setup::{PipelineContext, RenderContext, TextContext},
+    setup::{PipelineContext, RenderContext},
     state::AppState,
+    text::TextContext,
 };
 
 #[tracing::instrument(skip(

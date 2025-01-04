@@ -1,6 +1,4 @@
 use tracing::info;
-use tracing_subscriber::field::display;
-use wgpu::core::device::queue;
 use winit::{
     dpi::{PhysicalPosition, PhysicalSize},
     window::Window,
@@ -10,8 +8,9 @@ use crate::{
     buffer::DisplayInfoBuffer,
     color::{PaletteBuffer, MOCHA},
     rectangle::Rectangle,
-    setup::{RenderContext, TextContext},
+    setup::RenderContext,
     sidebar::Sidebar,
+    text::TextContext,
 };
 
 pub struct AppState {
@@ -20,9 +19,6 @@ pub struct AppState {
     palette_change: bool,
     //active: ActiveElement,
     cursor: Option<PhysicalPosition<f64>>,
-    mouse_down: bool,
-    //last_clicked: Option<LastClick>,
-    click_count: u8,
     sidebar: Sidebar,
     //content: Content<'a>,
 }
@@ -36,8 +32,6 @@ impl AppState {
             resize_event: false,
             palette_change: true,
             cursor: None,
-            mouse_down: false,
-            click_count: 0,
             sidebar,
         }
     }
