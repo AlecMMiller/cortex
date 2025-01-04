@@ -11,7 +11,7 @@ use std::sync::Arc;
 
 use buffer::{DisplayInfoBuffer, RectBuffer, VertexBundle};
 use color::PaletteBuffer;
-use setup::{get_surface_config, PipelineContext, RenderContext};
+use setup::{get_surface_config, PipelineContext, RenderContext, TextContext};
 use state::AppState;
 use tracing::{debug, info, span, Level};
 use winit::{
@@ -36,6 +36,7 @@ async fn run(event_loop: EventLoop<()>, window: Arc<Window>) {
         &rectangle_buffer,
     );
     let mut surface_config = get_surface_config(&window, &render_context);
+    let mut text_context = TextContext::new(&render_context.device, &render_context.queue);
 
     let mut state = AppState::new(&window);
 
@@ -63,6 +64,7 @@ async fn run(event_loop: EventLoop<()>, window: Arc<Window>) {
                                 &vertex_bundle,
                                 &palette_buffer,
                                 &display_info_buffer,
+                                &mut text_context,
                             );
                             false
                         }

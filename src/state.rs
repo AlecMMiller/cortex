@@ -1,5 +1,6 @@
 use tracing::info;
 use tracing_subscriber::field::display;
+use wgpu::core::device::queue;
 use winit::{
     dpi::{PhysicalPosition, PhysicalSize},
     window::Window,
@@ -7,9 +8,9 @@ use winit::{
 
 use crate::{
     buffer::DisplayInfoBuffer,
-    color::{make_pallete, PaletteBuffer, Swatch, MOCHA},
+    color::{PaletteBuffer, MOCHA},
     rectangle::Rectangle,
-    setup::RenderContext,
+    setup::{RenderContext, TextContext},
     sidebar::Sidebar,
 };
 
@@ -76,26 +77,25 @@ impl AppState {
 
     pub fn prepare(
         &self,
-        _window: &Window,
+        window: &Window,
         context: &RenderContext,
         palette_buffer: &PaletteBuffer,
         display_info_buffer: &DisplayInfoBuffer,
+        text_context: &mut TextContext,
     ) {
         if self.palette_change {
             info!("Writing to palette_buffer");
-            let palette = make_pallete(MOCHA);
-
-            context.queue.write_buffer(
-                &palette_buffer.buffer,
-                0,
-                &Swatch::as_wgsl_bytes(palette).expect("Error in encase translating palette"),
-            );
+            palette_buffer.write_to_queue(&context.queue, MOCHA);
         }
 
         if self.resize_event {
-            info!("Writing to display info buffer");
+            info!("Writing new size info");
             display_info_buffer.write_to_queue(&context.queue);
+            text_context.resize(&context.queue, window);
         }
+
+        let text_areas = Vec::new();
+        text_context.prepare(&context.device, &context.queue, text_areas);
 
         //match &mut self.content {
         //    Content::Editor(editor) => {

@@ -1,7 +1,7 @@
 use encase::ShaderType;
 use glam::Vec4;
 use tracing::debug;
-use wgpu::{Buffer, BufferDescriptor, BufferUsages, Color, Device};
+use wgpu::{Buffer, BufferDescriptor, BufferUsages, Color, Device, Queue};
 
 type PaletteDefinition = [u32; 12];
 
@@ -62,6 +62,16 @@ impl PaletteBuffer {
         });
 
         Self { buffer }
+    }
+
+    pub fn write_to_queue(&self, queue: &Queue, theme: PaletteDefinition) {
+        let palette = make_pallete(theme);
+
+        queue.write_buffer(
+            &self.buffer,
+            0,
+            &Swatch::as_wgsl_bytes(palette).expect("Error in encase translating palette"),
+        );
     }
 }
 

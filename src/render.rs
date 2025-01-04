@@ -4,7 +4,7 @@ use winit::window::Window;
 use crate::{
     buffer::{DisplayInfoBuffer, RectBuffer, VertexBundle},
     color::{make_color, PaletteBuffer},
-    setup::{PipelineContext, RenderContext},
+    setup::{PipelineContext, RenderContext, TextContext},
     state::AppState,
 };
 
@@ -15,7 +15,8 @@ use crate::{
     state,
     rect_buffer,
     palette,
-    display_info
+    display_info,
+    text
 ))]
 pub fn render(
     window: &Window,
@@ -26,6 +27,7 @@ pub fn render(
     vertexes: &VertexBundle,
     palette: &PaletteBuffer,
     display_info: &DisplayInfoBuffer,
+    text: &mut TextContext,
 ) {
     let frame = context.surface.get_current_texture().unwrap();
 
@@ -33,7 +35,7 @@ pub fn render(
         .texture
         .create_view(&wgpu::TextureViewDescriptor::default());
 
-    state.prepare(window, context, palette, display_info);
+    state.prepare(window, context, palette, display_info, text);
 
     let mut encoder = context
         .device
@@ -67,7 +69,10 @@ pub fn render(
         render_pass.set_pipeline(&pipeline.pipeline);
         vertexes.add_to_pass(&mut render_pass);
         render_pass.set_bind_group(0, Some(&pipeline.bind_group), &[]);
+        debug!(count = num_instances, "Drawing rectangles");
         render_pass.draw_indexed(0..vertexes.num_indices, 0, 0..num_instances);
+
+        text.render(&mut render_pass);
     }
     debug!("Submitting encoder queue");
     context.queue.submit(Some(encoder.finish()));

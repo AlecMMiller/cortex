@@ -14,7 +14,7 @@ pub struct DisplayInfo {
 
 pub struct DisplayInfoBuffer {
     pub buffer: Buffer,
-    pub data: DisplayInfo,
+    data: DisplayInfo,
 }
 
 impl DisplayInfoBuffer {
