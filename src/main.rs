@@ -1,5 +1,6 @@
 mod buffer;
 mod color;
+mod cursor;
 mod rectangle;
 mod render;
 mod setup;
@@ -11,6 +12,7 @@ use std::sync::Arc;
 
 use buffer::{DisplayInfoBuffer, RectBuffer, VertexBundle};
 use color::PaletteBuffer;
+use cursor::CursorState;
 use setup::{get_surface_config, PipelineContext, RenderContext, TextContext};
 use state::AppState;
 use tracing::{debug, info, span, Level};
@@ -39,6 +41,7 @@ async fn run(event_loop: EventLoop<()>, window: Arc<Window>) {
     let mut text_context = TextContext::new(&render_context.device, &render_context.queue);
 
     let mut state = AppState::new(&window);
+    let mut cursor_state = CursorState::new();
 
     let main_window_id = window.id();
 
@@ -53,6 +56,16 @@ async fn run(event_loop: EventLoop<()>, window: Arc<Window>) {
                     let span = span!(Level::INFO, "window_event", event = debug(&window_event));
                     let _enter = span.enter();
                     match window_event {
+                        WindowEvent::CursorMoved {
+                            device_id: _,
+                            position,
+                        } => cursor_state.moved(position),
+
+                        WindowEvent::MouseInput {
+                            device_id: _,
+                            state: element_state,
+                            button,
+                        } => cursor_state.mouse_input(element_state, button),
                         WindowEvent::RedrawRequested => {
                             info!("Drawing screen");
                             render::render(
