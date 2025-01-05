@@ -8,15 +8,18 @@ mod setup;
 mod sidebar;
 mod size;
 mod state;
+mod svg;
 mod text;
 
-use std::sync::Arc;
+use std::{path::Path, sync::Arc};
 
+use crate::svg::Svg;
 use buffer::{DisplayInfoBuffer, RectBuffer, VertexBundle};
 use color::PaletteBuffer;
 use cursor::CursorState;
 use setup::{get_surface_config, PipelineContext, RenderContext};
 use state::AppState;
+use svg::SvgRenderer;
 use text::TextContext;
 use tracing::{debug, info, span, Level};
 use winit::{
@@ -47,6 +50,14 @@ async fn run(event_loop: EventLoop<()>, window: Arc<Window>) {
     let mut cursor_state = CursorState::new();
 
     let main_window_id = window.id();
+
+    let svg = Svg::load(Path::new("./src/home.svg"));
+    let mut svg_renderer = SvgRenderer::new(&render_context.device);
+
+    svg_renderer.write_transforms(&render_context.queue, &svg.get_transforms(6.0, 32.0));
+    svg_renderer.write_primitives(&render_context.queue, &svg.get_primitives(0xCDD6F4FF, 48.0));
+
+    svg_renderer.write_mesh(&render_context.queue, &svg.mesh);
 
     info!("Starting event loop");
     event_loop
@@ -80,6 +91,7 @@ async fn run(event_loop: EventLoop<()>, window: Arc<Window>) {
                                 &vertex_bundle,
                                 &palette_buffer,
                                 &display_info_buffer,
+                                &svg_renderer,
                             );
                             false
                         }
@@ -91,6 +103,7 @@ async fn run(event_loop: EventLoop<()>, window: Arc<Window>) {
                         WindowEvent::Resized(new_size) => {
                             info!("Resizing the window");
                             state.resize(new_size);
+                            svg_renderer.set_canvas_size(&new_size);
                             display_info_buffer.set_size(&new_size);
                             surface_config.width = new_size.width;
                             surface_config.height = new_size.height;
@@ -128,6 +141,14 @@ pub fn main() {
         .expect("Failed to initialize tracing subscriber");
 
     info!("Application started");
+    //let event_loop = EventLoop::new().unwrap();
+
+    //let builder = winit::window::WindowBuilder::new().with_title("Cortex");
+    //let window = Arc::new(builder.build(&event_loop).unwrap());
+    //pollster::block_on(do_thing(event_loop, window));
+    //load_svg(Path::new("./src/shell.svg"));
+
+    //let foo = init(window);
 
     let event_loop = EventLoop::new().unwrap();
     let builder = winit::window::WindowBuilder::new().with_title("Cortex");

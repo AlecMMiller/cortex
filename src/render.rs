@@ -6,6 +6,7 @@ use crate::{
     color::{make_color, PaletteBuffer},
     setup::{PipelineContext, RenderContext},
     state::AppState,
+    svg::SvgRenderer,
 };
 
 #[tracing::instrument(skip(
@@ -16,6 +17,7 @@ use crate::{
     rect_buffer,
     palette,
     display_info,
+    svg_context
 ))]
 pub fn render(
     window: &Window,
@@ -26,6 +28,7 @@ pub fn render(
     vertexes: &VertexBundle,
     palette: &PaletteBuffer,
     display_info: &DisplayInfoBuffer,
+    svg_context: &SvgRenderer,
 ) {
     let frame = context.surface.get_current_texture().unwrap();
 
@@ -33,7 +36,7 @@ pub fn render(
         .texture
         .create_view(&wgpu::TextureViewDescriptor::default());
 
-    state.prepare(window, context, palette, display_info);
+    state.prepare(window, context, palette, display_info, svg_context);
 
     let mut encoder = context
         .device
@@ -71,6 +74,8 @@ pub fn render(
         render_pass.draw_indexed(0..vertexes.num_indices, 0, 0..num_instances);
 
         state.render(&mut render_pass);
+
+        svg_context.render(&mut render_pass);
     }
     debug!("Submitting encoder queue");
     context.queue.submit(Some(encoder.finish()));

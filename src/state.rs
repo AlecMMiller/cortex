@@ -11,6 +11,7 @@ use crate::{
     rectangle::Rectangle,
     setup::RenderContext,
     sidebar::Sidebar,
+    svg::SvgRenderer,
     text::TextContext,
 };
 
@@ -90,6 +91,7 @@ impl<'a> AppState {
         context: &RenderContext,
         palette_buffer: &PaletteBuffer,
         display_info_buffer: &DisplayInfoBuffer,
+        svg_context: &SvgRenderer,
     ) {
         if self.palette_change {
             info!("Writing to palette_buffer");
@@ -100,9 +102,10 @@ impl<'a> AppState {
             let mut text_context = self.text.lock().unwrap();
 
             if self.resize_event {
-                info!("Writing new size info for text");
+                info!("Writing new size info");
                 display_info_buffer.write_to_queue(&context.queue);
                 text_context.resize(&context.queue, window);
+                svg_context.write_size(&context.queue);
             }
 
             let mut text_areas = Vec::new();
