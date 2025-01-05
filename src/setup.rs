@@ -98,7 +98,7 @@ impl RenderContext {
     }
 }
 
-pub const SWAPHCHAIN_FORMAT: TextureFormat = TextureFormat::Bgra8UnormSrgb;
+pub const SWAPHCHAIN_FORMAT: TextureFormat = TextureFormat::Bgra8Unorm;
 
 pub struct PipelineContext {
     pub bind_group: BindGroup,

@@ -8,6 +8,8 @@ use wgpu::{
 };
 use winit::dpi::PhysicalSize;
 
+use crate::setup::SWAPHCHAIN_FORMAT;
+
 use super::gpu_types::{GpuGlobals, GpuPrimitive, GpuTransform, GpuVertex};
 
 pub struct SvgRenderer {
@@ -175,7 +177,7 @@ impl SvgRenderer {
                 module: &shader_module,
                 entry_point: Some("fs_main"),
                 targets: &[Some(wgpu::ColorTargetState {
-                    format: wgpu::TextureFormat::Bgra8UnormSrgb,
+                    format: SWAPHCHAIN_FORMAT,
                     blend: None,
                     write_mask: wgpu::ColorWrites::ALL,
                 })],

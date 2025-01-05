@@ -76,14 +76,16 @@ impl PaletteBuffer {
 }
 
 fn make_color_raw(c: u32) -> (f64, f64, f64) {
-    let f = |xu: u32| {
-        let x = (xu & 0xFF) as f64 / 255.0;
-        if x > 0.04045 {
-            ((x + 0.055) / 1.055).powf(2.4)
-        } else {
-            x / 12.92
-        }
-    };
+    //let f = |xu: u32| {
+    //    let x = (xu & 0xFF) as f64 / 255.0;
+    //    if x > 0.04045 {
+    //        ((x + 0.055) / 1.055).powf(2.4)
+    //    } else {
+    //        x / 12.92
+    //    }
+    //};
+
+    let f = |xu: u32| (xu & 0xFF) as f64 / 255.0;
 
     return (f(c >> 16), f(c >> 8), f(c));
 }

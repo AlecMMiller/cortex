@@ -80,7 +80,7 @@ impl TextBlock {
             top: self.origin.y,
             scale: self.scale_factor,
             bounds: TextBounds::default(),
-            default_color: glyphon::Color::rgb(255, 255, 255),
+            default_color: glyphon::Color::rgb(205, 214, 244),
             custom_glyphs: &[],
         }
     }
@@ -101,7 +101,13 @@ impl TextContext {
         let swash_cache = SwashCache::new();
         let cache = Cache::new(device);
         let viewport = Viewport::new(device, &cache);
-        let mut text_atlas = TextAtlas::new(device, queue, &cache, SWAPHCHAIN_FORMAT);
+        let mut text_atlas = TextAtlas::with_color_mode(
+            device,
+            queue,
+            &cache,
+            SWAPHCHAIN_FORMAT,
+            glyphon::ColorMode::Web,
+        );
         let text_renderer =
             TextRenderer::new(&mut text_atlas, &device, MultisampleState::default(), None);
 
